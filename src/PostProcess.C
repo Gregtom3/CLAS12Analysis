@@ -61,6 +61,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
   double phi_R;
   double phi_h;
   double th;
+  double zpair = 0.0;
 
   _tree_postprocess->Branch("fid",&fid);
   _tree_postprocess->Branch("Mdiphoton",&Mgg);
@@ -78,6 +79,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
   _tree_postprocess->Branch("nu",&nu);
   _tree_postprocess->Branch("x",&x);
   _tree_postprocess->Branch("y",&y);
+  _tree_postprocess->Branch("z",&zpair);
   //  _tree_postprocess->Branch("charge",&charge);
   
   TLorentzVector init_electron;
@@ -99,7 +101,6 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
 
   double xF_pi = 0.0;
   double xF_pi0 = 0.0;
-  double zpair = 0.0;
 
   double zpi = 0.0;
   double zpi0 = 0.0;
@@ -118,7 +119,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
     phi_h=0.0;
     phi_R=0.0;
     th=0.0;
-
+    zpair=0.0;
     for(unsigned int i = 0 ; i < pid->size() ; i++){
       // Identify the scattered electron
       if(pid->at(i)==11){
@@ -203,6 +204,7 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
   double phi_h;
   double phi_R;
   double th; 
+  double zpair;
 
   _tree_postprocess->Branch("fid",&fid);
   _tree_postprocess->Branch("Mdiphoton",&Mgg);
@@ -220,6 +222,7 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
   _tree_postprocess->Branch("nu",&nu);
   _tree_postprocess->Branch("x",&x);
   _tree_postprocess->Branch("y",&y);
+  _tree_postprocess->Branch("z",&zpair);
   _tree_postprocess->Branch("th",&th);
 
   TLorentzVector init_electron;
@@ -241,7 +244,6 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
 
   double xF_pi = 0.0;
   double xF_pi0 = 0.0;
-  double zpair = 0.0;
 
   double zpi = 0.0;
   double zpi0 = 0.0;
@@ -260,6 +262,8 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
     phi_h=0.0;
     phi_R=0.0;
     th = 0.0;
+    zpair = 0.0;
+
     for(unsigned int i = 0 ; i < pid->size() ; i++){
       // Identify the scattered electron
       if(pid->at(i)==11){

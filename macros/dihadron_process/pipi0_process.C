@@ -11,9 +11,10 @@ using namespace std;
 
 int pipi0_process(
 		  //const char * hipoFile = "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/bkg45nA_10604MeV/45nA_job_3301_3.hipo",
-		  //const char * hipoFile = "/w/hallb-scshelf2102/clas12/users/gmat/CLAS12Analysis/data/raw/sample/Out_DIS_pass1_915_920.hipo_skim23.hipo",
-		  const char * hipoFile = "/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/nSidis_005310.hipo",
-		  const char * outputFile = "/work/clas12/users/gmat/CLAS12Analysis/data/raw/test.root"
+		  const char * hipoFile = "/w/hallb-scshelf2102/clas12/users/gmat/CLAS12Analysis/data/raw/sample/Out_DIS_pass1_915_920.hipo_skim23.hipo",
+		  //const char * hipoFile = "/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/nSidis_005310.hipo",
+		  const char * outputFile = "/work/clas12/users/gmat/CLAS12Analysis/data/raw/test.root",
+		  const double beamE = 10.6
 		  )
 {
   //---------------
@@ -32,7 +33,7 @@ int pipi0_process(
   //-----------------------------------
   Settings settings;
   
-  settings.setElectronBeamEnergy(10.6);
+  settings.setElectronBeamEnergy(beamE);
   
   settings.setQ2range(1,100);
   settings.setWrange(2,100);
