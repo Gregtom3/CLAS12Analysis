@@ -3,7 +3,7 @@
 # User edits fields below
 # ----------------------------------------------------------------------------------------------
 # Location of CLAS12Analysis directory
-CLAS12Analysisdir="/path/to/CLAS12Analysis/"
+CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
 
 # Location of hipo files for analysis
 hipodir=/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/
@@ -18,20 +18,34 @@ outdir="fall2018-torus-1-v1-nSidis"
 rootname="test_"
 
 # Process macro code location
-processcodename="macros/pipi0_process.C"
+processcodelocation="macros/dihadron_process/"
+processcodename="pipi0_process.C"
 
 # Location of clas12root package
-clas12rootdir="/path/to/clas12root"
+clas12rootdir="/work/clas12/users/gmat/packages/clas12root"
+
+
+
+
+
+
+
+
+
+
 
 #----------------------------------------------------------------------------------------------
 # No more editing required below
 #----------------------------------------------------------------------------------------------
 workdir=$CLAS12Analysisdir
-outputdir=$CLAS12Analysisdir+"data/"+$outdir
-processdir=$CLAS12Analysisdir+$processcodename
+outputdir=$CLAS12Analysisdir
+outputdir+="data/"
+outputdir+=$outdir
+processdir=$CLAS12Analysisdir
+processdir+=$processcodelocation
 
 
-runJobs="${workdir}/slurm/runJobs.sh"
+runJobs="${workdir}slurm/runJobs.sh"
 touch $runJobs
 chmod +x $runJobs
 echo " " > $runJobs
@@ -57,7 +71,7 @@ do
     echo "module load clas12/pro" >> $file
     echo "set CLAS12ROOT=${clas12rootdir}" >> $file
     echo "set CCDB_HOME=${CLAS12ROOT}/ccdb" >> $file
-    echo "source ${CCDB_HOME}/environment.csh" >> $file
+    #echo "source ${CCDB_HOME}/environment.csh" >> $file
     echo "cd ${processdir}" >> $file    
     echo "clas12root ${processcodename}\\(\\\"${hipofile}\\\",\\\"${outputdir}/${rootname}${i}.root\\\",${beamE}\\)" >> $file   
     echo "sbatch shells/${rootname}${i}.sh" >> $runJobs
