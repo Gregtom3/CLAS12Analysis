@@ -11,7 +11,7 @@ int PostProcess::Init(TTree * tree_Reco, double eBeam)
   _tree_Reco->SetBranchAddress("x", &x, &b_x);
   _tree_Reco->SetBranchAddress("y", &y, &b_y);
   _tree_Reco->SetBranchAddress("helicity", &helicity, &b_helicity);
-  //  _tree_Reco->SetBranchAddress("charge", &charge, &b_charge);
+  _tree_Reco->SetBranchAddress("polarization", &polarization, &b_polarization);
   _tree_Reco->SetBranchAddress("pid", &pid, &b_pid);
   _tree_Reco->SetBranchAddress("px", &px, &b_px);
   _tree_Reco->SetBranchAddress("py", &py, &b_py);
@@ -51,10 +51,10 @@ int PostProcess::Process(TTree *_tree_postprocess){
 }
 
 int PostProcess::pipi0(TTree * _tree_postprocess){
-  double fid = 0.0;
+  int fid = 0;
   double Mgg;
-  double E1;
-  double E2;
+  //  double E1;
+  //  double E2;
   double Mdihadron;
   double beta1;
   double beta2;
@@ -65,22 +65,22 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
 
   _tree_postprocess->Branch("fid",&fid);
   _tree_postprocess->Branch("Mdiphoton",&Mgg);
-  _tree_postprocess->Branch("E1",&E1);
-  _tree_postprocess->Branch("E2",&E2);
+  //  _tree_postprocess->Branch("E1",&E1);
+  //  _tree_postprocess->Branch("E2",&E2);
   _tree_postprocess->Branch("Mdihadron",&Mdihadron);
-  _tree_postprocess->Branch("beta1",&beta1);
-  _tree_postprocess->Branch("beta2",&beta2);
+  //_tree_postprocess->Branch("beta1",&beta1);
+  //_tree_postprocess->Branch("beta2",&beta2);
   _tree_postprocess->Branch("helicity",&helicity);
   _tree_postprocess->Branch("phi_R",&phi_R);
   _tree_postprocess->Branch("phi_h",&phi_h);
   _tree_postprocess->Branch("th",&th);
-  _tree_postprocess->Branch("Q2",&Q2);
-  _tree_postprocess->Branch("W",&W);
-  _tree_postprocess->Branch("nu",&nu);
+  //_tree_postprocess->Branch("Q2",&Q2);
+  //_tree_postprocess->Branch("W",&W);
+  //_tree_postprocess->Branch("nu",&nu);
   _tree_postprocess->Branch("x",&x);
-  _tree_postprocess->Branch("y",&y);
+  //_tree_postprocess->Branch("y",&y);
   _tree_postprocess->Branch("z",&zpair);
-  //  _tree_postprocess->Branch("charge",&charge);
+  _tree_postprocess->Branch("polarization",&polarization);
   
   TLorentzVector init_electron;
   init_electron.SetPxPyPzE(0,0,sqrt(_electron_beam_energy*_electron_beam_energy - electronMass * electronMass),_electron_beam_energy);
@@ -111,8 +111,8 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
     nb = _tree_Reco->GetEntry(jentry);   nbytes += nb;
     
     Mgg=0.0;
-    E1=0.0;
-    E2=0.0;
+    //    E1=0.0;
+    //    E2=0.0;
     Mdihadron=0.0;
     beta1=0.0;
     beta2=0.0;
@@ -164,13 +164,17 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
 	       abs(vz_electron-vz_pi)<20 && abs(vz_electron-vz_pi0)<20){
 	            
 	      dihadron = pi0+pi;
-	      // All cuts are addressed, now appended interesting quantities
+	      
 	      Mgg=((gamma1+gamma2).M());
-	      E1=(gamma1.E());
-	      E2=(gamma2.E());
+	      
+	      //	      E1=(gamma1.E());
+	      //	      E2=(gamma2.E());
 	      Mdihadron=(dihadron.M());
 	      beta1=(beta->at(i));
 	      beta2=(beta->at(j));
+	      // All cuts are addressed, now appended interesting quantities
+	      if(Mgg<0.08 || Mgg>0.4 || abs(beta1-1)>0.02 || abs(beta2-1)>0.02)
+		continue;
 	      phi_R=(_kin.phi_R(q,init_electron,pi,pi0));
 	      phi_h=(_kin.phi_h(q,init_electron,pi,pi0));
      	      th = (_kin.com_th(pi,pi0));
@@ -193,7 +197,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
 
 
 int PostProcess::pipi0_MC(TTree * _tree_postprocess){
-  double fid = 0.0;
+  int fid = 0;
   double Mgg;
   double E1;
   double E2;

@@ -69,7 +69,7 @@ class PostProcess{
   Float_t         x;
   Float_t         y;
   Float_t         helicity;
-  //  Float_t         charge;
+  Float_t         polarization;
   vector<float>   *pid=0;
   vector<float>   *px=0;
   vector<float>   *py=0;
@@ -94,7 +94,7 @@ class PostProcess{
   TBranch        *b_x;
   TBranch        *b_y;
   TBranch        *b_helicity;
-  //  TBranch        *b_charge;
+  TBranch        *b_polarization;
   TBranch        *b_pid;
   TBranch        *b_px;
   TBranch        *b_py;
@@ -111,6 +111,7 @@ class PostProcess{
   TBranch        *b_chi2;
   TBranch        *b_parentID;
   TBranch        *b_parentPID;
+
 
   TTree *_tree_Reco;
   Long64_t _nentries;

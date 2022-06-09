@@ -41,7 +41,7 @@ int SIDISKinematicsReco::Init()
   _map_event.insert( make_pair( "W" , dummy ) );
   _map_event.insert( make_pair( "nu" , dummy ) );
   _map_event.insert( make_pair( "helicity" , dummy ) );
-  //  _map_event.insert( make_pair( "charge" , dummy ) );
+  _map_event.insert( make_pair( "polarization" , dummy ) );
   
   // Create particle map 
   // -------------------------  
@@ -100,6 +100,7 @@ int SIDISKinematicsReco::Init()
 
   for(unsigned int idx = 0 ; idx < _settings.hipoFileStrings().size() ; idx ++){
     _chain.Add(_settings.hipoFileStrings().at(idx).c_str());
+
   }
 
   // Set beam energy
@@ -136,6 +137,8 @@ int SIDISKinematicsReco::InitHipo()
   // -----------------------------------------------------
   // Add banks to the _config_c12 object
   // -----------------------------------------------------
+
+  // Add REC::Kinematics bank
   if(_settings.getEventRecoMethod() == Settings::eventRecoMethod::useRecKinematicsBank){
     _idx_RECKin = _config_c12->addBank("REC::Kinematics");
     _ix = _config_c12->getBankOrder(_idx_RECKin,"x");
@@ -144,6 +147,11 @@ int SIDISKinematicsReco::InitHipo()
     _inu = _config_c12->getBankOrder(_idx_RECKin,"nu");
     _iW = _config_c12->getBankOrder(_idx_RECKin,"W");
   }
+
+  // Add RUN::config bank
+  _idx_RUNconfig = _config_c12->addBank("RUN::config");
+  _irun = _config_c12->getBankOrder(_idx_RUNconfig,"run");
+
   return 0;
 }
 int SIDISKinematicsReco::process_events()
@@ -156,13 +164,22 @@ int SIDISKinematicsReco::process_events()
   // -----------------------------------------------------
   if(_settings.doFiducialCuts())
     _fiducial = FiducialCuts(_c12);
-  
+
+
   // Move to the next event in the Hipo chain
   while(_chain.Next()==true){
     if(_verbosity > 0 && (_ievent)%_printEvery==0 && _ievent!=0){
       std::cout << _ievent << " events completed | " << _tree_Reco->GetEntriesFast() << " passed cuts --> " << _tree_Reco->GetEntriesFast()*100.0/_ievent << "%" << std::endl;
     }
     
+    // Get the run number from the RUN::config bank
+    // -----------------------------------------------------
+    _runNumber = _c12->getBank(_idx_RUNconfig)->getInt(_irun,0);   
+
+    // Set torus bending in fiducial
+    // -----------------------------------------------------
+    _fiducial.setTorusBending(runTorusBending(_runNumber));
+
     /* Increase event # */
     _ievent++;
 
@@ -401,7 +418,7 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     // CUT Fiducial -------------------------------------------------------------
     // Skip over particles that do not satisfy Fiducial Cuts
     if(_settings.doFiducialCuts()){
-      if(_fiducial.FidCutParticle(_c12,pid,pindex,theta) == false)
+      if(_fiducial.FidCutParticle(_c12,_runNumber,pid,pindex,p,theta) == false)
 	continue;
     }
     
@@ -500,7 +517,7 @@ int SIDISKinematicsReco::AddTruthEventInfo(const std::unique_ptr<clas12::clas12r
       (_map_event.find("y"))->second = y;
       (_map_event.find("nu"))->second = nu;
       (_map_event.find("W"))->second = W;
-      //      (_map_event.find("charge"))->second = _c12->getRunBeamCharge();
+      (_map_event.find("polarization"))->second = 0;
       break;
     }
   }
@@ -573,8 +590,11 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
     (_map_event.find("nu"))->second = reco_nu;
     (_map_event.find("W"))->second = reco_W;
     auto event = _c12->event();
-    (_map_event.find("helicity"))->second = -event->getHelicity();
-    //    (_map_event.find("charge"))->second = _c12->getRunBeamCharge();
+    if(runHelicityFlip(_runNumber))
+      (_map_event.find("helicity"))->second = -event->getHelicity();
+    else
+      (_map_event.find("helicity"))->second = event->getHelicity();
+    (_map_event.find("polarization"))->second = runPolarization(_runNumber,true);
   }
   
   return 0;
