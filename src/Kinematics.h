@@ -3,6 +3,9 @@
 
 #include "TLorentzVector.h"
 #include "TVector3.h"
+#include <iostream>
+
+using namespace std;
 
 class Kinematics {
  public:
@@ -21,8 +24,9 @@ class Kinematics {
   static double th(double Pt, double Pz);
   static double eta(double th);
   static double phi(double Px, double Py);
+  static double xF(TLorentzVector, TLorentzVector,double);
   static double phi_h(TLorentzVector,TLorentzVector,TLorentzVector,TLorentzVector);
-  static double phi_R(TLorentzVector,TLorentzVector,TLorentzVector,TLorentzVector);
+  static double phi_R(TLorentzVector,TLorentzVector,TLorentzVector,TLorentzVector,double,double);
   static double com_th(TLorentzVector, TLorentzVector);
 };
 #endif

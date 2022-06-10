@@ -140,8 +140,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
     zpi = (init_target*pi)/(init_target*q);
 
     // Get xF of Pi+/-
-    //    xF_pi=2*(pi*q)/(abs(q.M())*W);
-    xF_pi = zpi/W;
+    xF_pi = Kinematics::xF(q,pi,W);
 
     // Next, identify pairs of photons
     for(unsigned int i = 0 ; i < pid->size() ; i++){
@@ -153,9 +152,8 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
 	    pi0=gamma1+gamma2;
 	    vz_pi0=(vz->at(i)+vz->at(j))/2.0;
 	    zpi0 = (init_target*pi0)/(init_target*q);
-//	    xF_pi0=2*(pi0*q)/(abs(q.M())*W);
-	    xF_pi0 = zpi0/W;
-	    
+	    xF_pi0 = Kinematics::xF(q,pi0,W);
+
 	    zpair = (init_target*(pi+pi0))/(init_target * q);
 	    if(gamma1.Angle(electron.Vect())>8*PI/180.0 &&
 	       gamma2.Angle(electron.Vect())>8*PI/180.0 &&
@@ -175,7 +173,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
 	      // All cuts are addressed, now appended interesting quantities
 	      if(Mgg<0.08 || Mgg>0.4 || abs(beta1-1)>0.02 || abs(beta2-1)>0.02)
 		continue;
-	      phi_R=(_kin.phi_R(q,init_electron,pi,pi0));
+	      phi_R=(_kin.phi_R(q,init_electron,pi,pi0,zpi,zpi0));
 	      phi_h=(_kin.phi_h(q,init_electron,pi,pi0));
      	      th = (_kin.com_th(pi,pi0));
 	      _tree_postprocess->Fill();
@@ -288,8 +286,7 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
     zpi = (init_target*pi)/(init_target*q);
 
     // Get xF of Pi+/-
-    //    xF_pi=2*(pi*q)/(abs(q.M())*W);
-    xF_pi = zpi/W;
+    xF_pi = Kinematics::xF(q,pi,W);
 
     // Next, identify pairs of photons
     for(unsigned int i = 0 ; i < pid->size() ; i++){
@@ -301,8 +298,8 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
 	    pi0=gamma1+gamma2;
 	    vz_pi0=(vz->at(i)+vz->at(j))/2.0;
 	    zpi0 = (init_target*pi0)/(init_target*q);
-//	    xF_pi0=2*(pi0*q)/(abs(q.M())*W);
-	    xF_pi0 = zpi0/W;
+
+	    xF_pi0 = Kinematics::xF(q,pi0,W);
 	    
 	    zpair = (init_target*(pi+pi0))/(init_target * q);
 	    if(gamma1.Angle(electron.Vect())>8*PI/180.0 &&
@@ -323,7 +320,7 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
 		flag=(1);
 	      else
 		flag=(-1);
-	      phi_R=(_kin.phi_R(q,init_electron,pi,pi0));
+	      phi_R=(_kin.phi_R(q,init_electron,pi,pi0,zpi,zpi0));
 	      phi_h=(_kin.phi_h(q,init_electron,pi,pi0));	      
      	      th = (_kin.com_th(pi,pi0));
 	      _tree_postprocess->Fill();
