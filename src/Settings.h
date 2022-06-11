@@ -18,13 +18,21 @@ class Settings{
     useLargestPinFD = 2
   };
 
+  enum chargedPionChi2cut
+  {
+    standard = 1,
+    strict = 2
+  };
+
   bool doMC() const;
   bool doReco() const;
   bool doFiducialCuts() const;
   bool doPostProcess() const;
+  bool doChargedPionChi2() const;
   bool connectMC2Reco() const;
   bool ignoreOtherRecoParticles() const;
   eventRecoMethod getEventRecoMethod() const;
+  chargedPionChi2cut getChargedPionChi2cut() const;
   const char * postProcessMethod() const;
   double electronBeamEnergy() const;
   double Q2min() const;
@@ -41,6 +49,7 @@ class Settings{
   void setconnectMC2Reco(bool);
   void setignoreOtherRecoParticles(bool);
   void setEventRecoMethod(eventRecoMethod);
+  void setChargedPionChi2cut(chargedPionChi2cut);
   void setPostProcessMethod(const char *);
   void setElectronBeamEnergy(double);
   void setQ2range(double, double);
@@ -68,15 +77,20 @@ class Settings{
   std::vector<std::string> hipoFileStrings();
 
   bool needsChi2PidCut(int);
+  std::vector<int> get_fPID();
+  std::vector<int> get_fNpart();
+  std::vector<bool> get_fExact();
  private:
 
   bool _doMC = false;
   bool _doReco = false;
   bool _doFiducialCuts = false;
   bool _doPostProcess = false;
+  bool _doChargedPionChi2 = false;
   bool _connectMC2Reco = false;
   bool _ignoreOtherRecoParticles = false;
   eventRecoMethod _eventRecoMethod;
+  chargedPionChi2cut _chargedPionChi2cut;
   const char *_postProcessMethod;
   double _electronBeamEnergy = 10.6;
   double _Q2min = -999;
@@ -85,7 +99,6 @@ class Settings{
   double _Wmax  = 999;
   double _ymin  = 0;
   double _ymax  = 1;
-
   // Vectors for final state
   // _fPID --> {11, 211, 22} = {e-, pi+, gamma}
   // _fNpart --> {1, 1, 2}   = {1 e-, 1 pi+, 2 gammas}
@@ -96,7 +109,7 @@ class Settings{
   std::vector<int> _fPID;
   std::vector<int> _fNpart;
   std::vector<bool> _fExact;
-  
+
   // std::vector of Hipo filename strings
   std::vector<std::string> _hipoFileStrings;
   

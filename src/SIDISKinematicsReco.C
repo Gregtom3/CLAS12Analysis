@@ -339,54 +339,11 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     // Extract each particle from event one-at-a-time
     auto particle = particles.at(idx);
     int pid = particle->getPid();
-
-    // CUT pid -------------------------------------------------------------
-    // Skip over particles that are not interesting in the final state
-    if(_settings.ignoreOtherRecoParticles() && _settings.getN_fromPID(pid)==0)
-      continue;
-
     float chi2 = particle->getChi2Pid();
-
-    // CUT chi2 -------------------------------------------------------------
-    // Skip over particles that both need a chi2pid cut, and do not satisfy it
-    if(abs(chi2) > _settings.getChi2max_fromPID(pid))
-      {
-	// Skip event if this lone particle NEEDED to pass the cut
-	if(_settings.getN_fromPID(pid)==1 && _settings.isExact_fromPID(pid))
-	  return -1;
-	else
-	  continue;
-      }
-
-    float beta = particle->getBeta();
-
-    // CUT beta -------------------------------------------------------------
-    // Skip over particles that both need a beta cut, and do not satisfy it
-    if(abs(beta) > _settings.getBetamax_fromPID(pid) || abs(beta) < _settings.getBetamin_fromPID(pid))
-      {
-	// Skip event if this lone particle NEEDED to pass the cut
-	if(_settings.getN_fromPID(pid)==1 && _settings.isExact_fromPID(pid))
-	  return -1;
-	else
-	  continue;
-      }
-
-    float p = particle->getP();
-    // CUT p -------------------------------------------------------------
-    // Skip over particles that do not satisfy minimum momentum cut
-
-    if(_settings.getPmin_fromPID(pid) > p)
-      {
-	// Skip event if this lone particle NEEDED to pass the cut
-	if(_settings.getN_fromPID(pid)==1 && _settings.isExact_fromPID(pid))
-	  return -1;
-	else
-	  continue;
-
-      }
     float theta = particle->getTheta();
     float eta = _kin.eta(theta);
     float phi = particle->getPhi();
+    float p = particle->getP();
     float px = _kin.Px(p,theta,phi);
     float py = _kin.Py(p,theta,phi);
     float pz = _kin.Pz(p,theta,phi);
@@ -394,34 +351,80 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     float m = 0.0;
     if(pid!=22)
       m = particle->getPdgMass();
-
     float E  = _kin.E(m,p);
-    // CUT E -------------------------------------------------------------
-    // Skip over particles that do not satisfy minimum energy cut
-    if(_settings.getEmin_fromPID(pid) > E)
-      continue;
-
+    float beta = particle->getBeta();
     int pindex = particle->getIndex();
     float vz = particle->par()->getVz();
 
-    // CUT vz -------------------------------------------------------------
-    // Skip over particles that do not satisfy Vz range
-    if(vz < _settings.getVzmin_fromPID(pid) || vz > _settings.getVzmax_fromPID(pid))
-      {
-	// Skip event if this lone particle NEEDED to pass the cut
-	if(_settings.getN_fromPID(pid)==1 && _settings.isExact_fromPID(pid))
+    bool passChargedPionChi2=true;
+
+    // CUT pid -------------------------------------------------------------
+    // Skip over particles that are not interesting in the final state
+    if(_settings.ignoreOtherRecoParticles() && _settings.getN_fromPID(pid)==0)
+      continue;
+
+    // CUT chi2 -------------------------------------------------------------
+    // Skip over particles that both need a chi2pid cut, and do not satisfy it
+    if(abs(chi2) > _settings.getChi2max_fromPID(pid))
+      continue;
+
+    // CUT chi2 -------------------------------------------------------------
+    // For charged pions, perform additional chi2 cuts
+    // See RGA analysis note for details
+    if(pid==211||pid==-211){
+      if(_settings.doChargedPionChi2()){
+	// Determine pion charge dependent C value
+	float C = 0.0;
+	(pid==211 ? C=0.88 : C=0.93);
+	// 2 different pion chi2pid regions
+	// standard
+	// strict
+	if(_settings.getChargedPionChi2cut()==Settings::chargedPionChi2cut::standard){
+	  if(p<2.44)
+	    passChargedPionChi2=chi2<C*3;
+	  else
+	    passChargedPionChi2=chi2<C*(0.00869 + 14.98587 * exp(-p/1.18236) + 1.81751 * exp(-p/4.86394));
+	} 
+	else if(_settings.getChargedPionChi2cut()==Settings::chargedPionChi2cut::strict){
+	  if(p<2.44)
+	    passChargedPionChi2=chi2<C*3;
+	  else if(p<4.6)
+	    passChargedPionChi2=chi2< C * (0.00869 + 14.98587 * exp(-p/1.18236) + 1.81751 * exp(-p/4.86394));
+	  else
+	    passChargedPionChi2=chi2< C * (-1.14099 + 24.14992 * exp(-p/1.36554) + 2.66876 * exp(-p/6.80552));
+	} 
+	else {
+	  std::cout << " UNKNOWN chargedPionChi2cut value, returning -1" << std::endl;
 	  return -1;
-	else
-	  continue;
-      }
+	}
+      }	
+    }
+    
+    if(passChargedPionChi2 == false)
+      continue;
+    
+    // CUT beta -------------------------------------------------------------
+    if(abs(beta) > _settings.getBetamax_fromPID(pid) || abs(beta) < _settings.getBetamin_fromPID(pid))
+      continue;
+
+    // CUT p -------------------------------------------------------------
+    if(_settings.getPmin_fromPID(pid) > p)      
+      continue;
+
+    // CUT E -------------------------------------------------------------
+    if(_settings.getEmin_fromPID(pid) > E)
+      continue;
+
+    // CUT vz -------------------------------------------------------------
+    if(vz < _settings.getVzmin_fromPID(pid) || vz > _settings.getVzmax_fromPID(pid))
+      continue;
 
     // CUT Fiducial -------------------------------------------------------------
-    // Skip over particles that do not satisfy Fiducial Cuts
     if(_settings.doFiducialCuts()){
       if(_fiducial.FidCutParticle(_c12,_runNumber,pid,pindex,p,theta) == false)
 	continue;
     }
-    
+
     SIDISParticlev1 *sp = new SIDISParticlev1();
     sp->set_candidate_id( pindex );
     
@@ -447,8 +450,25 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     sp->set_property( SIDISParticle::part_parentPID, -999);
     // Add SIDISParticle to the collection
     recoparticleMap.insert ( make_pair( sp->get_candidate_id() , sp) );
-
   }
+
+  // Parse through the recoparticleMap to check if the desired event trigger was reco'd
+  for (unsigned int i = 0 ; i < _settings.get_fPID().size() ; i++){
+    int pid = _settings.get_fPID().at(i);
+    int npart = _settings.get_fNpart().at(i);
+    bool exact = _settings.get_fExact().at(i);
+    int npart_map = 0;
+    for (type_map_part::iterator it_reco = recoparticleMap.begin(); it_reco!= recoparticleMap.end() ; ++it_reco){
+      if( (it_reco->second)->get_property_int(SIDISParticle::part_pid) == pid)
+	npart_map++;
+    }
+    
+    if(exact == true && npart_map!=npart)
+      return -1;
+    else if(exact == false && npart_map<npart)
+      return -1;
+  }
+ 
   return 0;
 }
 

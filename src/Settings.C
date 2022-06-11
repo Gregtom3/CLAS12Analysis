@@ -12,8 +12,10 @@ bool Settings::doReco() const {return _doReco;}
 bool Settings::doFiducialCuts() const {return _doFiducialCuts;}
 bool Settings::doPostProcess() const {return _doPostProcess;}
 bool Settings::connectMC2Reco() const {return _connectMC2Reco;}
+bool Settings::doChargedPionChi2() const {return _doChargedPionChi2;}
 bool Settings::ignoreOtherRecoParticles() const {return _ignoreOtherRecoParticles;}
 Settings::eventRecoMethod Settings::getEventRecoMethod() const {return _eventRecoMethod;}
+Settings::chargedPionChi2cut Settings::getChargedPionChi2cut() const {return _chargedPionChi2cut;}
 const char * Settings::postProcessMethod() const {return _postProcessMethod;}
 double Settings::electronBeamEnergy() const {return _electronBeamEnergy;}
 double Settings::Q2min() const {return _Q2min;}
@@ -55,6 +57,12 @@ void Settings::setignoreOtherRecoParticles(bool b){
 
 void Settings::setEventRecoMethod(eventRecoMethod eRM){
   _eventRecoMethod = eRM;
+  return;
+}
+
+void Settings::setChargedPionChi2cut(chargedPionChi2cut cut){
+  _doChargedPionChi2 = true;
+  _chargedPionChi2cut = cut;
   return;
 }
 
@@ -223,7 +231,9 @@ double Settings::getChi2max_fromPID(int pid){
  return 99999;
 } 
 
-
+std::vector<int> Settings::get_fPID(){return _fPID;}
+std::vector<int> Settings::get_fNpart(){return _fNpart;}
+std::vector<bool> Settings::get_fExact(){return _fExact;}
 
 std::vector<std::string> Settings::hipoFileStrings() {return _hipoFileStrings;}
 

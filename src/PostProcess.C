@@ -68,8 +68,8 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
   //  _tree_postprocess->Branch("E1",&E1);
   //  _tree_postprocess->Branch("E2",&E2);
   _tree_postprocess->Branch("Mdihadron",&Mdihadron);
-  //_tree_postprocess->Branch("beta1",&beta1);
-  //_tree_postprocess->Branch("beta2",&beta2);
+  _tree_postprocess->Branch("beta1",&beta1);
+  _tree_postprocess->Branch("beta2",&beta2);
   _tree_postprocess->Branch("helicity",&helicity);
   _tree_postprocess->Branch("phi_R",&phi_R);
   _tree_postprocess->Branch("phi_h",&phi_h);
@@ -107,7 +107,6 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
 
   Long64_t nbytes = 0, nb = 0;
   for (Long64_t jentry=0; jentry<_nentries;jentry++) {
-
     nb = _tree_Reco->GetEntry(jentry);   nbytes += nb;
     
     Mgg=0.0;
@@ -126,6 +125,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
 	electron.SetPxPyPzE(px->at(i),py->at(i),pz->at(i),E->at(i));
 	vz_electron=vz->at(i);
       }
+      // Identify the single charged pion
       if(pid->at(i)==_piPID){
 	pi.SetPxPyPzE(px->at(i),py->at(i),pz->at(i),E->at(i));
 	vz_pi=vz->at(i);      
@@ -139,9 +139,6 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
     // Get z of Pi+/-
     zpi = (init_target*pi)/(init_target*q);
 
-    // Get xF of Pi+/-
-    xF_pi = Kinematics::xF(q,pi,W);
-
     // Next, identify pairs of photons
     for(unsigned int i = 0 ; i < pid->size() ; i++){
       if(pid->at(i)==22){
@@ -152,16 +149,21 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
 	    pi0=gamma1+gamma2;
 	    vz_pi0=(vz->at(i)+vz->at(j))/2.0;
 	    zpi0 = (init_target*pi0)/(init_target*q);
-	    xF_pi0 = Kinematics::xF(q,pi0,W);
 
-	    zpair = (init_target*(pi+pi0))/(init_target * q);
+	    dihadron = pi0+pi;
+
+	    xF_pi = Kinematics::xF(q,pi,init_target,W);
+	    xF_pi0 = Kinematics::xF(q,pi0,init_target,W);
+
+	    zpair = zpi+zpi0;
+	    
 	    if(gamma1.Angle(electron.Vect())>8*PI/180.0 &&
 	       gamma2.Angle(electron.Vect())>8*PI/180.0 &&
 	              xF_pi>0 && xF_pi0>0 &&
 	              zpair<0.95 &&
 	       abs(vz_electron-vz_pi)<20 && abs(vz_electron-vz_pi0)<20){
 	            
-	      dihadron = pi0+pi;
+
 	      
 	      Mgg=((gamma1+gamma2).M());
 	      
@@ -173,7 +175,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
 	      // All cuts are addressed, now appended interesting quantities
 	      if(Mgg<0.08 || Mgg>0.4 || abs(beta1-1)>0.02 || abs(beta2-1)>0.02)
 		continue;
-	      phi_R=(_kin.phi_R(q,init_electron,pi,pi0,zpi,zpi0));
+	      phi_R=(_kin.phi_R(q,init_electron,pi,pi0));
 	      phi_h=(_kin.phi_h(q,init_electron,pi,pi0));
      	      th = (_kin.com_th(pi,pi0));
 	      _tree_postprocess->Fill();
@@ -285,9 +287,6 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
     // Get z of Pi+/-
     zpi = (init_target*pi)/(init_target*q);
 
-    // Get xF of Pi+/-
-    xF_pi = Kinematics::xF(q,pi,W);
-
     // Next, identify pairs of photons
     for(unsigned int i = 0 ; i < pid->size() ; i++){
       if(pid->at(i)==22){
@@ -298,17 +297,17 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
 	    pi0=gamma1+gamma2;
 	    vz_pi0=(vz->at(i)+vz->at(j))/2.0;
 	    zpi0 = (init_target*pi0)/(init_target*q);
-
-	    xF_pi0 = Kinematics::xF(q,pi0,W);
+	    dihadron = pi0+pi;
+	    xF_pi = Kinematics::xF(q,pi,init_target,W);
+	    xF_pi0 = Kinematics::xF(q,pi0,init_target,W);
 	    
-	    zpair = (init_target*(pi+pi0))/(init_target * q);
+	    zpair = zpi+zpi0;
 	    if(gamma1.Angle(electron.Vect())>8*PI/180.0 &&
 	       gamma2.Angle(electron.Vect())>8*PI/180.0 &&
 	              xF_pi>0 && xF_pi0>0 &&
 	              zpair<0.95 &&
 	       abs(vz_electron-vz_pi)<20 && abs(vz_electron-vz_pi0)<20){
-	            
-	      dihadron = pi0+pi;
+	           
 	      // All cuts are addressed, now appended interesting quantities
 	      Mgg=((gamma1+gamma2).M());
 	      E1=(gamma1.E());
@@ -320,7 +319,7 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
 		flag=(1);
 	      else
 		flag=(-1);
-	      phi_R=(_kin.phi_R(q,init_electron,pi,pi0,zpi,zpi0));
+	      phi_R=(_kin.phi_R(q,init_electron,pi,pi0));
 	      phi_h=(_kin.phi_h(q,init_electron,pi,pi0));	      
      	      th = (_kin.com_th(pi,pi0));
 	      _tree_postprocess->Fill();
