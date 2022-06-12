@@ -91,7 +91,7 @@ double Kinematics::xF(TLorentzVector q, TLorentzVector p, TLorentzVector init_ta
   return 2*(qq.Vect().Dot(pp.Vect()))/(qq.Vect().Mag()*W);
 }
 
-double Kinematics::phi_R(TLorentzVector Q, TLorentzVector L, TLorentzVector p1, TLorentzVector p2){
+double Kinematics::phi_R(TLorentzVector Q, TLorentzVector L, TLorentzVector p1, TLorentzVector p2, int method){
   TLorentzVector ph = p1 + p2;
   TLorentzVector r = 0.5*(p1-p2);
 
@@ -99,7 +99,26 @@ double Kinematics::phi_R(TLorentzVector Q, TLorentzVector L, TLorentzVector p1, 
   TVector3 l(L.Px(), L.Py(), L.Pz());
   TVector3 R(r.Px(), r.Py(), r.Pz());
 
-  TVector3 Rperp = R-(q*R)/(q*q)*q;
+  TVector3 Rperp;
+  // Different methods for defining Rperp
+  switch(method){
+  case 0:   // -- HERMES 0803.2367 angle
+    Rperp=R-(q*R)/(q*q)*q;
+    break;
+  case 1: // -- HERMES 0803.2367 angle, but used Matevosyan et al 1707.04999
+          //    to obtain R_T vector
+    TLorentzVector init_target;
+    init_target.SetPxPyPzE(0,0,0,0.938272);
+    double z1 = (init_target*p1)/(init_target*Q);
+    double z2 = (init_target*p2)/(init_target*Q);
+    TVector3 P1(p1.Px(), p1.Py(), p1.Pz());
+    TVector3 P2(p2.Px(), p2.Py(), p2.Pz());
+    TVector3 P1perp = P1-(q*P1)/(q*q)*q;
+    TVector3 P2perp = P2-(q*P2)/(q*q)*q;
+    Rperp = (z2*P1perp-z1*P2perp)*((1)/(z1+z2));
+    break;
+  }
+
   TVector3 qcrossl = q.Cross(l);
   TVector3 qcrossRperp = q.Cross(Rperp);
 

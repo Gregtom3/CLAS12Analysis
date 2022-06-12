@@ -362,7 +362,7 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     // Skip over particles that are not interesting in the final state
     if(_settings.ignoreOtherRecoParticles() && _settings.getN_fromPID(pid)==0)
       continue;
-
+    
     // CUT chi2 -------------------------------------------------------------
     // Skip over particles that both need a chi2pid cut, and do not satisfy it
     if(abs(chi2) > _settings.getChi2max_fromPID(pid))
@@ -468,7 +468,7 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     else if(exact == false && npart_map<npart)
       return -1;
   }
- 
+
   return 0;
 }
 
@@ -490,8 +490,10 @@ int SIDISKinematicsReco::ConnectTruth2Reco( type_map_part& particleMap,
 	double dth = abs(reco_theta-mc_theta);
 	double dphi = abs(reco_phi-mc_phi);
 	//	double dE = abs(reco_E - mc_E);
-
-	if( (dth < 6*degtorad) && 
+	int mcpid = (it_mc->second)->get_property_int(SIDISParticle::part_pid);
+	int recopid = (it_reco->second)->get_property_int(SIDISParticle::part_pid);
+	if( (mcpid == recopid) &&
+	   (dth < 6*degtorad) && 
 	    (dphi < 2*degtorad || abs(dphi - 2*PI) < 2*degtorad)){
 	  (it_mc->second)->set_property( SIDISParticle::part_pindex, (it_reco->second)->get_property_int(SIDISParticle::part_pindex));
 	  (it_reco->second)->set_property( SIDISParticle::part_parentID , (it_mc->second)->get_property_int(SIDISParticle::part_parentID));

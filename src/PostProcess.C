@@ -53,32 +53,34 @@ int PostProcess::Process(TTree *_tree_postprocess){
 int PostProcess::pipi0(TTree * _tree_postprocess){
   int fid = 0;
   double Mgg;
-  //  double E1;
-  //  double E2;
+  double E1;
+  double E2;
   double Mdihadron;
   double beta1;
   double beta2;
-  double phi_R;
+  double phi_R0;
+  double phi_R1;
   double phi_h;
   double th;
   double zpair = 0.0;
 
   _tree_postprocess->Branch("fid",&fid);
   _tree_postprocess->Branch("Mdiphoton",&Mgg);
-  //  _tree_postprocess->Branch("E1",&E1);
-  //  _tree_postprocess->Branch("E2",&E2);
+  _tree_postprocess->Branch("E1",&E1);
+  _tree_postprocess->Branch("E2",&E2);
   _tree_postprocess->Branch("Mdihadron",&Mdihadron);
   _tree_postprocess->Branch("beta1",&beta1);
   _tree_postprocess->Branch("beta2",&beta2);
   _tree_postprocess->Branch("helicity",&helicity);
-  _tree_postprocess->Branch("phi_R",&phi_R);
+  _tree_postprocess->Branch("phi_R0",&phi_R0);
+  _tree_postprocess->Branch("phi_R1",&phi_R1);
   _tree_postprocess->Branch("phi_h",&phi_h);
   _tree_postprocess->Branch("th",&th);
-  //_tree_postprocess->Branch("Q2",&Q2);
-  //_tree_postprocess->Branch("W",&W);
-  //_tree_postprocess->Branch("nu",&nu);
+  _tree_postprocess->Branch("Q2",&Q2);
+  _tree_postprocess->Branch("W",&W);
+  _tree_postprocess->Branch("nu",&nu);
   _tree_postprocess->Branch("x",&x);
-  //_tree_postprocess->Branch("y",&y);
+  _tree_postprocess->Branch("y",&y);
   _tree_postprocess->Branch("z",&zpair);
   _tree_postprocess->Branch("polarization",&polarization);
   
@@ -110,13 +112,14 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
     nb = _tree_Reco->GetEntry(jentry);   nbytes += nb;
     
     Mgg=0.0;
-    //    E1=0.0;
-    //    E2=0.0;
+    E1=0.0;
+    E2=0.0;
     Mdihadron=0.0;
     beta1=0.0;
     beta2=0.0;
     phi_h=0.0;
-    phi_R=0.0;
+    phi_R0=0.0;
+    phi_R1=0.0;
     th=0.0;
     zpair=0.0;
     for(unsigned int i = 0 ; i < pid->size() ; i++){
@@ -166,16 +169,15 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
 
 	      
 	      Mgg=((gamma1+gamma2).M());
-	      
-	      //	      E1=(gamma1.E());
-	      //	      E2=(gamma2.E());
+	      E1=(gamma1.E());
+	      E2=(gamma2.E());
 	      Mdihadron=(dihadron.M());
 	      beta1=(beta->at(i));
 	      beta2=(beta->at(j));
-	      // All cuts are addressed, now appended interesting quantities
-	      if(Mgg<0.08 || Mgg>0.4 || abs(beta1-1)>0.02 || abs(beta2-1)>0.02)
+	      if(abs(beta1-1)>0.02 || abs(beta2-1)>0.02)
 		continue;
-	      phi_R=(_kin.phi_R(q,init_electron,pi,pi0));
+	      phi_R0=(_kin.phi_R(q,init_electron,pi,pi0,0));
+	      phi_R1=(_kin.phi_R(q,init_electron,pi,pi0,1));
 	      phi_h=(_kin.phi_h(q,init_electron,pi,pi0));
      	      th = (_kin.com_th(pi,pi0));
 	      _tree_postprocess->Fill();
@@ -206,7 +208,8 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
   double beta2;
   int flag;
   double phi_h;
-  double phi_R;
+  double phi_R0;
+  double phi_R1;
   double th; 
   double zpair;
 
@@ -219,7 +222,8 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
   _tree_postprocess->Branch("beta2",&beta2);
   _tree_postprocess->Branch("helicity",&helicity);
   _tree_postprocess->Branch("flag",&flag);
-  _tree_postprocess->Branch("phi_R",&phi_R);
+  _tree_postprocess->Branch("phi_R0",&phi_R0);
+  _tree_postprocess->Branch("phi_R1",&phi_R1);
   _tree_postprocess->Branch("phi_h",&phi_h);
   _tree_postprocess->Branch("Q2",&Q2);
   _tree_postprocess->Branch("W",&W);
@@ -264,7 +268,8 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
     beta2=0.0;
     flag=0;
     phi_h=0.0;
-    phi_R=0.0;
+    phi_R0=0.0;
+    phi_R1=0.0;
     th = 0.0;
     zpair = 0.0;
 
@@ -298,10 +303,12 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
 	    vz_pi0=(vz->at(i)+vz->at(j))/2.0;
 	    zpi0 = (init_target*pi0)/(init_target*q);
 	    dihadron = pi0+pi;
+
 	    xF_pi = Kinematics::xF(q,pi,init_target,W);
 	    xF_pi0 = Kinematics::xF(q,pi0,init_target,W);
 	    
 	    zpair = zpi+zpi0;
+	    
 	    if(gamma1.Angle(electron.Vect())>8*PI/180.0 &&
 	       gamma2.Angle(electron.Vect())>8*PI/180.0 &&
 	              xF_pi>0 && xF_pi0>0 &&
@@ -319,7 +326,8 @@ int PostProcess::pipi0_MC(TTree * _tree_postprocess){
 		flag=(1);
 	      else
 		flag=(-1);
-	      phi_R=(_kin.phi_R(q,init_electron,pi,pi0));
+	      phi_R0=(_kin.phi_R(q,init_electron,pi,pi0,0));
+	      phi_R1=(_kin.phi_R(q,init_electron,pi,pi0,1));
 	      phi_h=(_kin.phi_h(q,init_electron,pi,pi0));	      
      	      th = (_kin.com_th(pi,pi0));
 	      _tree_postprocess->Fill();

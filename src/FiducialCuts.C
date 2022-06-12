@@ -17,9 +17,9 @@ FiducialCuts::FiducialCuts(const std::unique_ptr<clas12::clas12reader>& _c12){
   // Add trajectory bank
   _idx_RECTraj = _c12->addBank("REC::Traj");
   _ipindex_Traj = _c12->getBankOrder(_idx_RECCal,"pindex");
-  _icx = _c12->getBankOrder(_idx_RECTraj,"cx");
-  _icy = _c12->getBankOrder(_idx_RECTraj,"cy");
-  _icz = _c12->getBankOrder(_idx_RECTraj,"cz");
+  _icx = _c12->getBankOrder(_idx_RECTraj,"x");
+  _icy = _c12->getBankOrder(_idx_RECTraj,"y");
+  _icz = _c12->getBankOrder(_idx_RECTraj,"z");
   _ilayer_Traj = _c12->getBankOrder(_idx_RECTraj,"layer");
 }
 
@@ -53,7 +53,7 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
     // Perform electron (pid==11) fiducial cuts
     if(pid==11){
       Ele_sector = _c12->getBank(_idx_RECCal)->getInt(_isector,i);
-      if(lv<9 || lw<9)
+      if(lv<9 || lw<9 || lv>400 || lw>400)
 	return false;
       switch(_c12->getBank(_idx_RECCal)->getInt(_ilayer_Cal,i)){
       case 1:
@@ -70,7 +70,7 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
     
     // Perform photon (pid==22) fiducial cuts
     if(pid==22){
-      if(lv<14 || lw <14)
+      if(lv<14 || lw <14 || lv>400 || lw>400 )
 	return false;
     }
   }
@@ -133,8 +133,6 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
       else if(_torusBending==1){
 	if(DC_fiducial_cut_XY(_cx[r],_cy[r],_cz[r],sector,r+1,pid)==false){return false;}
       }
-      else
-	return false;
     }
   }
   return true;
@@ -566,9 +564,12 @@ bool FiducialCuts::DC_fiducial_cut_XY(float cx, float cy, float cz, int sector, 
    // WARNING
    // Tested on 6/3/2022
    // calc_min > calc_max for some reason, so I've flipped the inequalities
-   //   return ((Y > calc_min) && (Y < calc_max));
-   return ((Y < calc_min) && (Y > calc_max));
-   
+   // return ((Y < calc_min) && (Y > calc_max));
+
+   // Revisited on 6/12/2022
+   // I believe we need to use x,y,z and not cx, cy, cz. I made this fix by simply
+   // replacing the Bank names at the top of FiducialCuts.C
+   return ((Y > calc_min) && (Y < calc_max));   
 }
  
 // sampling fraction (SF) cut, for electrons
