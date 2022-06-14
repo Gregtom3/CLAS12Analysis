@@ -13,16 +13,17 @@ FiducialCuts::FiducialCuts(const std::unique_ptr<clas12::clas12reader>& _c12){
 
 bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _c12, int pid, int pindex, float theta){
   
+  // Perform standard fiducial cuts
+  if(theta<5*PI/180.0 || theta>35*PI/180.0)
+    return false;
+  
+  
   // Loop over entries in the Calorimeter bank
   for(auto i = 0 ; i < _c12->getBank(_idx_RECCal)->getRows() ; i++){
     // Continue loop if the pindex in the calo bank does not match 
     if(_c12->getBank(_idx_RECCal)->getInt(_ipindex,i)!=pindex)
       continue;
     
-    // Perform standard fiducial cuts
-    if(theta<5*PI/180.0 || theta>35*PI/180.0)
-      return false;
-
     float lv = _c12->getBank(_idx_RECCal)->getFloat(_ilv,i);
     float lw = _c12->getBank(_idx_RECCal)->getFloat(_ilw,i);
 
@@ -38,6 +39,6 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
 	return false;
     }
   }
-  
+
   return true;
 }

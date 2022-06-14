@@ -9,8 +9,9 @@ R__LOAD_LIBRARY(libclas12ana.so)
 using namespace std;
 
 int pipi0_postprocess_only(
-		  const char * inputFile = "/work/clas12/users/gmat/CLAS12Analysis/data/raw/test.root"
-		  )
+			   const char * inputFile = "/work/clas12/users/gmat/CLAS12Analysis/data/raw/test.root",
+			   const double beamE = 10.6
+)
 {
   //---------------
   // Load libraries
@@ -30,7 +31,7 @@ int pipi0_postprocess_only(
   // Create PostProcess Object 
   //-----------------------------------
   PostProcess *pp = new PostProcess();
-  pp->Init(tReco,10.6);
+  pp->Init(tReco,beamE);
   pp->setPostProcessMethod("pipluspi0");
   
   //-----------------------------------

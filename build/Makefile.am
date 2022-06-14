@@ -50,21 +50,21 @@ libclas12ana_la_SOURCES = \
 
 ################################################
 # linking tests
-
-noinst_PROGRAMS = testexternals
-
-BUILT_SOURCES = \
+#
+#noinst_PROGRAMS = testexternals
+#
+#BUILT_SOURCES = \
   testexternals.c
 
-testexternals_LDADD = \
+#testexternals_LDADD = \
   libclas12ana.la
 
-testexternals.c:
-	echo "//*** this is a generated file. Do not commit, do not edit" > $@
-	echo "int main()" >> $@
-	echo "{" >> $@
-	echo "  return 0;" >> $@
-	echo "}" >> $@
+#testexternals.c:
+#	echo "//*** this is a generated file. Do not commit, do not edit" > $@
+#	echo "int main()" >> $@
+#	echo "{" >> $@
+#	echo "  return 0;" >> $@
+#	echo "}" >> $@
 
 clean-local:
 	rm -f *Dict* $(BUILT_SOURCES) *.pcm
