@@ -563,7 +563,7 @@ int PostProcess::pipiminus(TTree * _tree_postprocess){
 //        lv_p_gN.SetPx(dihadron.Px()); //bad code to test a theory about thesis code's use of SetPxPyPzM (M instead of E)
 //        lv_p_gN.SetPy(dihadron.Py());
 //        lv_p_gN.SetPz(dihadron.Pz());
-//        lv_p_gN.SetE(Mdihadron);
+//        lv_p_gN.SetM(Mdihadron);
         lv_q_gN = q;
         lv_p_gN.Boost(gNBoostNeg);
         lv_q_gN.Boost(gNBoostNeg);
@@ -604,7 +604,7 @@ int PostProcess::pipiminus(TTree * _tree_postprocess){
 //	    phi_h=(_kin.phi_h(q,init_electron,piplus,piminus));
         phi_h = acos(cosphih);
         //if statements
-        if(sinPhiH < 0.0){ phi_h = 2 * TMath::Pi() - phi_h;}
+//        if(sinPhiH < 0.0){ phi_h = 2 * TMath::Pi() - phi_h;}
 //        if(phi_R_pre < 0.0){ phi_R = 2 * TMath::Pi() + phi_R_pre;}
             th = (_kin.com_th(piplus,piminus));
 	    _tree_postprocess->Fill();

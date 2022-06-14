@@ -50,6 +50,7 @@ libclas12ana_la_SOURCES = \
 
 ################################################
 # linking tests
+<<<<<<< Updated upstream
 #
 #noinst_PROGRAMS = testexternals
 #
@@ -58,6 +59,16 @@ libclas12ana_la_SOURCES = \
 
 #testexternals_LDADD = \
   libclas12ana.la
+=======
+
+#noinst_PROGRAMS = testexternals
+
+#BUILT_SOURCES = \
+#  testexternals.c
+
+#testexternals_LDADD = \
+#  libclas12ana.la
+>>>>>>> Stashed changes
 
 #testexternals.c:
 #	echo "//*** this is a generated file. Do not commit, do not edit" > $@
