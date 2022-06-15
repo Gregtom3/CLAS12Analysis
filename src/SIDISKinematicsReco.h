@@ -80,7 +80,9 @@ class SIDISKinematicsReco{
   
   int _idx_RUNconfig;
   int _irun;
+  int _ievnum;
   int _runNumber;
+  int _evnum;
 
   std::string _outfilename="";
   TFile *_tfile;

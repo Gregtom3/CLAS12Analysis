@@ -55,6 +55,8 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
   double Mgg;
   double E1;
   double E2;
+  double angle1;
+  double angle2;
   double Mdihadron;
   double beta1;
   double beta2;
@@ -63,11 +65,12 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
   double phi_h;
   double th;
   double zpair = 0.0;
-
   _tree_postprocess->Branch("fid",&fid);
   _tree_postprocess->Branch("Mdiphoton",&Mgg);
   _tree_postprocess->Branch("E1",&E1);
   _tree_postprocess->Branch("E2",&E2);
+  _tree_postprocess->Branch("angle1",&angle1);
+  _tree_postprocess->Branch("angle2",&angle2);
   _tree_postprocess->Branch("Mdihadron",&Mdihadron);
   _tree_postprocess->Branch("beta1",&beta1);
   _tree_postprocess->Branch("beta2",&beta2);
@@ -130,8 +133,6 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
       }
       // Identify the single charged pion
       if(pid->at(i)==_piPID){
-	pi.SetPxPyPzE(px->at(i),py->at(i),pz->at(i),E->at(i));
-	vz_pi=vz->at(i);      
       }
     }
 
@@ -139,49 +140,62 @@ int PostProcess::pipi0(TTree * _tree_postprocess){
     // Set virtual photon
     q = init_electron - electron;
     
-    // Get z of Pi+/-
-    zpi = (init_target*pi)/(init_target*q);
-
     // Next, identify pairs of photons
     for(unsigned int i = 0 ; i < pid->size() ; i++){
       if(pid->at(i)==22){
 	for(unsigned int j = i+1 ; j < pid->size() ; j++){
 	  if(pid->at(j)==22){
-	    gamma1.SetPxPyPzE(px->at(i),py->at(i),pz->at(i),E->at(i));
-	    gamma2.SetPxPyPzE(px->at(j),py->at(j),pz->at(j),E->at(j));
-	    pi0=gamma1+gamma2;
-	    vz_pi0=(vz->at(i)+vz->at(j))/2.0;
-	    zpi0 = (init_target*pi0)/(init_target*q);
+	    // Next, identify a pion
+	    for(unsigned int k = 0 ; k < pid->size() ; k++){
+	      if(pid->at(k)==_piPID){
+		
+		// Create pion
+		pi.SetPxPyPzE(px->at(k),py->at(k),pz->at(k),E->at(k));
+		vz_pi=vz->at(k);      
+		zpi = (init_target*pi)/(init_target*q);
+		
+		// Create gammas
+		gamma1.SetPxPyPzE(px->at(i),py->at(i),pz->at(i),E->at(i));
+		gamma2.SetPxPyPzE(px->at(j),py->at(j),pz->at(j),E->at(j));
+		angle1=gamma1.Angle(electron.Vect())*180/PI;
+		angle2=gamma2.Angle(electron.Vect())*180/PI;
 
-	    dihadron = pi0+pi;
+		// Create pi0
+		pi0=gamma1+gamma2;
+		vz_pi0=(vz->at(i)+vz->at(j))/2.0;
+		zpi0 = (init_target*pi0)/(init_target*q);
 
-	    xF_pi = Kinematics::xF(q,pi,init_target,W);
-	    xF_pi0 = Kinematics::xF(q,pi0,init_target,W);
+		// Create dihadron
+		dihadron = pi0+pi;
 
-	    zpair = zpi+zpi0;
+		xF_pi = Kinematics::xF(q,pi,init_target,W);
+		xF_pi0 = Kinematics::xF(q,pi0,init_target,W);
+
+		zpair = zpi+zpi0;
 	    
-	    if(gamma1.Angle(electron.Vect())>8*PI/180.0 &&
-	       gamma2.Angle(electron.Vect())>8*PI/180.0 &&
-	              xF_pi>0 && xF_pi0>0 &&
-	              zpair<0.95 &&
-	       abs(vz_electron-vz_pi)<20 && abs(vz_electron-vz_pi0)<20){
+		if(angle1>8 && angle2>8 &&
+		   xF_pi>0 && xF_pi0>0 &&
+		   zpair<0.95 &&
+		   abs(vz_electron-vz_pi)<20 && abs(vz_electron-vz_pi0)<20){
 	            
 
 	      
-	      Mgg=((gamma1+gamma2).M());
-	      E1=(gamma1.E());
-	      E2=(gamma2.E());
-	      Mdihadron=(dihadron.M());
-	      beta1=(beta->at(i));
-	      beta2=(beta->at(j));
-	      if(abs(beta1-1)>0.02 || abs(beta2-1)>0.02)
-		continue;
-	      phi_R0=(_kin.phi_R(q,init_electron,pi,pi0,0));
-	      phi_R1=(_kin.phi_R(q,init_electron,pi,pi0,1));
-	      phi_h=(_kin.phi_h(q,init_electron,pi,pi0));
-     	      th = (_kin.com_th(pi,pi0));
-	      _tree_postprocess->Fill();
-	      fid++;
+		  Mgg=((gamma1+gamma2).M());
+		  E1=(gamma1.E());
+		  E2=(gamma2.E());
+		  Mdihadron=(dihadron.M());
+		  beta1=(beta->at(i));
+		  beta2=(beta->at(j));
+		  if(abs(beta1-1)>0.1 || abs(beta2-1)>0.1)
+		    continue;
+		  phi_R0=(_kin.phi_R(q,init_electron,pi,pi0,0));
+		  phi_R1=(_kin.phi_R(q,init_electron,pi,pi0,1));
+		  phi_h=(_kin.phi_h(q,init_electron,pi,pi0));
+		  th = (_kin.com_th(pi,pi0));
+		  _tree_postprocess->Fill();
+		  fid++;
+		}
+	      }
 	    }
 	  }
 	}

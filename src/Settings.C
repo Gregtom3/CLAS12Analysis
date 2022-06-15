@@ -228,7 +228,7 @@ double Settings::getChi2max_fromPID(int pid){
      if(_chi2PID.at(idx)==pid)
        return _chi2max.at(idx);
    }
- return 99999;
+ return 99999999;
 } 
 
 std::vector<int> Settings::get_fPID(){return _fPID;}

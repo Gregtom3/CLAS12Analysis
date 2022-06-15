@@ -42,6 +42,7 @@ int SIDISKinematicsReco::Init()
   _map_event.insert( make_pair( "nu" , dummy ) );
   _map_event.insert( make_pair( "helicity" , dummy ) );
   _map_event.insert( make_pair( "polarization" , dummy ) );
+  _map_event.insert( make_pair( "evnum" , dummy ) );
   
   // Create particle map 
   // -------------------------  
@@ -151,6 +152,7 @@ int SIDISKinematicsReco::InitHipo()
   // Add RUN::config bank
   _idx_RUNconfig = _config_c12->addBank("RUN::config");
   _irun = _config_c12->getBankOrder(_idx_RUNconfig,"run");
+  _ievnum = _config_c12->getBankOrder(_idx_RUNconfig,"event");
 
   return 0;
 }
@@ -173,8 +175,10 @@ int SIDISKinematicsReco::process_events()
     }
     
     // Get the run number from the RUN::config bank
+    // Also get the event number too
     // -----------------------------------------------------
     _runNumber = _c12->getBank(_idx_RUNconfig)->getInt(_irun,0);   
+    _evnum = _c12->getBank(_idx_RUNconfig)->getInt(_ievnum,0);   
 
     // Set torus bending in fiducial
     // -----------------------------------------------------
@@ -335,7 +339,6 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
 
   // Loop over all particles
   for(unsigned int idx = 0 ; idx < particles.size() ; idx++){
-
     // Extract each particle from event one-at-a-time
     auto particle = particles.at(idx);
     int pid = particle->getPid();
@@ -480,19 +483,20 @@ int SIDISKinematicsReco::ConnectTruth2Reco( type_map_part& particleMap,
 
     double reco_theta = (it_reco->second)->get_property_float(SIDISParticle::part_theta); 
     double reco_phi = (it_reco->second)->get_property_float(SIDISParticle::part_phi); 
-    //    double reco_E = (it_reco->second)->get_property_float(SIDISParticle::part_E);
+    double reco_E = (it_reco->second)->get_property_float(SIDISParticle::part_E);
       /* Loop over all MC particles */
       for(type_map_part::iterator it_mc = particleMap.begin(); it_mc!= particleMap.end(); ++it_mc){
 	double mc_theta = (it_mc->second)->get_property_float(SIDISParticle::part_theta); 
 	double mc_phi = (it_mc->second)->get_property_float(SIDISParticle::part_phi); 
-	//	double mc_E = (it_reco->second)->get_property_float(SIDISParticle::part_E);
+	double mc_E = (it_reco->second)->get_property_float(SIDISParticle::part_E);
 	/* Match the *theta* and *phi* of two particles. For details, see https://www.jlab.org/Hall-B/general/thesis/THayward_thesis.pdf */
 	double dth = abs(reco_theta-mc_theta);
 	double dphi = abs(reco_phi-mc_phi);
-	//	double dE = abs(reco_E - mc_E);
+	double dE = abs(reco_E - mc_E);
 	int mcpid = (it_mc->second)->get_property_int(SIDISParticle::part_pid);
 	int recopid = (it_reco->second)->get_property_int(SIDISParticle::part_pid);
 	if( (mcpid == recopid) &&
+	    (dE < 0.5) &&
 	   (dth < 6*degtorad) && 
 	    (dphi < 2*degtorad || abs(dphi - 2*PI) < 2*degtorad)){
 	  (it_mc->second)->set_property( SIDISParticle::part_pindex, (it_reco->second)->get_property_int(SIDISParticle::part_pindex));
@@ -540,6 +544,7 @@ int SIDISKinematicsReco::AddTruthEventInfo(const std::unique_ptr<clas12::clas12r
       (_map_event.find("nu"))->second = nu;
       (_map_event.find("W"))->second = W;
       (_map_event.find("polarization"))->second = 0;
+      (_map_event.find("evnum"))->second = _evnum;
       break;
     }
   }
@@ -617,6 +622,7 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
     else
       (_map_event.find("helicity"))->second = event->getHelicity();
     (_map_event.find("polarization"))->second = runPolarization(_runNumber,true);
+    (_map_event.find("evnum"))->second = _evnum;
   }
   
   return 0;

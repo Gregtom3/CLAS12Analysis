@@ -41,6 +41,10 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
   Ele_ECIN_e = 0.0;
   Ele_ECOUT_e = 0.0;
   Ele_sector = 0;
+  // Second, define bools to test if particle hit all three calorimeters
+  bool was_in_PCAL = false;
+  bool was_in_ECIN = false;
+  bool was_in_ECOUT = false;
   // --------------------------------------------------------------------
   for(auto i = 0 ; i < _c12->getBank(_idx_RECCal)->getRows() ; i++){
     // Continue loop if the pindex in the calo bank does not match 
@@ -49,20 +53,28 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
     
     float lv = _c12->getBank(_idx_RECCal)->getFloat(_ilv,i);
     float lw = _c12->getBank(_idx_RECCal)->getFloat(_ilw,i);
+    int layerCal = _c12->getBank(_idx_RECCal)->getInt(_ilayer_Cal,i);
 
     // Perform electron (pid==11) fiducial cuts
+    // -----------------------------------------------------------------
     if(pid==11){
       Ele_sector = _c12->getBank(_idx_RECCal)->getInt(_isector,i);
-      if(lv<9 || lw<9 || lv>400 || lw>400)
-	return false;
-      switch(_c12->getBank(_idx_RECCal)->getInt(_ilayer_Cal,i)){
-      case 1:
+      switch(layerCal){
+      case 1: // PCAL
+	was_in_PCAL = true;
 	Ele_PCAL_e = _c12->getBank(_idx_RECCal)->getFloat(_ienergy,i);
+
+	if(lv<9 || lw<9 || lv>400 || lw>400) // PCAL lv lw cuts
+       	  return false;
+
+
 	break;
-      case 4:
+      case 4: // InnerCal
+	was_in_ECIN = true;
 	Ele_ECIN_e = _c12->getBank(_idx_RECCal)->getFloat(_ienergy,i);
 	break;
-      case 7:
+      case 7: // OuterCal
+	was_in_ECOUT = true;
 	Ele_ECOUT_e = _c12->getBank(_idx_RECCal)->getFloat(_ienergy,i);
 	break;
       }
@@ -70,11 +82,38 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
     
     // Perform photon (pid==22) fiducial cuts
     if(pid==22){
-      if(lv<14 || lw <14 || lv>400 || lw>400 )
-	return false;
+      switch(layerCal){
+      case 1: // PCAL
+	was_in_PCAL = true;
+	if(lv<14 || lw<14 || lv>400 || lw>400) // PCAL lv lw cuts
+	  return false;
+	break;
+      case 4: // InnerCal
+	was_in_ECIN = true;
+	break;
+      case 7: // OuterCal
+	was_in_ECOUT = true;
+	break;
+      }   
     }
   }
-
+  
+  //------------------------------------------------------
+  // Ensure photon went through PCAL
+  //------------------------------------------------------
+  if(pid == 22)
+    {
+      if(!was_in_PCAL)
+	return false;
+    }
+  //------------------------------------------------------
+  // Ensure electron went through PCAL, ECIN, and ECOUT
+  //------------------------------------------------------
+  if(pid == 11)
+    {
+      if(!was_in_PCAL || !was_in_ECIN || !was_in_ECOUT)
+	return false;
+    }
   //------------------------------------------------------
   // Perform electron PCAL energy cut
   //------------------------------------------------------
@@ -119,6 +158,16 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
       _cz[2] = _c12->getBank(_idx_RECTraj)->getFloat(_icz,i);
     }
   }
+
+  // For charged particles, make sure there are hits in are 3 DC's
+  if(pid!=22){
+    for(int r = 0 ; r < 3 ; r++){
+      if(_cx[r]==0 || _cy[r]==0 || _cz[r]==0)
+	return false;
+    }
+  }
+  
+  
   // Get the azimuthal sector # from the middle drift chamber
   int sector = determineSectorDC(_cx[1],_cy[1],_cz[1]);
   // For each of the 3 drift chamber regions, ensure the poly/XY fiducial cut is satisfied
