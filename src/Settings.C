@@ -7,93 +7,6 @@ Settings::Settings()
   
 }
 
-bool Settings::doMC() const {return _doMC;}
-bool Settings::doReco() const {return _doReco;}
-bool Settings::doFiducialCuts() const {return _doFiducialCuts;}
-bool Settings::doPostProcess() const {return _doPostProcess;}
-bool Settings::connectMC2Reco() const {return _connectMC2Reco;}
-bool Settings::doChargedPionChi2() const {return _doChargedPionChi2;}
-bool Settings::ignoreOtherRecoParticles() const {return _ignoreOtherRecoParticles;}
-Settings::eventRecoMethod Settings::getEventRecoMethod() const {return _eventRecoMethod;}
-Settings::chargedPionChi2cut Settings::getChargedPionChi2cut() const {return _chargedPionChi2cut;}
-const char * Settings::postProcessMethod() const {return _postProcessMethod;}
-double Settings::electronBeamEnergy() const {return _electronBeamEnergy;}
-double Settings::Q2min() const {return _Q2min;}
-double Settings::Q2max() const {return _Q2max;}
-double Settings::Wmin() const {return _Wmin;}
-double Settings::Wmax() const {return _Wmax;}
-double Settings::ymin() const {return _ymin;}
-double Settings::ymax() const {return _ymax;}
-
-void Settings::setdoMC(bool b){
-  _doMC = b;
-  return;
-}
-
-void Settings::setdoReco(bool b){
-  _doReco = b;
-  return;
-}
-
-void Settings::setdoFiducialCuts(bool b){
-  _doFiducialCuts = b;
-  return;
-}
-
-void Settings::setdoPostProcess(bool b){
-  _doPostProcess = b;
-  return;
-}
-
-void Settings::setconnectMC2Reco(bool b){
-  _connectMC2Reco = b;
-  return;
-}
-
-void Settings::setignoreOtherRecoParticles(bool b){
-  _ignoreOtherRecoParticles = b;
-  return;
-}
-
-void Settings::setEventRecoMethod(eventRecoMethod eRM){
-  _eventRecoMethod = eRM;
-  return;
-}
-
-void Settings::setChargedPionChi2cut(chargedPionChi2cut cut){
-  _doChargedPionChi2 = true;
-  _chargedPionChi2cut = cut;
-  return;
-}
-
-void Settings::setPostProcessMethod(const char * method){
-  _postProcessMethod = method;
-  return;
-}
-void Settings::setElectronBeamEnergy(double E){
-  _electronBeamEnergy = E;
-  return;
-}
-
-void Settings::setQ2range(double Q2min, double Q2max) {
-  _Q2min = Q2min;
-  _Q2max = Q2max;
-  return;
-}
-
-void Settings::setWrange(double Wmin, double Wmax) {
-  _Wmin = Wmin;
-  _Wmax = Wmax;
-  return;
-}
-
-void Settings::setyrange(double ymin, double ymax) {
-  _ymin = ymin;
-  _ymax = ymax;
-  return;
-}
-
-
 void Settings::addFinalState(int pid, int n, bool exact=false) {
   // Make sure pid isn't a duplicate
   if(std::count(_fPID.begin(), _fPID.end(), pid)){
@@ -145,8 +58,6 @@ void Settings::addPIDforChi2max(int pid, double chi2max){
   _chi2max.push_back(chi2max);
   return;
 }
-
-std::vector<int> Settings::getFinalStatePIDs(){ return _fPID; }
 
 int Settings::getN_fromPID(int pid){
   for(unsigned int idx = 0 ; idx < _fPID.size() ; idx++)
@@ -230,12 +141,6 @@ double Settings::getChi2max_fromPID(int pid){
    }
  return 99999999;
 } 
-
-std::vector<int> Settings::get_fPID(){return _fPID;}
-std::vector<int> Settings::get_fNpart(){return _fNpart;}
-std::vector<bool> Settings::get_fExact(){return _fExact;}
-
-std::vector<std::string> Settings::hipoFileStrings() {return _hipoFileStrings;}
 
 bool Settings::needsChi2PidCut(int pid){
   for(unsigned int idx = 0 ; idx < _chi2PID.size() ; idx++)

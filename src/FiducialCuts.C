@@ -26,22 +26,33 @@ FiducialCuts::FiducialCuts(const std::unique_ptr<clas12::clas12reader>& _c12){
 void FiducialCuts::setTorusBending(int torusBending){
   _torusBending = torusBending; // -1 inbending, +1 outbending
 }
-bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _c12, int run, int pid, int pindex, float p, float theta){
+bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _c12, int run){
   
+  // Grab necessary particle info
+  // --------------------------------------------------------------------
+  int pid = sp->get_property_int(SIDISParticle::part_pid);
+  int pindex = sp->get_property_int(SIDISParticle::part_pindex);
+  float p = sp->get_property_float(SIDISParticle::part_p);
+  float theta = sp->get_property_float(SIDISParticle::part_theta);
+
+  // Set universal run number
+  // --------------------------------------------------------------------
   _runNumber = run;
 
-  // Perform standard fiducial cuts
+  // Perform standard polar angle fiducial cuts
+  // --------------------------------------------------------------------
   if(theta<5*PI/180.0 || theta>35*PI/180.0)
     return false;
   
-  // --------------------------------------------------------------------
   // Loop over entries in the Calorimeter bank
   // First, reset electron energies
+  // --------------------------------------------------------------------
   Ele_PCAL_e = 0.0;
   Ele_ECIN_e = 0.0;
   Ele_ECOUT_e = 0.0;
   Ele_sector = 0;
   // Second, define bools to test if particle hit all three calorimeters
+  // --------------------------------------------------------------------
   bool was_in_PCAL = false;
   bool was_in_ECIN = false;
   bool was_in_ECOUT = false;
@@ -81,6 +92,7 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
     }
     
     // Perform photon (pid==22) fiducial cuts
+    // --------------------------------------------------------------------
     if(pid==22){
       switch(layerCal){
       case 1: // PCAL
@@ -127,7 +139,6 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
     return false;
   // --------------------------------------------------------------------
   // Loop over entries in the Trajectory bank
-  //
   // --------------------------------------------------------------------
   _cx[0] = 0;
   _cy[0] = 0;
@@ -160,12 +171,12 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
   }
 
   // For charged particles, make sure there are hits in are 3 DC's
-  if(pid!=22){
+  /*if(pid!=22){
     for(int r = 0 ; r < 3 ; r++){
       if(_cx[r]==0 || _cy[r]==0 || _cz[r]==0)
 	return false;
     }
-  }
+    }*/
   
   
   // Get the azimuthal sector # from the middle drift chamber

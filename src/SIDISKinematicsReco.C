@@ -112,6 +112,10 @@ int SIDISKinematicsReco::Init()
   // -------------------------
   _config_c12=_chain.GetC12Reader();
   
+  // Configure PID helper
+  // -------------------------
+  PID _pidhelper = PID(_settings);
+
   // Initialize Hipo file settings
   // -------------------------------
   InitHipo();
@@ -335,11 +339,14 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
 						   type_map_part& recoparticleMap )
 {
   // Get std::vector<> of particles in event
+  // -------------------------------------------------------
   auto particles=_c12->getDetParticles();
 
   // Loop over all particles
+  // -------------------------------------------------------
   for(unsigned int idx = 0 ; idx < particles.size() ; idx++){
     // Extract each particle from event one-at-a-time
+    // -------------------------------------------------------
     auto particle = particles.at(idx);
     int pid = particle->getPid();
     float chi2 = particle->getChi2Pid();
@@ -359,75 +366,8 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     int pindex = particle->getIndex();
     float vz = particle->par()->getVz();
 
-    bool passChargedPionChi2=true;
-
-    // CUT pid -------------------------------------------------------------
-    // Skip over particles that are not interesting in the final state
-    if(_settings._ignoreOtherRecoParticles && _settings.getN_fromPID(pid)==0)
-      continue;
-    
-    // CUT chi2 -------------------------------------------------------------
-    // Skip over particles that both need a chi2pid cut, and do not satisfy it
-    if(abs(chi2) > _settings.getChi2max_fromPID(pid))
-      continue;
-
-    // CUT chi2 -------------------------------------------------------------
-    // For charged pions, perform additional chi2 cuts
-    // See RGA analysis note for details
-    if(pid==211||pid==-211){
-      if(_settings._chargedPionChi2cut!=Settings::chargedPionChi2cut::none){
-	// Determine pion charge dependent C value
-	float C = 0.0;
-	(pid==211 ? C=0.88 : C=0.93);
-	// 2 different pion chi2pid regions
-	// standard
-	// strict
-	if(_settings._chargedPionChi2cut==Settings::chargedPionChi2cut::standard){
-	  if(p<2.44)
-	    passChargedPionChi2=chi2<C*3;
-	  else
-	    passChargedPionChi2=chi2<C*(0.00869 + 14.98587 * exp(-p/1.18236) + 1.81751 * exp(-p/4.86394));
-	} 
-	else if(_settings._chargedPionChi2cut==Settings::chargedPionChi2cut::strict){
-	  if(p<2.44)
-	    passChargedPionChi2=chi2<C*3;
-	  else if(p<4.6)
-	    passChargedPionChi2=chi2< C * (0.00869 + 14.98587 * exp(-p/1.18236) + 1.81751 * exp(-p/4.86394));
-	  else
-	    passChargedPionChi2=chi2< C * (-1.14099 + 24.14992 * exp(-p/1.36554) + 2.66876 * exp(-p/6.80552));
-	} 
-	else {
-	  std::cout << " UNKNOWN chargedPionChi2cut value, returning -1" << std::endl;
-	  return -1;
-	}
-      }	
-    }
-    
-    if(passChargedPionChi2 == false)
-      continue;
-    
-    // CUT beta -------------------------------------------------------------
-    if(abs(beta) > _settings.getBetamax_fromPID(pid) || abs(beta) < _settings.getBetamin_fromPID(pid))
-      continue;
-
-    // CUT p -------------------------------------------------------------
-    if(_settings.getPmin_fromPID(pid) > p)      
-      continue;
-
-    // CUT E -------------------------------------------------------------
-    if(_settings.getEmin_fromPID(pid) > E)
-      continue;
-
-    // CUT vz -------------------------------------------------------------
-    if(vz < _settings.getVzmin_fromPID(pid) || vz > _settings.getVzmax_fromPID(pid))
-      continue;
-
-    // CUT Fiducial -------------------------------------------------------------
-    if(_settings._doFiducialCuts){
-      if(_fiducial.FidCutParticle(_c12,_runNumber,pid,pindex,p,theta) == false)
-	continue;
-    }
-
+    // Create new particle structure
+    // -------------------------------------------------------
     SIDISParticlev1 *sp = new SIDISParticlev1();
     sp->set_candidate_id( pindex );
     
@@ -442,7 +382,6 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     sp->set_property( SIDISParticle::part_theta,   theta);
     sp->set_property( SIDISParticle::part_eta,   eta);
     sp->set_property( SIDISParticle::part_phi,   phi);
-
     sp->set_property( SIDISParticle::part_vz,   vz);
 
     sp->set_property( SIDISParticle::part_pindex,   pindex);
@@ -451,11 +390,28 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     sp->set_property( SIDISParticle::part_ID, pindex);
     sp->set_property( SIDISParticle::part_parentID, -999);
     sp->set_property( SIDISParticle::part_parentPID, -999);
+    
+    // CUT REC::Particle
+    // --------------------------------------------------------------------------
+    if(_pidhelper.performPIDCuts(sp)==false)
+      continue;
+    
+    // CUT Fiducial
+    // --------------------------------------------------------------------------
+    if(_settings._doFiducialCuts){
+      if(_fiducial.FidCutParticle(_c12,_runNumber,sp) == false)
+	continue;
+    }
+
     // Add SIDISParticle to the collection
+    // --------------------------------------------------------------------------
     recoparticleMap.insert ( make_pair( sp->get_candidate_id() , sp) );
   }
 
   // Parse through the recoparticleMap to check if the desired event trigger was reco'd
+  // In this case, we make sure that, after all cuts, the event contains the desired minimum/exact
+  // number of particles
+  // ---------------------------------------------------------------------------------------
   for (unsigned int i = 0 ; i < _settings._fPID.size() ; i++){
     int pid = _settings._fPID.at(i);
     int npart = _settings._fNpart.at(i);
@@ -495,8 +451,7 @@ int SIDISKinematicsReco::ConnectTruth2Reco( type_map_part& particleMap,
 	double dE = abs(reco_E - mc_E);
 	int mcpid = (it_mc->second)->get_property_int(SIDISParticle::part_pid);
 	int recopid = (it_reco->second)->get_property_int(SIDISParticle::part_pid);
-	if( (mcpid == recopid) &&
-	    (dE < 0.5) &&
+	if((dE < 0.5) &&
 	   (dth < 6*degtorad) && 
 	    (dphi < 2*degtorad || abs(dphi - 2*PI) < 2*degtorad)){
 	  (it_mc->second)->set_property( SIDISParticle::part_pindex, (it_reco->second)->get_property_int(SIDISParticle::part_pindex));

@@ -3,6 +3,7 @@
 
 /* Src Includes */
 #include "Constants.h"
+#include "SIDISParticlev1.h"
 /* CLAS12 Includes */
 #include "HipoChain.h"
 #include "clas12reader.h"
@@ -15,7 +16,7 @@ class FiducialCuts{
   FiducialCuts(const std::unique_ptr<clas12::clas12reader>&);
 
   void setTorusBending(int);
-  bool FidCutParticle(const std::unique_ptr<clas12::clas12reader>&, int, int , int, float,float);
+  bool FidCutParticle(const std::unique_ptr<clas12::clas12reader>&, int);
 
   bool DC_fiducial_cut_theta_phi(float,float,float,int, int, int);
 
