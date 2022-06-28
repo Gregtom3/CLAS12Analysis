@@ -114,7 +114,8 @@ int SIDISKinematicsReco::Init()
   
   // Configure PID helper
   // -------------------------
-  PID _pidhelper = PID(_settings);
+  PID _pidhelper = PID();
+  _pidhelper.ImportSettings(_settings);
 
   // Initialize Hipo file settings
   // -------------------------------
@@ -449,8 +450,8 @@ int SIDISKinematicsReco::ConnectTruth2Reco( type_map_part& particleMap,
 	double dth = abs(reco_theta-mc_theta);
 	double dphi = abs(reco_phi-mc_phi);
 	double dE = abs(reco_E - mc_E);
-	int mcpid = (it_mc->second)->get_property_int(SIDISParticle::part_pid);
-	int recopid = (it_reco->second)->get_property_int(SIDISParticle::part_pid);
+	//	int mcpid = (it_mc->second)->get_property_int(SIDISParticle::part_pid);
+	//	int recopid = (it_reco->second)->get_property_int(SIDISParticle::part_pid);
 	if((dE < 0.5) &&
 	   (dth < 6*degtorad) && 
 	    (dphi < 2*degtorad || abs(dphi - 2*PI) < 2*degtorad)){

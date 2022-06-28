@@ -32,7 +32,8 @@ pkginclude_HEADERS = \
   ../src/PostProcess.h \
   ../src/SIDISParticlev1.h \
   ../src/FiducialCuts.h	\
-  ../src/Merger.h
+  ../src/Merger.h \
+  ../src/PID.h
 
 libclas12ana_la_SOURCES = \
   ../src/Kinematics.C \
@@ -42,31 +43,13 @@ libclas12ana_la_SOURCES = \
   ../src/PostProcess.C \
   ../src/SIDISParticlev1.C \
   ../src/FiducialCuts.C \
-  ../src/Merger.C
+  ../src/Merger.C \
+  ../src/PID.C
 
 %_Dict.C: ../src/%.h ../src/%LinkDef.h
 	rootcint -f $@ @CINTDEFS@ -c $(AM_CPPFLAGS) $^
-#	rootcint -f $@ @CINTDEFS@ -c $(DEFAULT_INCLUDES) $(AM_CPPFLAGS) $^	
 
 %_Dict_rdict.pcm: ../src/%_Dict.C ;
-
-################################################
-# linking tests
-#
-#noinst_PROGRAMS = testexternals
-#
-#BUILT_SOURCES = \
-  testexternals.c
-
-#testexternals_LDADD = \
-  libclas12ana.la
-
-#testexternals.c:
-#	echo "//*** this is a generated file. Do not commit, do not edit" > $@
-#	echo "int main()" >> $@
-#	echo "{" >> $@
-#	echo "  return 0;" >> $@
-#	echo "}" >> $@
 
 clean-local:
 	rm -f *Dict* $(BUILT_SOURCES) *.pcm

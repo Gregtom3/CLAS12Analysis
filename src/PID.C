@@ -1,16 +1,17 @@
 #include "PID.h"
 
-PID::PID(Settings _settingsFromMain){
+PID::PID(){}
+
+void PID::ImportSettings(Settings _settingsFromMain){
   _settings = _settingsFromMain;
 }
 
 bool PID::performPIDCuts(SIDISParticlev1* sp){
   
   int pid = sp->get_property_int(SIDISParticle::part_pid);
-  int pindex = sp->get_property_int(SIDISParticle::part_pindex);
+  //  int pindex = sp->get_property_int(SIDISParticle::part_pindex);
   float E = sp->get_property_float(SIDISParticle::part_E);
   float p = sp->get_property_float(SIDISParticle::part_p);  
-  float theta = sp->get_property_float(SIDISParticle::part_theta);
   float chi2 = sp->get_property_float(SIDISParticle::part_chi2);
   float beta = sp->get_property_float(SIDISParticle::part_beta);
   float vz = sp->get_property_float(SIDISParticle::part_vz);
@@ -18,9 +19,11 @@ bool PID::performPIDCuts(SIDISParticlev1* sp){
   // CUT chi2 -------------------------------------------------------------
   // Skip over particles that both need a chi2pid cut, and do not satisfy it
   if(abs(chi2) > _settings.getChi2max_fromPID(pid))
-    return -1;
+    return false;
 
+  
   // CUT chi2 -------------------------------------------------------------
+  bool passChargedPionChi2=true;
   // For charged pions, perform additional chi2 cuts
   // See RGA analysis note for details
   if(pid==211||pid==-211){
@@ -47,29 +50,31 @@ bool PID::performPIDCuts(SIDISParticlev1* sp){
       } 
       else {
 	std::cout << " UNKNOWN chargedPionChi2cut value, returning -1" << std::endl;
-	return -1;
+	return false;
       }
     }
   }
     
   if(passChargedPionChi2 == false)
-    return -1;
+    return false;
     
   // CUT beta -------------------------------------------------------------
   if(abs(beta) > _settings.getBetamax_fromPID(pid) || abs(beta) < _settings.getBetamin_fromPID(pid))
-    return -1;
+    return false;
 
   // CUT p -------------------------------------------------------------
   if(_settings.getPmin_fromPID(pid) > p)      
-    return -1;
+    return false;
 
   // CUT E -------------------------------------------------------------
   if(_settings.getEmin_fromPID(pid) > E)
-    return -1;
+    return false;
 
   // CUT vz -------------------------------------------------------------
   if(vz < _settings.getVzmin_fromPID(pid) || vz > _settings.getVzmax_fromPID(pid))
-    return -1;
-
+    return false;
+  
+  
+  // All REC::Particle cuts have been successfully passed!
   return true;
 } 

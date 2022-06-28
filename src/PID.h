@@ -11,10 +11,11 @@ class Settings;
 
 class PID{
  public:
-  PID(Settings);
+  PID();
+  void ImportSettings(Settings _settingsFromMain);
   
   // All cuts based on REC::Particle information alone
-  bool performPIDCuts(SIDISParticlev1*)
+  bool performPIDCuts(SIDISParticlev1*);
 
  protected:
   Settings _settings;

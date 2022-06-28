@@ -16,7 +16,7 @@ class FiducialCuts{
   FiducialCuts(const std::unique_ptr<clas12::clas12reader>&);
 
   void setTorusBending(int);
-  bool FidCutParticle(const std::unique_ptr<clas12::clas12reader>&, int);
+  bool FidCutParticle(const std::unique_ptr<clas12::clas12reader>&, int, SIDISParticlev1*);
 
   bool DC_fiducial_cut_theta_phi(float,float,float,int, int, int);
 

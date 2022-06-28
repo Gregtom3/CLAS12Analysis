@@ -26,7 +26,7 @@ FiducialCuts::FiducialCuts(const std::unique_ptr<clas12::clas12reader>& _c12){
 void FiducialCuts::setTorusBending(int torusBending){
   _torusBending = torusBending; // -1 inbending, +1 outbending
 }
-bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _c12, int run){
+bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _c12, int run, SIDISParticlev1 *sp){
   
   // Grab necessary particle info
   // --------------------------------------------------------------------
