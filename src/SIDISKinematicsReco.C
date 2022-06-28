@@ -94,19 +94,19 @@ int SIDISKinematicsReco::Init()
 
   // Load in HipoFiles
   // -------------------------
-  if(_settings.hipoFileStrings().size()==0){
+  if(_settings._hipoFileStrings.size()==0){
     std::cout << "ERROR in SIDISKinematicsReco::Init() -- No files added to hipoChain. Double-check that 'addHipoFile' in Settings.h was called by processing script" << std::endl;
     return -1;
   }
 
-  for(unsigned int idx = 0 ; idx < _settings.hipoFileStrings().size() ; idx ++){
-    _chain.Add(_settings.hipoFileStrings().at(idx).c_str());
+  for(unsigned int idx = 0 ; idx < _settings._hipoFileStrings.size() ; idx ++){
+    _chain.Add(_settings._hipoFileStrings.at(idx).c_str());
 
   }
 
   // Set beam energy
   // -------------------------
-  _electron_beam_energy = _settings.electronBeamEnergy();
+  _electron_beam_energy = _settings._electronBeamEnergy;
 
   // Configure CLAS12Reader
   // -------------------------
@@ -123,7 +123,7 @@ int SIDISKinematicsReco::InitHipo()
   // -----------------------------------------------------
   // Using the _config_c12 object, cut PIDs for each event
   // -----------------------------------------------------
-  std::vector<int> finalStatePIDs = _settings.getFinalStatePIDs();
+  std::vector<int> finalStatePIDs = _settings._fPID;
   for(unsigned int idx = 0 ; idx < finalStatePIDs.size(); idx++){
     int pid = finalStatePIDs.at(idx);
     int npid = _settings.getN_fromPID(pid);
@@ -140,7 +140,7 @@ int SIDISKinematicsReco::InitHipo()
   // -----------------------------------------------------
 
   // Add REC::Kinematics bank
-  if(_settings.getEventRecoMethod() == Settings::eventRecoMethod::useRecKinematicsBank){
+  if(_settings._eventRecoMethod == Settings::eventRecoMethod::useRecKinematicsBank){
     _idx_RECKin = _config_c12->addBank("REC::Kinematics");
     _ix = _config_c12->getBankOrder(_idx_RECKin,"x");
     _iQ2 = _config_c12->getBankOrder(_idx_RECKin,"Q2"); 
@@ -164,7 +164,7 @@ int SIDISKinematicsReco::process_events()
 
   // Create Fiducial Cuts Object
   // -----------------------------------------------------
-  if(_settings.doFiducialCuts())
+  if(_settings._doFiducialCuts)
     _fiducial = FiducialCuts(_c12);
 
 
@@ -199,7 +199,7 @@ int SIDISKinematicsReco::process_events()
 
     
     // Parse through reconstructed particle data
-    if(_settings.doReco())
+    if(_settings._doReco)
       {
 		
 	/* Add reco particle information */
@@ -209,14 +209,14 @@ int SIDISKinematicsReco::process_events()
       }
     
     // Parse through true Monte Carlo particle data
-    if(_settings.doMC())
+    if(_settings._doMC)
       {
 	
 	/* Add particle information */
 	CollectParticlesFromTruth( _c12, particleMap );
 	
 	/* Connect MC and Reco particle info in TTrees */
-	if(_settings.connectMC2Reco())
+	if(_settings._connectMC2Reco)
 	  {
 	    ConnectTruth2Reco( particleMap, recoparticleMap );
 	  }
@@ -226,7 +226,7 @@ int SIDISKinematicsReco::process_events()
     // Writing to TTrees 
     // ---------------------------
 
-    if(_settings.doReco())
+    if(_settings._doReco)
       {
 	/* Reset branch map */
 	ResetBranchMap();
@@ -244,7 +244,7 @@ int SIDISKinematicsReco::process_events()
 	/* Free up memory taken by elements of the map */
 	DeleteParticlePointers( recoparticleMap );
       }
-    if(_settings.doMC())
+    if(_settings._doMC)
       {
 	/* Reset branch map */
 	ResetBranchMap();
@@ -363,7 +363,7 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
 
     // CUT pid -------------------------------------------------------------
     // Skip over particles that are not interesting in the final state
-    if(_settings.ignoreOtherRecoParticles() && _settings.getN_fromPID(pid)==0)
+    if(_settings._ignoreOtherRecoParticles && _settings.getN_fromPID(pid)==0)
       continue;
     
     // CUT chi2 -------------------------------------------------------------
@@ -375,20 +375,20 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     // For charged pions, perform additional chi2 cuts
     // See RGA analysis note for details
     if(pid==211||pid==-211){
-      if(_settings.doChargedPionChi2()){
+      if(_settings._chargedPionChi2cut!=Settings::chargedPionChi2cut::none){
 	// Determine pion charge dependent C value
 	float C = 0.0;
 	(pid==211 ? C=0.88 : C=0.93);
 	// 2 different pion chi2pid regions
 	// standard
 	// strict
-	if(_settings.getChargedPionChi2cut()==Settings::chargedPionChi2cut::standard){
+	if(_settings._chargedPionChi2cut==Settings::chargedPionChi2cut::standard){
 	  if(p<2.44)
 	    passChargedPionChi2=chi2<C*3;
 	  else
 	    passChargedPionChi2=chi2<C*(0.00869 + 14.98587 * exp(-p/1.18236) + 1.81751 * exp(-p/4.86394));
 	} 
-	else if(_settings.getChargedPionChi2cut()==Settings::chargedPionChi2cut::strict){
+	else if(_settings._chargedPionChi2cut==Settings::chargedPionChi2cut::strict){
 	  if(p<2.44)
 	    passChargedPionChi2=chi2<C*3;
 	  else if(p<4.6)
@@ -423,7 +423,7 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
       continue;
 
     // CUT Fiducial -------------------------------------------------------------
-    if(_settings.doFiducialCuts()){
+    if(_settings._doFiducialCuts){
       if(_fiducial.FidCutParticle(_c12,_runNumber,pid,pindex,p,theta) == false)
 	continue;
     }
@@ -456,10 +456,10 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
   }
 
   // Parse through the recoparticleMap to check if the desired event trigger was reco'd
-  for (unsigned int i = 0 ; i < _settings.get_fPID().size() ; i++){
-    int pid = _settings.get_fPID().at(i);
-    int npart = _settings.get_fNpart().at(i);
-    bool exact = _settings.get_fExact().at(i);
+  for (unsigned int i = 0 ; i < _settings._fPID.size() ; i++){
+    int pid = _settings._fPID.at(i);
+    int npart = _settings._fNpart.at(i);
+    bool exact = _settings._fExact.at(i);
     int npart_map = 0;
     for (type_map_part::iterator it_reco = recoparticleMap.begin(); it_reco!= recoparticleMap.end() ; ++it_reco){
       if( (it_reco->second)->get_property_int(SIDISParticle::part_pid) == pid)
@@ -563,7 +563,7 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
   double reco_W = -999;
 
   /* METHOD 1: If available, use REC::Kinematics bank for event reco */
-  if(_settings.getEventRecoMethod() == Settings::eventRecoMethod::useRecKinematicsBank){
+  if(_settings._eventRecoMethod == Settings::eventRecoMethod::useRecKinematicsBank){
     reco_x=_c12->getBank(_idx_RECKin)->getDouble(_ix,0);
     reco_Q2=_c12->getBank(_idx_RECKin)->getDouble(_iQ2,0);
     reco_y=_c12->getBank(_idx_RECKin)->getDouble(_iy,0);
@@ -571,7 +571,7 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
     reco_W=_c12->getBank(_idx_RECKin)->getDouble(_iW,0);
   }
   /* METHOD 2: Use the scattered electron to reconstruct event variables */
-  else if(_settings.getEventRecoMethod() == Settings::eventRecoMethod::useLargestPinFD){
+  else if(_settings._eventRecoMethod == Settings::eventRecoMethod::useLargestPinFD){
     // Get std::vector<> of particles in event
     auto particles=_c12->getDetParticles();
     
@@ -602,11 +602,11 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
     }
   }
   
-  if(reco_W < _settings.Wmin() || reco_W > _settings.Wmax())
+  if(reco_W < _settings._Wmin || reco_W > _settings._Wmax)
     return -1;
-  else if(reco_y < _settings.ymin() || reco_y > _settings.ymax())
+  else if(reco_y < _settings._ymin || reco_y > _settings._ymax)
     return -1;
-  else if(reco_Q2 < _settings.Q2min() || reco_Q2 > _settings.Q2max())
+  else if(reco_Q2 < _settings._Q2min || reco_Q2 > _settings._Q2max)
     return -1;
   else{
 
@@ -693,7 +693,7 @@ int SIDISKinematicsReco::PostProcessReco()
 
   _postprocess.Init(_tree_Reco,_electron_beam_energy);
   
-  if(_postprocess.setPostProcessMethod(_settings.postProcessMethod())!=0)
+  if(_postprocess.setPostProcessMethod(_settings._postProcessMethod)!=0)
     return -1;
   
   // This line is quite the mouthful...
@@ -714,13 +714,13 @@ int SIDISKinematicsReco::End()
   std::cout << "----------------------------------------" << std::endl;
   _tfile->cd();
   
-  if(_settings.doMC())
+  if(_settings._doMC)
     _tree_MC->Write();
   
-  if(_settings.doReco())
+  if(_settings._doReco)
     _tree_Reco->Write();
 
-  if(_settings.doPostProcess())
+  if(_settings._doPostProcess)
     _tree_PostProcess->Write();
 
   _tfile->Close();
