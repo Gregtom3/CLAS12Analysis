@@ -19,7 +19,7 @@ class SIDISParticle
     // -- 1-10   Generic Information -- //
     part_nParticle   = 1,
     part_nPhoton   = 2,
-    // -- 10-100 Particle Kinematics and Identification -- //
+    // -- 10-99 Particle Kinematics and Identification -- //
     part_pid = 10,
     part_px  = 11,
     part_py  = 12,
@@ -31,15 +31,64 @@ class SIDISParticle
     part_theta = 18,
     part_eta   = 19,
     part_phi   = 20,
+    part_vx   = 30,
+    part_vy   = 31,
+    part_vz   = 32,
+    part_vt   = 33,
 
-    part_vz   = 30,
-    
     part_pindex = 50,
     part_beta   = 51,
     part_chi2   = 52,
-    part_ID   = 53,
-    part_parentID = 54,
-    part_parentPID = 55
+    part_status = 53,
+    part_ID   = 54,
+    part_parentID = 55,
+    part_parentPID = 56,
+
+    // -- 100-199 Trajectory Bank Information 
+    traj_path = 100,
+    
+    traj_det1 = 110,
+    traj_det2 = 111,
+    traj_det3 = 112,
+
+    traj_x1 = 130,
+    traj_x2 = 131,
+    traj_x3 = 132,
+    traj_y1 = 133,
+    traj_y2 = 134,
+    traj_y3 = 135,
+    traj_z1 = 136,
+    traj_z2 = 137,
+    traj_z3 = 138,
+    
+    // -- 200-299 Calorimeter Bank Information
+    cal_sector_PCAL = 200,
+    cal_sector_ECIN = 201,
+    cal_sector_ECOUT = 202,
+
+    cal_energy_PCAL = 210,
+    cal_energy_ECIN = 211,
+    cal_energy_ECOUT = 212,
+
+    cal_time_PCAL = 220,
+    cal_time_ECIN = 221,
+    cal_time_ECOUT = 222,
+
+    cal_path_PCAL = 230,
+    cal_path_ECIN = 231,
+    cal_path_ECOUT = 232,
+
+    cal_lu_PCAL = 240,
+    cal_lu_ECIN = 241,
+    cal_lu_ECOUT = 242,
+    cal_lv_PCAL = 243,
+    cal_lv_ECIN = 244,
+    cal_lv_ECOUT = 245,
+    cal_lw_PCAL = 246,
+    cal_lw_ECIN = 247,
+    cal_lw_ECOUT = 248
+
+
   };
 
   enum PROPERTY_TYPE

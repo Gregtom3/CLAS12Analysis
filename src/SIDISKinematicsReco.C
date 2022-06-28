@@ -61,9 +61,46 @@ int SIDISKinematicsReco::Init()
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_pindex , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_beta , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_chi2 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_status , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_parentID , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_parentPID , vdummy) );
-   
+
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_path , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_det1 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_det2 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_det3 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_x1 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_x2 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_x3 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_y1 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_y2 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_y3 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_z1 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_z2 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_z3 , vdummy) );
+  
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_sector_PCAL , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_sector_ECIN , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_sector_ECOUT , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_energy_PCAL , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_energy_ECIN , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_energy_ECOUT , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_time_PCAL , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_time_ECIN , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_time_ECOUT , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_path_PCAL , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_path_ECIN , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_path_ECOUT , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_lu_PCAL , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_lu_ECIN , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_lu_ECOUT , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_lv_PCAL , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_lv_ECIN , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_lv_ECOUT , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_lw_PCAL , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_lw_ECIN , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_lw_ECOUT , vdummy) );
+
   // Create Monte Carlo TTree
   // -------------------------
 
