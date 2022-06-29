@@ -64,8 +64,10 @@ int SIDISKinematicsReco::Init()
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_status , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_parentID , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_parentPID , vdummy) );
-
-  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_path , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_sector , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_path1 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_path2 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_path3 , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_det1 , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_det2 , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::traj_det3 , vdummy) );

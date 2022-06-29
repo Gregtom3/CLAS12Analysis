@@ -55,14 +55,22 @@ std::pair<const std::string, SIDISParticle::PROPERTY_TYPE> SIDISParticle::get_pr
 
       // ----------------
      
-    case traj_path:
-      return std::make_pair("traj_path",SIDISParticle::type_float);
+    case traj_sector:
+      return std::make_pair("traj_sector",SIDISParticle::type_int);
+    case traj_path1:
+      return std::make_pair("traj_path1",SIDISParticle::type_float);
+    case traj_path2:
+      return std::make_pair("traj_path2",SIDISParticle::type_float);
+    case traj_path3:
+      return std::make_pair("traj_path3",SIDISParticle::type_float);
     case traj_det1:
       return std::make_pair("traj_det1",SIDISParticle::type_int);
     case traj_det2:
       return std::make_pair("traj_det2",SIDISParticle::type_int);
     case traj_det3:
       return std::make_pair("traj_det3",SIDISParticle::type_int);
+    case traj_sector:
+      return std::make_pair("traj_sector",SIDISParticle::type_int);
     case traj_x1:
       return std::make_pair("traj_x1",SIDISParticle::type_float);
     case traj_x2:

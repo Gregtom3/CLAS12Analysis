@@ -45,7 +45,10 @@ class SIDISParticle
     part_parentPID = 56,
 
     // -- 100-199 Trajectory Bank Information 
-    traj_path = 100,
+    traj_sector = 100,
+    traj_path1 = 101,
+    traj_path2 = 102,
+    traj_path3 = 103,
     
     traj_det1 = 110,
     traj_det2 = 111,
