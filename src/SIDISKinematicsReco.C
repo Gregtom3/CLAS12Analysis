@@ -425,7 +425,7 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     // CUT Fiducial -------------------------------------------------------------
     if(_settings.doFiducialCuts()){
       if(_fiducial.FidCutParticle(_c12,_runNumber,pid,pindex,p,theta) == false){
-	cout << "ievent = " << _ievent << " | FidCutParticle failed on pid = " << pid << endl;
+	//	cout << "ievent = " << _ievent << " | FidCutParticle failed on pid = " << pid << endl;
 	continue;
       }
     }

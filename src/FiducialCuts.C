@@ -111,22 +111,21 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
   //------------------------------------------------------
   if(pid == 11)
     {
-      if(!was_in_PCAL || !was_in_ECIN || !was_in_ECOUT){cout << "PCAL ECIN ECOUT fail" << endl;
-	return false;}
+      if(!was_in_PCAL || !was_in_ECIN || !was_in_ECOUT)
+	return false;
     }
   //------------------------------------------------------
   // Perform electron PCAL energy cut
   //------------------------------------------------------
-  if(pid==11 && Ele_PCAL_e<0.07){cout << "PCAL_e fail" << endl;
-    return false;}
+  if(pid==11 && Ele_PCAL_e<0.07)
+    return false;
 
   //------------------------------------------------------
   // Perform electron energy fraction cut
   //------------------------------------------------------
-  if(pid==11 && !CheckSampFrac(p)){cout << "CheckSampFrac fail" << endl;
-    return false;}
+  if(pid==11 && !CheckSampFrac(p))
+    return false;
 
-  return true;
  // --------------------------------------------------------------------
   // Loop over entries in the Trajectory bank
   //
@@ -162,12 +161,12 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
   }
 
   // For charged particles, make sure there are hits in are 3 DC's
-  if(pid!=22){
+  /*  if(pid!=22){
     for(int r = 0 ; r < 3 ; r++){
       if(_cx[r]==0 || _cy[r]==0 || _cz[r]==0)
 	return false;
     }
-  }
+    }*/
   
   
   // Get the azimuthal sector # from the middle drift chamber
@@ -175,16 +174,16 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
   // For each of the 3 drift chamber regions, ensure the poly/XY fiducial cut is satisfied
   for(int r = 0 ; r < 3 ; r++){
     if(pid==11){
-      if(DC_fiducial_cut_XY(_cx[r],_cy[r],_cz[r],sector,r+1,pid)==false){cout << "DC fail" << endl; return false;}
+      if(DC_fiducial_cut_XY(_cx[r],_cy[r],_cz[r],sector,r+1,pid)==false){return false;}
     }
-    if(pid==211||pid==-211||pid==2212){
+    /*    if(pid==211||pid==-211||pid==2212){
       if(_torusBending==-1){
 	if(DC_fiducial_cut_theta_phi(_cx[r],_cy[r],_cz[r],sector,r+1,pid)==false){return false;}
       }
       else if(_torusBending==1){
 	if(DC_fiducial_cut_XY(_cx[r],_cy[r],_cz[r],sector,r+1,pid)==false){return false;}
-      }
-    }
+	}
+      }*/
   }
   return true;
 }
@@ -542,7 +541,6 @@ bool FiducialCuts::DC_fiducial_cut_XY(float cx, float cy, float cz, int sector, 
    double X = cx;
    double Y = cy;
 
-   cout << "(x,y) = ("<<X<<","<<Y<<")"<<endl;
    if(sector == 2)
      {
        const double X_new = X * std::cos(-60 * PI / 180) - Y * std::sin(-60 * PI / 180);
@@ -621,6 +619,13 @@ bool FiducialCuts::DC_fiducial_cut_XY(float cx, float cy, float cz, int sector, 
    // Revisited on 6/12/2022
    // I believe we need to use x,y,z and not cx, cy, cz. I made this fix by simply
    // replacing the Bank names at the top of FiducialCuts.C
+   bool b = ((Y > calc_min) && (Y < calc_max));
+   if(part_pid==11){
+     if(b)
+       cout << "TRUE (x,y) = ("<<X<<","<<Y<<")"<<endl;
+     else
+       cout << "FALSE (x,y) = ("<<X<<","<<Y<<")"<<endl;
+   }
    return ((Y > calc_min) && (Y < calc_max));   
 }
  
