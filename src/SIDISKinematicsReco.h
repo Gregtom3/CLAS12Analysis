@@ -14,6 +14,7 @@
 #include "PostProcess.h"
 #include "PID.h"
 #include "FiducialCuts.h"
+#include "HipoBankInterface.h"
 /* ROOT includes */
 #include <TFile.h>
 #include <TTree.h>
@@ -69,6 +70,7 @@ class SIDISKinematicsReco{
   int _printEvery = 100000;
   Settings _settings;
   PID _pidhelper;
+  HipoBankInterface _hipoInterface;
   Kinematics _kin;
   PostProcess _postprocess;
   FiducialCuts _fiducial;

@@ -30,7 +30,7 @@ HipoBankInterface::HipoBankInterface(const std::unique_ptr<clas12::clas12reader>
 
 bool HipoBankInterface::loadBankData(const std::unique_ptr<clas12::clas12reader>& _c12 , SIDISParticlev1 *sp){
   clear();
-  
+
   // Grab necessary particle info
   // -------------------------------------------------------------
   int pindex = sp->get_property_int(SIDISParticle::part_pindex);
@@ -44,7 +44,7 @@ bool HipoBankInterface::loadBankData(const std::unique_ptr<clas12::clas12reader>
     if(_c12->getBank(_idx_RECCal)->getInt(_ipindex_RECCal,i)!=pindex)
       continue;
     
-    int sectorCal = _c12->getBank(_idx_RECCal)->getFloat(_isector_RECCal,i);
+    int sectorCal = _c12->getBank(_idx_RECCal)->getInt(_isector_RECCal,i);
     float timeCal = _c12->getBank(_idx_RECCal)->getFloat(_itime_RECCal,i);
     float pathCal = _c12->getBank(_idx_RECCal)->getFloat(_ipath_RECCal,i);
     float lu = _c12->getBank(_idx_RECCal)->getFloat(_ilu_RECCal,i);
@@ -80,7 +80,6 @@ bool HipoBankInterface::loadBankData(const std::unique_ptr<clas12::clas12reader>
     }
   }
 
-
   // -------------------------------------------------------------
   // Parse the REC::Trajectory
   // -------------------------------------------------------------
@@ -92,19 +91,19 @@ bool HipoBankInterface::loadBankData(const std::unique_ptr<clas12::clas12reader>
     
     if(_c12->getBank(_idx_RECTraj)->getInt(_ilayer_RECTraj,i)==6){
       _det_DC[0] = _c12->getBank(_idx_RECTraj)->getInt(_idet_RECTraj,i);
-      _path_DC[0] = _c12->getBank(_idx_RECTraj)->getInt(_ipath_RECTraj,i);
+      _path_DC[0] = _c12->getBank(_idx_RECTraj)->getFloat(_ipath_RECTraj,i);
       _x_DC[0] = _c12->getBank(_idx_RECTraj)->getFloat(_ix_RECTraj,i);
       _y_DC[0] = _c12->getBank(_idx_RECTraj)->getFloat(_iy_RECTraj,i);
       _z_DC[0] = _c12->getBank(_idx_RECTraj)->getFloat(_iz_RECTraj,i);
     }else if(_c12->getBank(_idx_RECTraj)->getInt(_ilayer_RECTraj,i)==18){
       _det_DC[1] = _c12->getBank(_idx_RECTraj)->getInt(_idet_RECTraj,i);
-      _path_DC[1] = _c12->getBank(_idx_RECTraj)->getInt(_ipath_RECTraj,i);
+      _path_DC[1] = _c12->getBank(_idx_RECTraj)->getFloat(_ipath_RECTraj,i);
       _x_DC[1] = _c12->getBank(_idx_RECTraj)->getFloat(_ix_RECTraj,i);
       _y_DC[1] = _c12->getBank(_idx_RECTraj)->getFloat(_iy_RECTraj,i);
       _z_DC[1] = _c12->getBank(_idx_RECTraj)->getFloat(_iz_RECTraj,i);
     }else if(_c12->getBank(_idx_RECTraj)->getInt(_ilayer_RECTraj,i)==36){
       _det_DC[2] = _c12->getBank(_idx_RECTraj)->getInt(_idet_RECTraj,i);
-      _path_DC[2] = _c12->getBank(_idx_RECTraj)->getInt(_ipath_RECTraj,i);
+      _path_DC[2] = _c12->getBank(_idx_RECTraj)->getFloat(_ipath_RECTraj,i);
       _x_DC[2] = _c12->getBank(_idx_RECTraj)->getFloat(_ix_RECTraj,i);
       _y_DC[2] = _c12->getBank(_idx_RECTraj)->getFloat(_iy_RECTraj,i);
       _z_DC[2] = _c12->getBank(_idx_RECTraj)->getFloat(_iz_RECTraj,i);
@@ -113,7 +112,7 @@ bool HipoBankInterface::loadBankData(const std::unique_ptr<clas12::clas12reader>
   
   // Get the azimuthal sector # from the middle drift chamber
   _sector_DC = determineSectorDC(_x_DC[1], _y_DC[1], _z_DC[1]);
-
+  
   importDataToParticle(sp);
   
   return true;

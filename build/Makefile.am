@@ -33,7 +33,8 @@ pkginclude_HEADERS = \
   ../src/SIDISParticlev1.h \
   ../src/FiducialCuts.h	\
   ../src/Merger.h \
-  ../src/PID.h
+  ../src/PID.h \
+  ../src/HipoBankInterface.h
 
 libclas12ana_la_SOURCES = \
   ../src/Kinematics.C \
@@ -44,7 +45,8 @@ libclas12ana_la_SOURCES = \
   ../src/SIDISParticlev1.C \
   ../src/FiducialCuts.C \
   ../src/Merger.C \
-  ../src/PID.C
+  ../src/PID.C \
+  ../src/HipoBankInterface.C
 
 %_Dict.C: ../src/%.h ../src/%LinkDef.h
 	rootcint -f $@ @CINTDEFS@ -c $(AM_CPPFLAGS) $^

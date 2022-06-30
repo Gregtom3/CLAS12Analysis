@@ -4,25 +4,6 @@ using namespace std;
 
 FiducialCuts::FiducialCuts(){}
 
-FiducialCuts::FiducialCuts(const std::unique_ptr<clas12::clas12reader>& _c12){
-  
-  // Add calorimeter bank
-  _idx_RECCal = _c12->addBank("REC::Calorimeter");
-  _ipindex_Cal = _c12->getBankOrder(_idx_RECCal,"pindex");
-  _ilv = _c12->getBankOrder(_idx_RECCal,"lv");
-  _ilw = _c12->getBankOrder(_idx_RECCal,"lw");
-  _ilayer_Cal = _c12->getBankOrder(_idx_RECCal,"layer");
-  _isector = _c12->getBankOrder(_idx_RECCal,"sector");
-  _ienergy = _c12->getBankOrder(_idx_RECCal,"energy");
-  // Add trajectory bank
-  _idx_RECTraj = _c12->addBank("REC::Traj");
-  _ipindex_Traj = _c12->getBankOrder(_idx_RECCal,"pindex");
-  _icx = _c12->getBankOrder(_idx_RECTraj,"x");
-  _icy = _c12->getBankOrder(_idx_RECTraj,"y");
-  _icz = _c12->getBankOrder(_idx_RECTraj,"z");
-  _ilayer_Traj = _c12->getBankOrder(_idx_RECTraj,"layer");
-}
-
 void FiducialCuts::setTorusBending(int torusBending){
   _torusBending = torusBending; // -1 inbending, +1 outbending
 }
@@ -31,10 +12,37 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
   // Grab necessary particle info
   // --------------------------------------------------------------------
   int pid = sp->get_property_int(SIDISParticle::part_pid);
-  int pindex = sp->get_property_int(SIDISParticle::part_pindex);
   float p = sp->get_property_float(SIDISParticle::part_p);
   float theta = sp->get_property_float(SIDISParticle::part_theta);
 
+  // Grab necessary detector info
+  // --------------------------------------------------------------------
+  Ele_PCAL_e = sp->get_property_float(SIDISParticle::cal_energy_PCAL);
+  Ele_ECIN_e = sp->get_property_float(SIDISParticle::cal_energy_ECIN);
+  Ele_ECOUT_e = sp->get_property_float(SIDISParticle::cal_energy_ECOUT);
+  Ele_sector = sp->get_property_int(SIDISParticle::cal_sector_ECOUT);
+  lu = sp->get_property_float(SIDISParticle::cal_lu_PCAL);
+  lv = sp->get_property_float(SIDISParticle::cal_lv_PCAL);
+  lw = sp->get_property_float(SIDISParticle::cal_lw_PCAL);
+
+  _x[0] = sp->get_property_float(SIDISParticle::traj_x1);
+  _x[1] = sp->get_property_float(SIDISParticle::traj_x2);
+  _x[2] = sp->get_property_float(SIDISParticle::traj_x3);
+  _y[0] = sp->get_property_float(SIDISParticle::traj_y1);
+  _y[1] = sp->get_property_float(SIDISParticle::traj_y2);
+  _y[2] = sp->get_property_float(SIDISParticle::traj_y3);
+  _z[0] = sp->get_property_float(SIDISParticle::traj_z1);
+  _z[1] = sp->get_property_float(SIDISParticle::traj_z2);
+  _z[2] = sp->get_property_float(SIDISParticle::traj_z3);
+
+  int sector = sp->get_property_int(SIDISParticle::traj_sector);
+
+  // Define bools to test if particle hit all three calorimeters
+  // --------------------------------------------------------------------
+  bool was_in_PCAL = (Ele_PCAL_e>0);
+  bool was_in_ECIN = (Ele_ECIN_e>0);
+  bool was_in_ECOUT = (Ele_ECOUT_e>0);
+  
   // Set universal run number
   // --------------------------------------------------------------------
   _runNumber = run;
@@ -43,180 +51,63 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
   // --------------------------------------------------------------------
   if(theta<5*PI/180.0 || theta>35*PI/180.0)
     return false;
-  
-  // Loop over entries in the Calorimeter bank
-  // First, reset electron energies
-  // --------------------------------------------------------------------
-  Ele_PCAL_e = 0.0;
-  Ele_ECIN_e = 0.0;
-  Ele_ECOUT_e = 0.0;
-  Ele_sector = 0;
-  // Second, define bools to test if particle hit all three calorimeters
-  // --------------------------------------------------------------------
-  bool was_in_PCAL = false;
-  bool was_in_ECIN = false;
-  bool was_in_ECOUT = false;
-  // --------------------------------------------------------------------
-  for(auto i = 0 ; i < _c12->getBank(_idx_RECCal)->getRows() ; i++){
-    // Continue loop if the pindex in the calo bank does not match 
-    if(_c12->getBank(_idx_RECCal)->getInt(_ipindex_Cal,i)!=pindex)
-      continue;
-    
-    float lv = _c12->getBank(_idx_RECCal)->getFloat(_ilv,i);
-    float lw = _c12->getBank(_idx_RECCal)->getFloat(_ilw,i);
-    int layerCal = _c12->getBank(_idx_RECCal)->getInt(_ilayer_Cal,i);
 
-    // Perform electron (pid==11) fiducial cuts
-    // -----------------------------------------------------------------
-    if(pid==11){
-      Ele_sector = _c12->getBank(_idx_RECCal)->getInt(_isector,i);
-      switch(layerCal){
-      case 1: // PCAL
-	was_in_PCAL = true;
-	Ele_PCAL_e = _c12->getBank(_idx_RECCal)->getFloat(_ienergy,i);
-
-	if(lv<9 || lw<9 || lv>400 || lw>400) // PCAL lv lw cuts
-       	  return false;
-
-
-	break;
-      case 4: // InnerCal
-	was_in_ECIN = true;
-	Ele_ECIN_e = _c12->getBank(_idx_RECCal)->getFloat(_ienergy,i);
-	break;
-      case 7: // OuterCal
-	was_in_ECOUT = true;
-	Ele_ECOUT_e = _c12->getBank(_idx_RECCal)->getFloat(_ienergy,i);
-	break;
-      }
-    }
-    
-    // Perform photon (pid==22) fiducial cuts
-    // --------------------------------------------------------------------
-    if(pid==22){
-      switch(layerCal){
-      case 1: // PCAL
-	was_in_PCAL = true;
-	if(lv<14 || lw<14 || lv>400 || lw>400) // PCAL lv lw cuts
-	  return false;
-	break;
-      case 4: // InnerCal
-	was_in_ECIN = true;
-	break;
-      case 7: // OuterCal
-	was_in_ECOUT = true;
-	break;
-      }   
-    }
-  }
-  
-  //------------------------------------------------------
-  // Ensure photon went through PCAL
-  //------------------------------------------------------
-  if(pid == 22)
-    {
-      if(!was_in_PCAL)
+  // -----------------------------------------------------------------
+  // Perform electron (pid==11) fiducial cuts
+  // -----------------------------------------------------------------
+  if(pid==11){
+    // PCAL lv lw cuts
+    if(lv<9 || lw<9 || lv>400 || lw>400) 
+      return false;
+    // Ensure electron went through PCAL, ECIN, and ECOUT    
+    if(!was_in_PCAL || !was_in_ECIN || !was_in_ECOUT)
+      return false;
+    // Perform electron PCAL energy cut 
+    if(Ele_PCAL_e<0.07)
+      return false;
+    // Perform electron sampling fraction cut
+    if(CheckSampFrac(p)==false)
+      return false;
+    // Perform electron DC fiducial cut
+    for(int r = 0 ; r < 3; r++){
+      if(DC_fiducial_cut_XY(_x[r],_y[r],_z[r],sector,r+1,pid)==false)
 	return false;
     }
-  //------------------------------------------------------
-  // Ensure electron went through PCAL, ECIN, and ECOUT
-  //------------------------------------------------------
-  if(pid == 11)
-    {
-      if(!was_in_PCAL || !was_in_ECIN || !was_in_ECOUT)
-	return false;
-    }
-  //------------------------------------------------------
-  // Perform electron PCAL energy cut
-  //------------------------------------------------------
-  if(pid==11 && Ele_PCAL_e<0.07)
-    return false;
-
-  //------------------------------------------------------
-  // Perform electron energy fraction cut
-  //------------------------------------------------------
-  if(pid==11 && !CheckSampFrac(p))
-    return false;
-  // --------------------------------------------------------------------
-  // Loop over entries in the Trajectory bank
-  // --------------------------------------------------------------------
-  _cx[0] = 0;
-  _cy[0] = 0;
-  _cz[0] = 0;
-  _cx[1] = 0;
-  _cy[1] = 0;
-  _cz[1] = 0;
-  _cx[2] = 0;
-  _cy[2] = 0;
-  _cz[2] = 0;
-  for(auto i = 0 ; i < _c12->getBank(_idx_RECTraj)->getRows() ; i++){
-
-    // Continue loop if the pindex in the traj bank does not match
-    if(_c12->getBank(_idx_RECTraj)->getInt(_ipindex_Traj,i)!=pindex)
-      continue;
-    
-    if(_c12->getBank(_idx_RECTraj)->getInt(_ilayer_Traj,i)==6){
-      _cx[0] = _c12->getBank(_idx_RECTraj)->getFloat(_icx,i);
-      _cy[0] = _c12->getBank(_idx_RECTraj)->getFloat(_icy,i);
-      _cz[0] = _c12->getBank(_idx_RECTraj)->getFloat(_icz,i);
-    }else if(_c12->getBank(_idx_RECTraj)->getInt(_ilayer_Traj,i)==18){
-      _cx[1] = _c12->getBank(_idx_RECTraj)->getFloat(_icx,i);
-      _cy[1] = _c12->getBank(_idx_RECTraj)->getFloat(_icy,i);
-      _cz[1] = _c12->getBank(_idx_RECTraj)->getFloat(_icz,i);
-    }else if(_c12->getBank(_idx_RECTraj)->getInt(_ilayer_Traj,i)==36){
-      _cx[2] = _c12->getBank(_idx_RECTraj)->getFloat(_icx,i);
-      _cy[2] = _c12->getBank(_idx_RECTraj)->getFloat(_icy,i);
-      _cz[2] = _c12->getBank(_idx_RECTraj)->getFloat(_icz,i);
-    }
   }
-
-  // For charged particles, make sure there are hits in are 3 DC's
-  /*if(pid!=22){
+  // -----------------------------------------------------------------
+  // Perform photon (pid==22) fiducial cuts
+  // -----------------------------------------------------------------
+  if(pid==22){
+    // PCAL lv lw cuts
+    if(lv<14 || lw<14 || lv>400 || lw>400) 
+      return false;
+    // Ensure photon went through PCAL    
+    if(!was_in_PCAL)
+      return false;
+  }
+  // -----------------------------------------------------------------
+  // Perform pion/proton fiducial cuts
+  // -----------------------------------------------------------------
+  if(pid==211 || pid==-211 || pid==2212){
     for(int r = 0 ; r < 3 ; r++){
-      if(_cx[r]==0 || _cy[r]==0 || _cz[r]==0)
-	return false;
-    }
-    }*/
-  
-  
-  // Get the azimuthal sector # from the middle drift chamber
-  int sector = determineSectorDC(_cx[1],_cy[1],_cz[1]);
-  // For each of the 3 drift chamber regions, ensure the poly/XY fiducial cut is satisfied
-  for(int r = 0 ; r < 3 ; r++){
-    if(pid==11){
-      if(DC_fiducial_cut_XY(_cx[r],_cy[r],_cz[r],sector,r+1,pid)==false){return false;}
-    }
-    if(pid==211||pid==-211||pid==2212){
       if(_torusBending==-1){
-	if(DC_fiducial_cut_theta_phi(_cx[r],_cy[r],_cz[r],sector,r+1,pid)==false){return false;}
+	if(DC_fiducial_cut_theta_phi(_x[r],_y[r],_z[r],sector,r+1,pid)==false)
+	  return false;
       }
       else if(_torusBending==1){
-	if(DC_fiducial_cut_XY(_cx[r],_cy[r],_cz[r],sector,r+1,pid)==false){return false;}
+	if(DC_fiducial_cut_XY(_x[r],_y[r],_z[r],sector,r+1,pid)==false)
+	  return false;
       }
     }
   }
+  // -----------------------------------------------------------------
+  // All fiducial cuts passed, return true
+  // -----------------------------------------------------------------
   return true;
 }
 
-// Determine which of the 6 azimuthal segments the track passes through
-// Copied from Stefan Diehl
-int FiducialCuts::determineSectorDC(float c2x, float c2y, float c2z)
-{
-  float phi = 180 / PI * atan2(c2y / sqrt(pow(c2x,2) + pow(c2y,2) + pow(c2z,2)), 
-					c2x /sqrt(pow(c2x,2) + pow(c2y,2) + pow(c2z,2)));
-  if(phi<30 && phi>=-30){return 1;}
-  else if(phi<90 && phi>=30){return 2;}
-  else if(phi<150 && phi>=90){return 3;}
-  else if(phi>=150 || phi<-150){return 4;}
-  else if(phi<-90 && phi>=-150){return 5;}
-  else if(phi<-30 && phi>-90){return 6;}
-  
-  return 0;
-}
-
-
 // Copied and edited from https://github.com/c-dilks/dispin/blob/master/src/FiducialCuts.cxx
-bool FiducialCuts::DC_fiducial_cut_theta_phi(float cx, float cy, float cz, int sector, int region, int part_pid){
+bool FiducialCuts::DC_fiducial_cut_theta_phi(float x, float y, float z, int sector, int region, int part_pid){
 
   // inbending
   const double maxparams_in[6][6][3][4] = {
@@ -380,9 +271,9 @@ bool FiducialCuts::DC_fiducial_cut_theta_phi(float cx, float cy, float cz, int s
   double theta_DCr = 5000;
   double phi_DCr_raw = 5000;
 
-  theta_DCr = 180 / PI * acos(cz / sqrt(pow(cx,2) + pow(cy,2) + pow(cz,2)));
-  phi_DCr_raw = 180 / PI * atan2(cy / sqrt(pow(cx,2) + pow(cy,2) + pow(cz,2)), 
-					cx /sqrt(pow(cx,2) + pow(cy,2) + pow(cz,2)));
+  theta_DCr = 180 / PI * acos(z / sqrt(pow(x,2) + pow(y,2) + pow(z,2)));
+  phi_DCr_raw = 180 / PI * atan2(y / sqrt(pow(x,2) + pow(y,2) + pow(z,2)), 
+					x /sqrt(pow(x,2) + pow(y,2) + pow(z,2)));
 
   double phi_DCr = 5000;
 
@@ -423,7 +314,7 @@ bool FiducialCuts::DC_fiducial_cut_theta_phi(float cx, float cy, float cz, int s
 /// --> based on local x, y coordinate
 /// --> Use this cut for inbending electrons and all outbending hadrons 
  
-bool FiducialCuts::DC_fiducial_cut_XY(float cx, float cy, float cz, int sector, int region, int part_pid)
+bool FiducialCuts::DC_fiducial_cut_XY(float x, float y, float z, int sector, int region, int part_pid)
 {
    
    const double maxparams_in[6][6][3][2] = {
@@ -548,8 +439,8 @@ bool FiducialCuts::DC_fiducial_cut_XY(float cx, float cy, float cz, int sector, 
    const auto minparams = ((_torusBending==-1) ? minparams_in : minparams_out);
    const auto maxparams = ((_torusBending==-1) ? maxparams_in : maxparams_out);
 
-   double X = cx;
-   double Y = cy;
+   double X = x;
+   double Y = y;
 
    if(sector == 2)
      {
@@ -627,7 +518,7 @@ bool FiducialCuts::DC_fiducial_cut_XY(float cx, float cy, float cz, int sector, 
    // return ((Y < calc_min) && (Y > calc_max));
 
    // Revisited on 6/12/2022
-   // I believe we need to use x,y,z and not cx, cy, cz. I made this fix by simply
+   // I believe we need to use x,y,z and not x,y,z. I made this fix by simply
    // replacing the Bank names at the top of FiducialCuts.C
    return ((Y > calc_min) && (Y < calc_max));   
 }

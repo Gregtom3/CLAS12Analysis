@@ -28,7 +28,10 @@ bool PID::basicRECParticleCuts(SIDISParticlev1* sp){
   float beta = sp->get_property_float(SIDISParticle::part_beta);
   float vz = sp->get_property_float(SIDISParticle::part_vz);
  
-  
+  // CUT pid --------------------------------------------------------------
+  if(_settings.getN_fromPID(pid)==0 && _settings._ignoreOtherRecoParticles)
+    return false;
+
   // CUT chi2 -------------------------------------------------------------
   if(abs(chi2) > _settings.getChi2max_fromPID(pid))
     return false;

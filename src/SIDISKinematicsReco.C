@@ -153,7 +153,7 @@ int SIDISKinematicsReco::Init()
   
   // Configure PID helper
   // -------------------------
-  PID _pidhelper = PID();
+  _pidhelper = PID();
   _pidhelper.ImportSettings(_settings);
 
   // Initialize Hipo file settings
@@ -206,16 +206,20 @@ int SIDISKinematicsReco::process_events()
   // -------------------------
   auto &_c12= _chain.C12ref();
 
+  // Configure HipoBankInterface
+  // -------------------------
+  _hipoInterface = HipoBankInterface(_c12); 
+
   // Create Fiducial Cuts Object
   // -----------------------------------------------------
   if(_settings._doFiducialCuts)
-    _fiducial = FiducialCuts(_c12);
+    _fiducial = FiducialCuts();
 
 
   // Move to the next event in the Hipo chain
   while(_chain.Next()==true){
     if(_verbosity > 0 && (_ievent)%_printEvery==0 && _ievent!=0){
-      std::cout << _ievent << " events completed | " << _tree_Reco->GetEntriesFast() << " passed cuts --> " << _tree_Reco->GetEntriesFast()*100.0/_ievent << "%" << std::endl;
+       std::cout << _ievent << " events completed | " << _tree_Reco->GetEntriesFast() << " passed cuts --> " << _tree_Reco->GetEntriesFast()*100.0/_ievent << "%" << std::endl;
     }
     
     // Get the run number from the RUN::config bank
@@ -430,17 +434,26 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     sp->set_property( SIDISParticle::part_ID, pindex);
     sp->set_property( SIDISParticle::part_parentID, -999);
     sp->set_property( SIDISParticle::part_parentPID, -999);
-    
+
+    // Add detector info to SIDISParticle
+    // --------------------------------------------------------------------------
+
+    if(_hipoInterface.loadBankData(_c12, sp)==false)
+      continue;
+
     // CUT REC::Particle
     // --------------------------------------------------------------------------
     if(_pidhelper.performPIDCuts(sp)==false)
       continue;
-    
+
     // CUT Fiducial
     // --------------------------------------------------------------------------
     if(_settings._doFiducialCuts){
       if(_fiducial.FidCutParticle(_c12,_runNumber,sp) == false)
-	continue;
+	{
+	  cout << "ievent = " << _ievent << " | FidCutParticle failed on pid = " << pid << endl;
+	  continue;
+	}
     }
 
     // Add SIDISParticle to the collection
