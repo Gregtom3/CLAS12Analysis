@@ -540,6 +540,7 @@ bool FiducialCuts::DC_fiducial_cut_XY(float cx, float cy, float cz, int sector, 
    double X = cx;
    double Y = cy;
 
+   cout << "(x,y) = ("<<X<<","<<Y<<")"<<endl;
    if(sector == 2)
      {
        const double X_new = X * std::cos(-60 * PI / 180) - Y * std::sin(-60 * PI / 180);
