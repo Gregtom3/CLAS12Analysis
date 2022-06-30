@@ -622,7 +622,7 @@ bool FiducialCuts::DC_fiducial_cut_XY(float cx, float cy, float cz, int sector, 
    bool b = ((Y > calc_min) && (Y < calc_max));
    if(part_pid==11){
      if(!b)
-       cout << "FALSE (x,y) = ("<<X<<","<<Y<<")"<<endl;
+       cout << "FALSE (x,y,z,sector) = ("<<X<<","<<Y<<","<<cz<<","<<sector<<")"<<endl;
    }
    return ((Y > calc_min) && (Y < calc_max));   
 }
