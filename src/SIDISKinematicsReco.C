@@ -53,11 +53,13 @@ int SIDISKinematicsReco::Init()
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_pt , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_p , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_E , vdummy) );
-  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_evtgen_E , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_theta , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_eta , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_phi , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_vx , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_vy , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_vz , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_vt , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_pindex , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_beta , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_chi2 , vdummy) );
@@ -102,6 +104,29 @@ int SIDISKinematicsReco::Init()
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_lw_PCAL , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_lw_ECIN , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::cal_lw_ECOUT , vdummy) );
+
+
+  // ----------------- MONTE CARLO VERSION ------------------- //
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_pid , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_px , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_py , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_pz , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_pt , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_p , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_E , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_theta , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_eta , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_phi , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_vx , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_vy , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_vz , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_vt , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_pindex , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_beta , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_chi2 , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_status , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_parentID , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_parentPID , vdummy) );
 
   // Create Monte Carlo TTree
   // -------------------------
@@ -221,7 +246,6 @@ int SIDISKinematicsReco::process_events()
     if(_verbosity > 0 && (_ievent)%_printEvery==0 && _ievent!=0){
        std::cout << _ievent << " events completed | " << _tree_Reco->GetEntriesFast() << " passed cuts --> " << _tree_Reco->GetEntriesFast()*100.0/_ievent << "%" << std::endl;
     }
-    
     // Get the run number from the RUN::config bank
     // Also get the event number too
     // -----------------------------------------------------
@@ -308,7 +332,6 @@ int SIDISKinematicsReco::process_events()
 	/* Free up memory taken by elements of the map */
 	DeleteParticlePointers( particleMap );
       }
-    
   }
   
   std::cout << " All events completed \n Done." << std::endl;
@@ -348,29 +371,33 @@ int SIDISKinematicsReco::CollectParticlesFromTruth(const std::unique_ptr<clas12:
     float eta = _kin.eta(theta);
     float phi   = _kin.phi(px,py);
 
+    float vx = mcparticles->getVx();
+    float vy = mcparticles->getVy();
     float vz = mcparticles->getVz();
+    //    float vt = mcparticles->getVt();
 
-    sp->set_property( SIDISParticle::part_pid, pid);
-    sp->set_property( SIDISParticle::part_px,  px);
-    sp->set_property( SIDISParticle::part_py,  py);
-    sp->set_property( SIDISParticle::part_pz,  pz);
-    sp->set_property( SIDISParticle::part_pt,  pt);
-    sp->set_property( SIDISParticle::part_p,  p);
-    sp->set_property( SIDISParticle::part_E,   E);
-    sp->set_property( SIDISParticle::part_evtgen_E,   E);
-    sp->set_property( SIDISParticle::part_theta,   theta);
-    sp->set_property( SIDISParticle::part_eta,   eta);
-    sp->set_property( SIDISParticle::part_phi,   phi);
+    sp->set_property( SIDISParticle::evtgen_part_pid, pid);
+    sp->set_property( SIDISParticle::evtgen_part_px,  px);
+    sp->set_property( SIDISParticle::evtgen_part_py,  py);
+    sp->set_property( SIDISParticle::evtgen_part_pz,  pz);
+    sp->set_property( SIDISParticle::evtgen_part_pt,  pt);
+    sp->set_property( SIDISParticle::evtgen_part_p,  p);
+    sp->set_property( SIDISParticle::evtgen_part_E,   E);
+    sp->set_property( SIDISParticle::evtgen_part_theta,   theta);
+    sp->set_property( SIDISParticle::evtgen_part_eta,   eta);
+    sp->set_property( SIDISParticle::evtgen_part_phi,   phi);
+    sp->set_property( SIDISParticle::evtgen_part_vx,   vx);
+    sp->set_property( SIDISParticle::evtgen_part_vy,   vy);
+    sp->set_property( SIDISParticle::evtgen_part_vz,   vz);
+    //    sp->set_property( SIDISParticle::evtgen_part_vt,   vt);
 
-    sp->set_property( SIDISParticle::part_vz,   vz);
-
-    sp->set_property( SIDISParticle::part_pindex,   -999);
-    sp->set_property( SIDISParticle::part_beta,   -999);
-    sp->set_property( SIDISParticle::part_chi2,   -999);
-    sp->set_property( SIDISParticle::part_ID,   mcparticles->getIndex());
-    sp->set_property( SIDISParticle::part_parentID,  mcparticles->getParent());
-    sp->set_property( SIDISParticle::part_parentPID, mcparticles->getPid(mcparticles->getParent()-1));
-    
+    sp->set_property( SIDISParticle::evtgen_part_pindex,   ineg999);
+    sp->set_property( SIDISParticle::evtgen_part_beta,   fneg999);
+    sp->set_property( SIDISParticle::evtgen_part_chi2,   fneg999);
+    sp->set_property( SIDISParticle::evtgen_part_ID,   mcparticles->getIndex());
+    sp->set_property( SIDISParticle::evtgen_part_parentID,  mcparticles->getParent());
+    sp->set_property( SIDISParticle::evtgen_part_parentPID, mcparticles->getPid(mcparticles->getParent()-1));
+      
     // Add SIDISParticle to the collection
     particleMap.insert ( make_pair( sp->get_candidate_id() , sp) );
     
@@ -385,7 +412,6 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
   // Get std::vector<> of particles in event
   // -------------------------------------------------------
   auto particles=_c12->getDetParticles();
-
   // Loop over all particles
   // -------------------------------------------------------
   for(unsigned int idx = 0 ; idx < particles.size() ; idx++){
@@ -408,7 +434,10 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     float E  = _kin.E(m,p);
     float beta = particle->getBeta();
     int pindex = particle->getIndex();
+    float vx = particle->par()->getVx();
+    float vy = particle->par()->getVy();
     float vz = particle->par()->getVz();
+    //    float vt = particle->par()->getVt();
 
     // Create new particle structure
     // -------------------------------------------------------
@@ -422,12 +451,13 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     sp->set_property( SIDISParticle::part_pt,  pt);
     sp->set_property( SIDISParticle::part_p,  p);
     sp->set_property( SIDISParticle::part_E,   E);
-    sp->set_property( SIDISParticle::part_evtgen_E,  -999);
     sp->set_property( SIDISParticle::part_theta,   theta);
     sp->set_property( SIDISParticle::part_eta,   eta);
     sp->set_property( SIDISParticle::part_phi,   phi);
+    sp->set_property( SIDISParticle::part_vx,   vx);
+    sp->set_property( SIDISParticle::part_vy,   vy);
     sp->set_property( SIDISParticle::part_vz,   vz);
-
+    //    sp->set_property( SIDISParticle::part_vt,   vt);
     sp->set_property( SIDISParticle::part_pindex,   pindex);
     sp->set_property( SIDISParticle::part_beta,   beta);
     sp->set_property( SIDISParticle::part_chi2,   chi2);
@@ -435,10 +465,33 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     sp->set_property( SIDISParticle::part_parentID, -999);
     sp->set_property( SIDISParticle::part_parentPID, -999);
 
+    // ------------------- MONTE CARLO ----------------------------//
+    sp->set_property( SIDISParticle::evtgen_part_pid, -999);
+    sp->set_property( SIDISParticle::evtgen_part_px,  (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_py,  (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_pz,  (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_pt,  (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_p,  (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_E,  (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_theta,   (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_eta,   (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_phi,   (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_vx,   (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_vy,   (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_vz,   (float)-999);
+    //    sp->set_property( SIDISParticle::evtgen_part_vt,   (float)-999);
+
+    sp->set_property( SIDISParticle::evtgen_part_pindex,   -999);
+    sp->set_property( SIDISParticle::evtgen_part_beta,   (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_chi2,   (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_ID, -999);
+    sp->set_property( SIDISParticle::evtgen_part_parentID, -999);
+    sp->set_property( SIDISParticle::evtgen_part_parentPID, -999);
+
     // Add detector info to SIDISParticle
     // --------------------------------------------------------------------------
 
-    if(_hipoInterface.loadBankData(_c12, sp)==false)
+    /*if(_hipoInterface.loadBankData(_c12, sp)==false)
       continue;
 
     // CUT REC::Particle
@@ -450,12 +503,9 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     // --------------------------------------------------------------------------
     if(_settings._doFiducialCuts){
       if(_fiducial.FidCutParticle(_c12,_runNumber,sp) == false)
-	{
-	  //	  cout << "ievent = " << _ievent << " | FidCutParticle failed on pid = " << pid << endl;
 	  continue;
-	}
     }
-
+    */
     // Add SIDISParticle to the collection
     // --------------------------------------------------------------------------
     recoparticleMap.insert ( make_pair( sp->get_candidate_id() , sp) );
@@ -493,11 +543,12 @@ int SIDISKinematicsReco::ConnectTruth2Reco( type_map_part& particleMap,
     double reco_theta = (it_reco->second)->get_property_float(SIDISParticle::part_theta); 
     double reco_phi = (it_reco->second)->get_property_float(SIDISParticle::part_phi); 
     double reco_E = (it_reco->second)->get_property_float(SIDISParticle::part_E);
+
       /* Loop over all MC particles */
       for(type_map_part::iterator it_mc = particleMap.begin(); it_mc!= particleMap.end(); ++it_mc){
-	double mc_theta = (it_mc->second)->get_property_float(SIDISParticle::part_theta); 
-	double mc_phi = (it_mc->second)->get_property_float(SIDISParticle::part_phi); 
-	double mc_E = (it_reco->second)->get_property_float(SIDISParticle::part_E);
+	double mc_theta = (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_theta); 
+	double mc_phi = (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_phi); 
+	double mc_E = (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_E);
 	/* Match the *theta* and *phi* of two particles. For details, see https://www.jlab.org/Hall-B/general/thesis/THayward_thesis.pdf */
 	double dth = abs(reco_theta-mc_theta);
 	double dphi = abs(reco_phi-mc_phi);
@@ -508,9 +559,21 @@ int SIDISKinematicsReco::ConnectTruth2Reco( type_map_part& particleMap,
 	   (dth < 6*degtorad) && 
 	    (dphi < 2*degtorad || abs(dphi - 2*PI) < 2*degtorad)){
 	  (it_mc->second)->set_property( SIDISParticle::part_pindex, (it_reco->second)->get_property_int(SIDISParticle::part_pindex));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_pid , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_pid));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_px , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_px));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_py , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_py));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_pz , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_pz));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_pt , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_pt));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_p , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_p));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_vx , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_vx));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_vy , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_vy));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_vz , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_vz));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_E , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_E));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_theta , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_theta));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_eta , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_eta));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_phi , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_phi));
 	  (it_reco->second)->set_property( SIDISParticle::part_parentID , (it_mc->second)->get_property_int(SIDISParticle::part_parentID));
 	  (it_reco->second)->set_property( SIDISParticle::part_parentPID , (it_mc->second)->get_property_int(SIDISParticle::part_parentPID));
-	  (it_reco->second)->set_property( SIDISParticle::part_evtgen_E , (it_mc->second)->get_property_float(SIDISParticle::part_evtgen_E));
 	}
       }
   }
@@ -564,11 +627,11 @@ int SIDISKinematicsReco::AddTruthEventInfo(const std::unique_ptr<clas12::clas12r
 int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12reader>& _c12)
 {
 
-  double reco_x = -999;
-  double reco_Q2 = -999;
-  double reco_y = -999;
-  double reco_nu = -999;
-  double reco_W = -999;
+  double reco_x = ineg999;
+  double reco_Q2 = ineg999;
+  double reco_y = ineg999;
+  double reco_nu = ineg999;
+  double reco_W = ineg999;
 
   /* METHOD 1: If available, use REC::Kinematics bank for event reco */
   if(_settings._eventRecoMethod == Settings::eventRecoMethod::useRecKinematicsBank){

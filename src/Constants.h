@@ -7,7 +7,8 @@ const double alpha_em     = 1/137.036;
 const double PI         = 3.14159265359;
 const double radtodeg     = 57.2957795131;
 const double degtorad     = 0.01745329251;
-
+const int    ineg999      = -999;
+const float  fneg999      = -999.;
 
 // Returns run polarization if "v" is true
 // Returns run polarization error if "v" is false

@@ -22,8 +22,6 @@ std::pair<const std::string, SIDISParticle::PROPERTY_TYPE> SIDISParticle::get_pr
       return std::make_pair("p", SIDISParticle::type_float);
     case part_E:
       return std::make_pair("E", SIDISParticle::type_float);
-    case part_evtgen_E:
-      return std::make_pair("evtgen_E", SIDISParticle::type_float);
     case part_theta:
       return std::make_pair("theta", SIDISParticle::type_float);
     case part_eta:
@@ -132,6 +130,53 @@ std::pair<const std::string, SIDISParticle::PROPERTY_TYPE> SIDISParticle::get_pr
       return std::make_pair("cal_lw_ECIN",SIDISParticle::type_float);
     case cal_lw_ECOUT:
       return std::make_pair("cal_lw_ECOUT",SIDISParticle::type_float);
+
+
+
+      // ------------------ MONTE CARLO VERSION --------------------- //
+
+    case evtgen_part_pid:
+      return std::make_pair("evtgen_pid", SIDISParticle::type_int);
+    case evtgen_part_px:
+      return std::make_pair("evtgen_px", SIDISParticle::type_float);
+    case evtgen_part_py:
+      return std::make_pair("evtgen_py", SIDISParticle::type_float);
+    case evtgen_part_pz:
+      return std::make_pair("evtgen_pz", SIDISParticle::type_float);
+    case evtgen_part_pt:
+      return std::make_pair("evtgen_pt", SIDISParticle::type_float);
+    case evtgen_part_p:
+      return std::make_pair("evtgen_p", SIDISParticle::type_float);
+    case evtgen_part_E:
+      return std::make_pair("evtgen_E", SIDISParticle::type_float);
+    case evtgen_part_theta:
+      return std::make_pair("evtgen_theta", SIDISParticle::type_float);
+    case evtgen_part_eta:
+      return std::make_pair("evtgen_eta", SIDISParticle::type_float);
+    case evtgen_part_phi:
+      return std::make_pair("evtgen_phi", SIDISParticle::type_float);
+    case evtgen_part_vx:
+      return std::make_pair("evtgen_vx", SIDISParticle::type_float);
+    case evtgen_part_vy:
+      return std::make_pair("evtgen_vy", SIDISParticle::type_float);
+    case evtgen_part_vz:
+      return std::make_pair("evtgen_vz", SIDISParticle::type_float);
+    case evtgen_part_vt:
+      return std::make_pair("evtgen_vt", SIDISParticle::type_float);
+    case evtgen_part_pindex:
+      return std::make_pair("evtgen_pindex", SIDISParticle::type_int);
+    case evtgen_part_beta:
+      return std::make_pair("evtgen_beta", SIDISParticle::type_float);
+    case evtgen_part_chi2:
+      return std::make_pair("evtgen_chi2", SIDISParticle::type_float);
+    case evtgen_part_status:
+      return std::make_pair("evtgen_status", SIDISParticle::type_int);
+    case evtgen_part_ID:
+      return std::make_pair("evtgen_ID", SIDISParticle::type_int);
+    case evtgen_part_parentID:
+      return std::make_pair("evtgen_parentID", SIDISParticle::type_int);
+    case evtgen_part_parentPID:
+      return std::make_pair("evtgen_parentPID", SIDISParticle::type_int);
 
     default:
       std::cout << "SIDISParticle::get_property_info - Fatal Error - unknown prop_id " << prop_id << std::endl;

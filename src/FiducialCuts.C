@@ -74,6 +74,7 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
     	return false;
     }
   }
+
   // -----------------------------------------------------------------
   // Perform photon (pid==22) fiducial cuts
   // -----------------------------------------------------------------
@@ -85,7 +86,7 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
     if(!was_in_PCAL)
       return false;
   }
-  return true;
+
   // -----------------------------------------------------------------
   // Perform pion/proton fiducial cuts
   // -----------------------------------------------------------------
@@ -511,21 +512,6 @@ bool FiducialCuts::DC_fiducial_cut_XY(float x, float y, float z, int sector, int
    double calc_min = minparams[pid][sector - 1][region][0] + minparams[pid][sector - 1][region][1] * X;
    double calc_max = maxparams[pid][sector - 1][region][0] + maxparams[pid][sector - 1][region][1] * X;
    
-   //cout << Y << " > " << calc_min << " && " << Y << " < " << calc_max << endl;
-
-   // WARNING
-   // Tested on 6/3/2022
-   // calc_min > calc_max for some reason, so I've flipped the inequalities
-   // return ((Y < calc_min) && (Y > calc_max));
-
-   // Revisited on 6/12/2022
-   // I believe we need to use x,y,z and not x,y,z. I made this fix by simply
-   // replacing the Bank names at the top of FiducialCuts.C
-   bool b = ((Y > calc_min) && (Y < calc_max));   
-   if(part_pid==11){
-     if(!b)
-       cout << "FALSE (x,y,z,sector) = ("<<X<<","<<Y<<","<<z<<","<<sector<<")"<<endl;
-   }
    return ((Y > calc_min) && (Y < calc_max));   
 }
  

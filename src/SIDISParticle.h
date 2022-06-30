@@ -27,7 +27,6 @@ class SIDISParticle
     part_pt  = 14,
     part_p   = 15,
     part_E   = 16,
-    part_evtgen_E = 17,
     part_theta = 18,
     part_eta   = 19,
     part_phi   = 20,
@@ -89,9 +88,36 @@ class SIDISParticle
     cal_lv_ECOUT = 245,
     cal_lw_PCAL = 246,
     cal_lw_ECIN = 247,
-    cal_lw_ECOUT = 248
+    cal_lw_ECOUT = 248,
 
 
+    // ------------------ MONTE CARLO VERSION ----------------------- //
+    // --  1000-1010   Generic Information -- //
+    evtgen_part_nParticle   = 1001,
+    evtgen_part_nPhoton   = 1002,
+    // -- 1010-1099 Particle Kinematics and Identification -- //
+    evtgen_part_pid = 1010,
+    evtgen_part_px  = 1011,
+    evtgen_part_py  = 1012,
+    evtgen_part_pz  = 1013,
+    evtgen_part_pt  = 1014,
+    evtgen_part_p   = 1015,
+    evtgen_part_E   = 1016,
+    evtgen_part_theta = 1018,
+    evtgen_part_eta   = 1019,
+    evtgen_part_phi   = 1020,
+    evtgen_part_vx   = 1030,
+    evtgen_part_vy   = 1031,
+    evtgen_part_vz   = 1032,
+    evtgen_part_vt   = 1033,
+
+    evtgen_part_pindex = 1050,
+    evtgen_part_beta   = 1051,
+    evtgen_part_chi2   = 1052,
+    evtgen_part_status = 1053,
+    evtgen_part_ID   = 1054,
+    evtgen_part_parentID = 1055,
+    evtgen_part_parentPID = 1056
   };
 
   enum PROPERTY_TYPE

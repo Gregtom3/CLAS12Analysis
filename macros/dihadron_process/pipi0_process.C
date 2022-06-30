@@ -37,18 +37,18 @@ int pipi0_process(
   //  settings.setElectronBeamEnergy(beamE);
   settings._electronBeamEnergy = beamE;
   
-  settings._doMC = false;
+  settings._doMC = true;
   settings._doReco = true;
   settings._eventRecoMethod = Settings::eventRecoMethod::useLargestPinFD;
-  settings._connectMC2Reco = false; // Connect pindex of REC::Particle to pindex of MC::Lund
+  settings._connectMC2Reco = true; // Connect pindex of REC::Particle to pindex of MC::Lund
 
   settings._Q2min = 1; settings._Q2max = 100;
   settings._Wmin = 2; settings._Wmax = 100;
   settings._ymin = 0; settings._ymax = 0.8;
   
   settings.addFinalState(11,1,true);  // Exactly 1 electron
-  settings.addFinalState(211,1,true); // Exactly 1 pi+
-  settings.addFinalState(22,2,false); // 2 or more gammas
+  //settings.addFinalState(211,1,false); // Exactly 1 pi+
+  //  settings.addFinalState(22,2,false); // 2 or more gammas
   settings._ignoreOtherRecoParticles = true; // Do not save to tree particle info of uninterested PIDs
 
   settings.addPIDforEmin(22,0.6);     // Gammas must have minimum energy of 0.6 GeV
