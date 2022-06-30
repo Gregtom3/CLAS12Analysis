@@ -125,7 +125,9 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
   //------------------------------------------------------
   if(pid==11 && !CheckSampFrac(p)){cout << "CheckSampFrac fail" << endl;
     return false;}
-  // --------------------------------------------------------------------
+
+  return true;
+ // --------------------------------------------------------------------
   // Loop over entries in the Trajectory bank
   //
   // --------------------------------------------------------------------

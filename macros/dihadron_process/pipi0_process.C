@@ -48,6 +48,7 @@ int pipi0_process(
   settings.addPIDforVzrange(11,-8,3); // e- must have vertex 'z' between [-13,12] cm
   settings.addPIDforBetarange(22,0.9,1.1); // Beta range for photon
   settings.addPIDforChi2max(211,3);        // Pi+ must have abs(chi2pid) < 3 
+  settings.setChargedPionChi2cut(Settings::chargedPionChi2cut::standard);
 
   settings.setdoMC(false);             // Analyze MC::Lund
   settings.setdoReco(true);           // Analyze REC::Particle
