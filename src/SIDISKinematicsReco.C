@@ -246,8 +246,6 @@ int SIDISKinematicsReco::process_events()
     if(_verbosity > 0 && (_ievent)%_printEvery==0 && _ievent!=0){
        std::cout << _ievent << " events completed | " << _tree_Reco->GetEntriesFast() << " passed cuts --> " << _tree_Reco->GetEntriesFast()*100.0/_ievent << "%" << std::endl;
     }
-    if(_ievent == 10)
-      break;
     // Get the run number from the RUN::config bank
     // Also get the event number too
     // -----------------------------------------------------
