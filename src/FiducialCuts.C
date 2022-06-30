@@ -111,20 +111,20 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
   //------------------------------------------------------
   if(pid == 11)
     {
-      if(!was_in_PCAL || !was_in_ECIN || !was_in_ECOUT)
-	return false;
+      if(!was_in_PCAL || !was_in_ECIN || !was_in_ECOUT){cout << "PCAL ECIN ECOUT fail" << endl;
+	return false;}
     }
   //------------------------------------------------------
   // Perform electron PCAL energy cut
   //------------------------------------------------------
-  if(pid==11 && Ele_PCAL_e<0.07)
-    return false;
+  if(pid==11 && Ele_PCAL_e<0.07){cout << "PCAL_e fail" << endl;
+    return false;}
 
   //------------------------------------------------------
   // Perform electron energy fraction cut
   //------------------------------------------------------
-  if(pid==11 && !CheckSampFrac(p))
-    return false;
+  if(pid==11 && !CheckSampFrac(p)){cout << "CheckSampFrac fail" << endl;
+    return false;}
   // --------------------------------------------------------------------
   // Loop over entries in the Trajectory bank
   //
@@ -173,7 +173,7 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
   // For each of the 3 drift chamber regions, ensure the poly/XY fiducial cut is satisfied
   for(int r = 0 ; r < 3 ; r++){
     if(pid==11){
-      if(DC_fiducial_cut_XY(_cx[r],_cy[r],_cz[r],sector,r+1,pid)==false){return false;}
+      if(DC_fiducial_cut_XY(_cx[r],_cy[r],_cz[r],sector,r+1,pid)==false){cout << "DC fail" << endl; return false;}
     }
     if(pid==211||pid==-211||pid==2212){
       if(_torusBending==-1){
