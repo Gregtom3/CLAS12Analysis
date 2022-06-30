@@ -442,7 +442,7 @@ bool FiducialCuts::DC_fiducial_cut_XY(float x, float y, float z, int sector, int
 
    double X = x;
    double Y = y;
-   cout << "(x,y) = ("<<X<<","<<Y<<")"<<endl;
+
    if(sector == 2)
      {
        const double X_new = X * std::cos(-60 * PI / 180) - Y * std::sin(-60 * PI / 180);
@@ -521,6 +521,11 @@ bool FiducialCuts::DC_fiducial_cut_XY(float x, float y, float z, int sector, int
    // Revisited on 6/12/2022
    // I believe we need to use x,y,z and not x,y,z. I made this fix by simply
    // replacing the Bank names at the top of FiducialCuts.C
+   bool b = ((Y > calc_min) && (Y < calc_max));   
+   if(part_pid==11){
+     if(!b)
+       cout << "FALSE (x,y) = ("<<X<<","<<Y<<")"<<endl;
+   }
    return ((Y > calc_min) && (Y < calc_max));   
 }
  
