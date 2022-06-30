@@ -29,11 +29,10 @@ HipoBankInterface::HipoBankInterface(const std::unique_ptr<clas12::clas12reader>
 }
 
 bool HipoBankInterface::loadBankData(const std::unique_ptr<clas12::clas12reader>& _c12 , SIDISParticlev1 *sp){
-  this.clear();
+  clear();
   
   // Grab necessary particle info
   // -------------------------------------------------------------
-  int pid = sp->get_property_int(SIDISParticle::part_pid);
   int pindex = sp->get_property_int(SIDISParticle::part_pindex);
 
   // -------------------------------------------------------------
@@ -57,15 +56,15 @@ bool HipoBankInterface::loadBankData(const std::unique_ptr<clas12::clas12reader>
     switch(layerCal){
     case 1: //PCal
       calidx = 0;
-      _Ele_PCAL_e = c12->getBank(_idx_RECCal)->getFloat(_ienergy_RECCal,i);
+      _Ele_PCAL_e = _c12->getBank(_idx_RECCal)->getFloat(_ienergy_RECCal,i);
       break;
     case 4: //ECIN
       calidx = 1;
-      _Ele_ECIN_e = c12->getBank(_idx_RECCal)->getFloat(_ienergy_RECCal,i);
+      _Ele_ECIN_e = _c12->getBank(_idx_RECCal)->getFloat(_ienergy_RECCal,i);
       break;
     case 7: //ECOUT
       calidx = 2;
-      _Ele_ECOUT_e = c12->getBank(_idx_RECCal)->getFloat(_ienergy_RECCal,i);
+      _Ele_ECOUT_e = _c12->getBank(_idx_RECCal)->getFloat(_ienergy_RECCal,i);
       break;   
     }
     
@@ -97,13 +96,13 @@ bool HipoBankInterface::loadBankData(const std::unique_ptr<clas12::clas12reader>
       _x_DC[0] = _c12->getBank(_idx_RECTraj)->getFloat(_ix_RECTraj,i);
       _y_DC[0] = _c12->getBank(_idx_RECTraj)->getFloat(_iy_RECTraj,i);
       _z_DC[0] = _c12->getBank(_idx_RECTraj)->getFloat(_iz_RECTraj,i);
-    }else if(_c12->getBank(_idx_RECTraj)->getInt(_ilayer_Traj,i)==18){
+    }else if(_c12->getBank(_idx_RECTraj)->getInt(_ilayer_RECTraj,i)==18){
       _det_DC[1] = _c12->getBank(_idx_RECTraj)->getInt(_idet_RECTraj,i);
       _path_DC[1] = _c12->getBank(_idx_RECTraj)->getInt(_ipath_RECTraj,i);
       _x_DC[1] = _c12->getBank(_idx_RECTraj)->getFloat(_ix_RECTraj,i);
       _y_DC[1] = _c12->getBank(_idx_RECTraj)->getFloat(_iy_RECTraj,i);
       _z_DC[1] = _c12->getBank(_idx_RECTraj)->getFloat(_iz_RECTraj,i);
-    }else if(_c12->getBank(_idx_RECTraj)->getInt(_ilayer_Traj,i)==36){
+    }else if(_c12->getBank(_idx_RECTraj)->getInt(_ilayer_RECTraj,i)==36){
       _det_DC[2] = _c12->getBank(_idx_RECTraj)->getInt(_idet_RECTraj,i);
       _path_DC[2] = _c12->getBank(_idx_RECTraj)->getInt(_ipath_RECTraj,i);
       _x_DC[2] = _c12->getBank(_idx_RECTraj)->getFloat(_ix_RECTraj,i);
@@ -113,14 +112,14 @@ bool HipoBankInterface::loadBankData(const std::unique_ptr<clas12::clas12reader>
   }
   
   // Get the azimuthal sector # from the middle drift chamber
-  int _sector_DC = determineSectorDC(_x_DC[1], _y_DC[1], _z_DC[1]);
+  _sector_DC = determineSectorDC(_x_DC[1], _y_DC[1], _z_DC[1]);
 
-  this.importDataToParticle(sp);
+  importDataToParticle(sp);
   
   return true;
 }
 
-bool importDataToParticle(SIDISParticlev1 *sp)
+bool HipoBankInterface::importDataToParticle(SIDISParticlev1 *sp)
 {
   
   // -------------------------------------------------------------
@@ -142,17 +141,17 @@ bool importDataToParticle(SIDISParticlev1 *sp)
   sp->set_property(SIDISParticle::cal_energy_ECIN, _Ele_ECIN_e);
   sp->set_property(SIDISParticle::cal_energy_ECOUT, _Ele_ECOUT_e);
 
-  sp->set_property(SIDISParticle::cal_lu_PCAL, _lu_RECCal[0]);
-  sp->set_property(SIDISParticle::cal_lu_ECIN, _lu_RECCal[1]);
-  sp->set_property(SIDISParticle::cal_lu_ECOUT, _lu_RECCal[2]);
+  sp->set_property(SIDISParticle::cal_lu_PCAL, _lu_Cal[0]);
+  sp->set_property(SIDISParticle::cal_lu_ECIN, _lu_Cal[1]);
+  sp->set_property(SIDISParticle::cal_lu_ECOUT, _lu_Cal[2]);
 
-  sp->set_property(SIDISParticle::cal_lv_PCAL, _lv_RECCal[0]);
-  sp->set_property(SIDISParticle::cal_lv_ECIN, _lv_RECCal[1]);
-  sp->set_property(SIDISParticle::cal_lv_ECOUT, _lv_RECCal[2]);
+  sp->set_property(SIDISParticle::cal_lv_PCAL, _lv_Cal[0]);
+  sp->set_property(SIDISParticle::cal_lv_ECIN, _lv_Cal[1]);
+  sp->set_property(SIDISParticle::cal_lv_ECOUT, _lv_Cal[2]);
 
-  sp->set_property(SIDISParticle::cal_lw_PCAL, _lw_RECCal[0]);
-  sp->set_property(SIDISParticle::cal_lw_ECIN, _lw_RECCal[1]);
-  sp->set_property(SIDISParticle::cal_lw_ECOUT, _lw_RECCal[2]);
+  sp->set_property(SIDISParticle::cal_lw_PCAL, _lw_Cal[0]);
+  sp->set_property(SIDISParticle::cal_lw_ECIN, _lw_Cal[1]);
+  sp->set_property(SIDISParticle::cal_lw_ECOUT, _lw_Cal[2]);
 
   // -------------------------------------------------------------
   // Import the REC::Trajectory data
@@ -200,17 +199,18 @@ void HipoBankInterface::clear(){
   _Ele_PCAL_e = 0.0;
   _Ele_ECIN_e = 0.0;
   _Ele_ECOUT_e = 0.0;
-  _sector_Cal={0,0,0};
-  _time_Cal={0,0,0};
-  _path_Cal={0,0,0};
-  _lu_Cal={0,0,0};
-  _lv_Cal={0,0,0};
-  _lw_Cal={0,0,0};
-
   _sector_DC = -1;
-  _det_DC={-1,-1,-1};
-  _path_DC={0,0,0};
-  _x_DC={0,0,0};
-  _y_DC={0,0,0};
-  _z_DC={0,0,0};
+  for(int i = 0 ; i < 3 ; i++){
+    _sector_Cal[i]=0;
+    _time_Cal[i]=0;
+    _path_Cal[i]=0;
+    _lu_Cal[i]=0;
+    _lv_Cal[i]=0;
+    _lw_Cal[i]=0;
+    _det_DC[i]=0;
+    _path_DC[i]=0;
+    _x_DC[i]=0;
+    _y_DC[i]=0;
+    _z_DC[i]=0;
+  }
 }

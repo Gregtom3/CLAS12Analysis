@@ -17,7 +17,7 @@ class HipoBankInterface{
   HipoBankInterface(const std::unique_ptr<clas12::clas12reader>&);
 
 // Using the pindex from the SIDISParticle, attach extra bank info
-  bool loadBankData(const std::unique_ptr<clas12::clas12reader&, SIDISParticlev1 *);
+  bool loadBankData(const std::unique_ptr<clas12::clas12reader>&, SIDISParticlev1 *);
  protected:
   bool importDataToParticle(SIDISParticlev1 *);
   int determineSectorDC(float, float, float);
@@ -59,5 +59,5 @@ class HipoBankInterface{
   float _y_DC[3]={0,0,0};
   float _z_DC[3]={0,0,0};
 
-  
+};  
 #endif
