@@ -57,21 +57,21 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
   // -----------------------------------------------------------------
   if(pid==11){
     // PCAL lv lw cuts
-    if(lv<9 || lw<9 || lv>400 || lw>400) {cout << "Fail lv lw cut" << endl;
-      return false;}
+    if(lv<9 || lw<9 || lv>400 || lw>400)
+      return false;
     // Ensure electron went through PCAL, ECIN, and ECOUT    
-    if(!was_in_PCAL || !was_in_ECIN || !was_in_ECOUT){cout << "Fail PCAL ECIN ECOUT cut" << endl;
-      return false;}
+    if(!was_in_PCAL || !was_in_ECIN || !was_in_ECOUT)
+      return false;
     // Perform electron PCAL energy cut 
-    if(Ele_PCAL_e<0.07){cout << "Fail PCAL e cut" << endl;
-      return false;}
+    if(Ele_PCAL_e<0.07)
+      return false;
     // Perform electron sampling fraction cut
-    if(CheckSampFrac(p)==false){cout << "Fail SampFrac cut" << endl;
-      return false;}
-    // Perform electron DC fiducial cut
+    if(CheckSampFrac(p)==false)
+      return false;
+    //Perform electron DC fiducial cut
     for(int r = 0 ; r < 3; r++){
-      if(DC_fiducial_cut_XY(_x[r],_y[r],_z[r],sector,r+1,pid)==false){cout << "Fail DC" << endl;
-	return false;}
+      if(DC_fiducial_cut_XY(_x[r],_y[r],_z[r],sector,r+1,pid)==false)
+    	return false;
     }
   }
   // -----------------------------------------------------------------
@@ -85,6 +85,7 @@ bool FiducialCuts::FidCutParticle(const std::unique_ptr<clas12::clas12reader>& _
     if(!was_in_PCAL)
       return false;
   }
+  return true;
   // -----------------------------------------------------------------
   // Perform pion/proton fiducial cuts
   // -----------------------------------------------------------------
