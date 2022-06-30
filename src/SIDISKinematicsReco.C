@@ -246,6 +246,8 @@ int SIDISKinematicsReco::process_events()
     if(_verbosity > 0 && (_ievent)%_printEvery==0 && _ievent!=0){
        std::cout << _ievent << " events completed | " << _tree_Reco->GetEntriesFast() << " passed cuts --> " << _tree_Reco->GetEntriesFast()*100.0/_ievent << "%" << std::endl;
     }
+    if(_ievent == 10)
+      break;
     // Get the run number from the RUN::config bank
     // Also get the event number too
     // -----------------------------------------------------
@@ -390,7 +392,6 @@ int SIDISKinematicsReco::CollectParticlesFromTruth(const std::unique_ptr<clas12:
     sp->set_property( SIDISParticle::evtgen_part_vy,   vy);
     sp->set_property( SIDISParticle::evtgen_part_vz,   vz);
     //    sp->set_property( SIDISParticle::evtgen_part_vt,   vt);
-
     sp->set_property( SIDISParticle::evtgen_part_pindex,   ineg999);
     sp->set_property( SIDISParticle::evtgen_part_beta,   fneg999);
     sp->set_property( SIDISParticle::evtgen_part_chi2,   fneg999);
@@ -480,7 +481,6 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     sp->set_property( SIDISParticle::evtgen_part_vy,   (float)-999);
     sp->set_property( SIDISParticle::evtgen_part_vz,   (float)-999);
     //    sp->set_property( SIDISParticle::evtgen_part_vt,   (float)-999);
-
     sp->set_property( SIDISParticle::evtgen_part_pindex,   -999);
     sp->set_property( SIDISParticle::evtgen_part_beta,   (float)-999);
     sp->set_property( SIDISParticle::evtgen_part_chi2,   (float)-999);
@@ -490,10 +490,10 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
 
     // Add detector info to SIDISParticle
     // --------------------------------------------------------------------------
-
-    /*if(_hipoInterface.loadBankData(_c12, sp)==false)
+    
+    if(_hipoInterface.loadBankData(_c12, sp)==false)
       continue;
-
+    
     // CUT REC::Particle
     // --------------------------------------------------------------------------
     if(_pidhelper.performPIDCuts(sp)==false)
@@ -505,7 +505,7 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
       if(_fiducial.FidCutParticle(_c12,_runNumber,sp) == false)
 	  continue;
     }
-    */
+    
     // Add SIDISParticle to the collection
     // --------------------------------------------------------------------------
     recoparticleMap.insert ( make_pair( sp->get_candidate_id() , sp) );
@@ -543,7 +543,6 @@ int SIDISKinematicsReco::ConnectTruth2Reco( type_map_part& particleMap,
     double reco_theta = (it_reco->second)->get_property_float(SIDISParticle::part_theta); 
     double reco_phi = (it_reco->second)->get_property_float(SIDISParticle::part_phi); 
     double reco_E = (it_reco->second)->get_property_float(SIDISParticle::part_E);
-
       /* Loop over all MC particles */
       for(type_map_part::iterator it_mc = particleMap.begin(); it_mc!= particleMap.end(); ++it_mc){
 	double mc_theta = (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_theta); 

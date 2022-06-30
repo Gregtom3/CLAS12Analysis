@@ -160,7 +160,7 @@ bool HipoBankInterface::importDataToParticle(SIDISParticlev1 *sp)
   sp->set_property(SIDISParticle::traj_path1, _path_DC[0]);
   sp->set_property(SIDISParticle::traj_path2, _path_DC[1]);
   sp->set_property(SIDISParticle::traj_path3, _path_DC[2]);
-
+  
   sp->set_property(SIDISParticle::traj_det1, _det_DC[0]);
   sp->set_property(SIDISParticle::traj_det2, _det_DC[1]);
   sp->set_property(SIDISParticle::traj_det3, _det_DC[2]);
@@ -176,7 +176,6 @@ bool HipoBankInterface::importDataToParticle(SIDISParticlev1 *sp)
   sp->set_property(SIDISParticle::traj_z1, _z_DC[0]);
   sp->set_property(SIDISParticle::traj_z2, _z_DC[1]);
   sp->set_property(SIDISParticle::traj_z3, _z_DC[2]);
-
   return true;
 }
 int HipoBankInterface::determineSectorDC(float x, float y, float z){

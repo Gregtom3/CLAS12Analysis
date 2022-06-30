@@ -28,7 +28,7 @@ class SIDISParticlev1 : public SIDISParticle
   unsigned int get_property_nocheck(const PROPERTY prop_id) const;
   int _candidateid;
   //! storage types for additional property
-  typedef uint8_t prop_id_t;
+  typedef uint32_t prop_id_t;
   typedef uint32_t prop_storage_t;
   typedef std::map<prop_id_t, prop_storage_t> prop_map_t;
   

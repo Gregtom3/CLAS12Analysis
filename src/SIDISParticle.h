@@ -92,32 +92,32 @@ class SIDISParticle
 
 
     // ------------------ MONTE CARLO VERSION ----------------------- //
-    // --  1000-1010   Generic Information -- //
-    evtgen_part_nParticle   = 1001,
-    evtgen_part_nPhoton   = 1002,
-    // -- 1010-1099 Particle Kinematics and Identification -- //
-    evtgen_part_pid = 1010,
-    evtgen_part_px  = 1011,
-    evtgen_part_py  = 1012,
-    evtgen_part_pz  = 1013,
-    evtgen_part_pt  = 1014,
-    evtgen_part_p   = 1015,
-    evtgen_part_E   = 1016,
-    evtgen_part_theta = 1018,
-    evtgen_part_eta   = 1019,
-    evtgen_part_phi   = 1020,
-    evtgen_part_vx   = 1030,
-    evtgen_part_vy   = 1031,
-    evtgen_part_vz   = 1032,
-    evtgen_part_vt   = 1033,
+    // --  Negative 1-10   Generic Information -- //
+    evtgen_part_nParticle   = -01,
+    evtgen_part_nPhoton   = -02,
+    // -- Negative 10-99 Particle Kinematics and Identification -- //
+    evtgen_part_pid = -10,
+    evtgen_part_px  = -11,
+    evtgen_part_py  = -12,
+    evtgen_part_pz  = -13,
+    evtgen_part_pt  = -14,
+    evtgen_part_p   = -15,
+    evtgen_part_E   = -16,
+    evtgen_part_theta = -17,
+    evtgen_part_eta   = -18,
+    evtgen_part_phi   = -29,
+    evtgen_part_vx   = -30,
+    evtgen_part_vy   = -31,
+    evtgen_part_vz   = -32,
+    evtgen_part_vt   = -33,
 
-    evtgen_part_pindex = 1050,
-    evtgen_part_beta   = 1051,
-    evtgen_part_chi2   = 1052,
-    evtgen_part_status = 1053,
-    evtgen_part_ID   = 1054,
-    evtgen_part_parentID = 1055,
-    evtgen_part_parentPID = 1056
+    evtgen_part_pindex = -50,
+    evtgen_part_beta   = -51,
+    evtgen_part_chi2   = -52,
+    evtgen_part_status = -53,
+    evtgen_part_ID   = -54,
+    evtgen_part_parentID = -55,
+    evtgen_part_parentPID = -56
   };
 
   enum PROPERTY_TYPE
