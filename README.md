@@ -55,6 +55,9 @@ Analysis tool for reading hipo4 files with clas12root
 - **tutorials/**
     - Directory containing some basic tutorial scripts for processing hipo files using the clas12ana.so library.
 ---
+# Analysis Suite Flowchart
+![FLOWCHART](/util/poster.png)
+---
 # Tutorials
 
 ### 1. Processing a small hipo file
@@ -75,7 +78,7 @@ Using root, we can then open the `output.root` file to check out the resulting T
         tree_reco->Print()
         tree_postprocess->Print()
         
-If you have graphics enabled, you can plot the diphoton mass stored in `tree_postprocess`. The parameter (flag) is defined in  
+If you have graphics enabled, you can plot the diphoton mass stored in `tree_postprocess`. The parameter (flag) saved in the tree tells the user (-1 --> diphotons did not originate from same parent pi0) or (1 --> diphotons originated from same parent pi0)
 
         tree_postprocess->Draw("Mgg","flag==1")
 
