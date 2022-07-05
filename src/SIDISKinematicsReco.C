@@ -351,7 +351,7 @@ int SIDISKinematicsReco::CollectParticlesFromTruth(const std::unique_ptr<clas12:
     // Get particle in MC::Lund
     mcparticles->setEntry(idx);
     if(mcparticles->getType()!=1) // Reject non-final state
-      continue; 
+      {continue;} 
     
     // Create new SIDISParticle
     SIDISParticlev1 *sp = new SIDISParticlev1();
@@ -437,7 +437,7 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     float vy = particle->par()->getVy();
     float vz = particle->par()->getVz();
     //    float vt = particle->par()->getVt();
-
+ 
     // Create new particle structure
     // -------------------------------------------------------
     SIDISParticlev1 *sp = new SIDISParticlev1();
@@ -488,20 +488,20 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
 
     // Add detector info to SIDISParticle
     // --------------------------------------------------------------------------
-    
+    //    
     if(_hipoInterface.loadBankData(_c12, sp)==false)
-      continue;
+      {delete sp; continue;}
     
     // CUT REC::Particle
     // --------------------------------------------------------------------------
     if(_pidhelper.performPIDCuts(sp)==false)
-      continue;
+      {delete sp; continue;}
 
     // CUT Fiducial
     // --------------------------------------------------------------------------
     if(_settings._doFiducialCuts){
       if(_fiducial.FidCutParticle(_c12,_runNumber,sp) == false)
-	  continue;
+	{delete sp; continue;}
     }
     
     // Add SIDISParticle to the collection
