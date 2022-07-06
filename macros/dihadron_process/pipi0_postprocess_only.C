@@ -9,7 +9,7 @@ R__LOAD_LIBRARY(libclas12ana.so)
 using namespace std;
 
 int pipi0_postprocess_only(
-			   const char * inputFile = "/work/clas12/users/gmat/CLAS12Analysis/data/raw/test.root",
+			   const char * inputFile = "/work/clas12/users/gmat/CLAS12Analysis/macros/dihadron_process/test.root",
 			   const double beamE = 10.6
 )
 {
@@ -32,7 +32,7 @@ int pipi0_postprocess_only(
   //-----------------------------------
   PostProcess *pp = new PostProcess();
   pp->Init(tReco,beamE);
-  pp->setPostProcessMethod("pipluspi0");
+  pp->setPostProcessMethod("pipluspi0_MC");
   
   //-----------------------------------
   // Post process events and save results in tPostProcess 
