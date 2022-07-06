@@ -153,7 +153,7 @@ echo "cd $outputSlurmDir" >> $waitFile
 echo "waitOutFile=\"wait.txt\"" >> $waitFile
 echo "touch \$waitOutFile" >> $waitFile
 echo "finishedJobs=0" >> $waitFile
-echo "nJobs=$i" >> $waitFile
+echo "nJobs=$(($i+1))" >> $waitFile
 echo "lastLine=\"\"" >> $waitFile
 echo "while [ \$finishedJobs -ne \$nJobs ]" >> $waitFile
 echo "do" >> $waitFile
@@ -186,7 +186,28 @@ echo "#SBATCH --chdir=${workdir}" >> $waitJob
 echo "#SBATCH --output=${outputSlurmDir}/wait-%x-%a.out" >> $waitJob
 echo "#SBATCH --error=${outputSlurmDir}/wait-%x-%a.err" >> $waitJob    
 echo "${outputSlurmDir}/wait.sh" >> $waitJob
-echo "sbatch $waitJob" >> $runJobsPostProcess
+
+
+# Job for merging all the tree_postprocess' into one
+mergeJob="${outputSlurmDir}/mergeJob.sh"
+touch $mergeJob
+chmod +x $mergeJob
+
+echo "#!/bin/bash" > $mergeJob
+echo "#SBATCH --account=clas12" >> $mergeJob
+echo "#SBATCH --partition=production" >> $mergeJob
+echo "#SBATCH --mem-per-cpu=16000" >> $mergeJob
+echo "#SBATCH --job-name=${rootname}_waitjob" >> $mergeJob
+echo "#SBATCH --cpus-per-task=4" >> $mergeJob
+echo "#SBATCH --time=24:00:00" >> $mergeJob
+echo "#SBATCH --chdir=${workdir}" >> $mergeJob
+echo "#SBATCH --output=${outputSlurmDir}/merge-%x-%a.out" >> $mergeJob
+echo "#SBATCH --error=${outputSlurmDir}/merge-%x-%a.err" >> $mergeJob    
+echo "clas12root ${workdir}/macros/mergeTrees.C\(\\\"${outputdir}*.root\\\",\\\"${outputdir}.root\\\"\)" >> $mergeJob
+
+# Allow, after all simulations are completed, for the merging of tree_postprocess
+echo "sbatch ${mergeJob}" >> $waitFile
   
 sbatch $runJobs
 sbatch $waitJob
+echo "sbatch $waitJob" >> $runJobsPostProcess
