@@ -37,6 +37,6 @@ int pipi0_fitter(
   splot.signalFactoryPDF = "Gaussian::Signal(Mdiphoton, mu[0.13,0.127,0.135], sigma[0.1,0.001,0.3])";
   splot.bgFactoryPDF = "Chebychev::BG(Mdiphoton, a0[0.1,-1,1], a1[0.1,-1,1], a2[0.1,-1,1])";
 
-  extractSWeights(splot);
+  splot.extractSWeights(splot);
   return 0;
 }

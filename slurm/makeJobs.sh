@@ -184,7 +184,7 @@ echo "            finishedJobs=\$((finishedJobs+1))" >> $mergeFile
 echo "        fi" >> $mergeFile
 echo "    done" >> $mergeFile
 echo "echo \"\$finishedJobs completed out of \$nJobs\" >> \$mergeOutFile" >> $mergeFile 
-echo "sleep 30" >> $mergeFile
+echo "sleep 10" >> $mergeFile
 echo "done" >> $mergeFile
 echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\"\)" >> $mergeFile
 echo "clas12root ${bincode}\(\\\"${outputdir}/merged_${rootname}.root\\\"\)" >> $mergeFile
@@ -215,7 +215,7 @@ echo "j=0" >> $fitFile
 echo "while IFS= read -r line; do" >> $fitFile
 echo "    sbatch --output=${outputSlurmDir}/fit-\$line.out --error=${outputSlurmDir}/fit-\$line.err $fitSlurm \$line" >> $fitFile
 echo "    j=\$((j+1))" >> $fitFile
-echo "done" >> $fitFile
+echo "done < \$1" >> $fitFile
 echo "cd $outputSlurmDir" >> $fitFile
 echo "fitOutFile=\"fit.txt\"" >> $fitFile
 echo "touch \$fitOutFile" >> $fitFile
@@ -233,7 +233,7 @@ echo "            finishedJobs=\$((finishedJobs+1))" >> $fitFile
 echo "        fi" >> $fitFile
 echo "    done" >> $fitFile
 echo "echo \"\$finishedJobs completed out of \$nJobs\" >> \$fitOutFile" >> $fitFile 
-echo "sleep 30" >> $fitFile
+echo "sleep 10" >> $fitFile
 echo "done" >> $fitFile
 
 # Slurm job for running the fitter
@@ -249,7 +249,7 @@ echo "#SBATCH --job-name=${rootname}_fitjob" >> $fitSlurm
 echo "#SBATCH --cpus-per-task=${nCPUs}" >> $fitSlurm
 echo "#SBATCH --time=24:00:00" >> $fitSlurm
 echo "#SBATCH --chdir=${workdir}" >> $fitSlurm
-echo "clas12root ${fitcode}\(\\\"${outputdir}\\\",\\\"merged_${rootname}.root\\\",\\\"\$binname\"\\\"\)" >> $fitSlurm
+echo "clas12root ${fitcode}\(\\\"${outputdir}\\\",\\\"merged_${rootname}.root\\\",\\\"\$binname\\\"\)" >> $fitSlurm
 
 echo "Submitting analysis jobs for the selected HIPO files"
 echo " "
