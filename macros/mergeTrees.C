@@ -8,7 +8,9 @@ R__LOAD_LIBRARY(libclas12ana.so)
 
 using namespace std;
 
-int mergeTrees(){
+int mergeTrees(const char * inputDir,
+	       const char * wildcard
+){
   //---------------
   // Load libraries
   //---------------
@@ -18,11 +20,9 @@ int mergeTrees(){
   // User params
   //---------------
   std::vector<std::string> dirpaths;
-  dirpaths.push_back("/work/clas12/users/gmat/CLAS12Analysis/data/fall2018-torus-1-v1-nSidis/june5_*.root");
-  dirpaths.push_back("/work/clas12/users/gmat/CLAS12Analysis/data/fall2018-torus+1-v1-nSidis/june5_*.root");
-  dirpaths.push_back("/work/clas12/users/gmat/CLAS12Analysis/data/spring2019-torus-1-v1-nSidis/june5_*.root");
+  dirpaths.push_back(Form("%s",inputDir));
   const char* treeName = "tree_postprocess";
-  const char* outFileName = "/work/clas12/users/gmat/CLAS12Analysis/data/rg-a/june8.root";
+  const char* outFileName = Form("%s/merged_%s.root",inputDir,inputFile);
   
   //-------------------------
   // Create mergeTrees Object
