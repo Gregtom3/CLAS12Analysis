@@ -2,11 +2,9 @@
 # --------------------------
 # Hipo dir defintions
 # --------------------------
-RGA_F18_IN="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/"
-RGA_F18_OUT="/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/nSidis/"
-RGA_S19_IN="/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/nSidis/"
-
-RGA_S19_IN="/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/nSidis/"
+RGA_F18_IN="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/*"
+RGA_F18_OUT="/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/nSidis/*"
+RGA_S19_IN="/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/nSidis/*"
 
 RGA_F18_IN_BATCH="/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/nSidis/nSidis_005032.hipo"
 
@@ -41,11 +39,11 @@ rootname="july8"
 
 # Code locations
 # --------------------------------------------------------
-processcode="macros/dihadron_process/pipi0_process.C"
-postprocesscode="macros/dihadron_process/pipi0_postprocess_only.C"
-mergecode="macros/mergeTrees.C"
-bincode="macros/dihadron_process/pipi0_binner.C"
-fitcode="macros/dihadron_process/pipi0_fitter.C"
+processcode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_process.C"
+postprocesscode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_postprocess_only.C"
+mergecode="${CLAS12Analysisdir}/macros/mergeTrees.C"
+bincode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_binner.C"
+fitcode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_fitter.C"
 
 # Location of clas12root package
 # --------------------------------------------------------
@@ -91,7 +89,7 @@ i=0
 for h_idx in "${!hipodirs[@]}"
 do
     hipodir=${hipodirs[$h_idx]}
-    for hipofile in "$hipodir"/*
+    for hipofile in "$hipodir"
     do
 	beamE=${beamEs[$h_idx]}
 	processFile="${shellSlurmDir}/${rootname}_${i}.sh"
