@@ -6,7 +6,7 @@ RGA_F18_IN="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/tr
 RGA_F18_OUT="/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/nSidis/*"
 RGA_S19_IN="/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/nSidis/*"
 
-RGA_F18_IN_BATCH="/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/nSidis/nSidis_005032.hipo"
+RGA_F18_IN_BATCH="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/nSidis_005032.hipo"
 
 # --------------------------
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -72,8 +72,6 @@ shellSlurmDir="${outputdir}/shells"
 outputSlurmDir="${outputdir}/output"
 runJobs="${shellSlurmDir}/runJobs.sh"
 runJobsPostProcess="${shellSlurmDir}/runJobsPostProcess.sh"
-mergeFile="${shellSlurmDir}/merge.sh"
-mergeSlurm="${shellSlurmDir}/mergeSlurm.slurm"
 mergeFile="${shellSlurmDir}/merge.sh"
 mergeSlurm="${shellSlurmDir}/mergeSlurm.slurm"
 fitFile="${shellSlurmDir}/fit.sh"
@@ -178,7 +176,7 @@ echo "lastLine=\"\"" >> $mergeFile
 echo "while [ \$finishedJobs -ne \$nJobs ]" >> $mergeFile
 echo "do" >> $mergeFile
 echo "    finishedJobs=0" >> $mergeFile
-echo "    for outputFile in ./*.out" >> $mergeFile
+echo "    for outputFile in ../output/*.out" >> $mergeFile
 echo "    do" >> $mergeFile
 echo "        lastLine=\$(tail -1 \$outputFile)" >> $mergeFile
 echo "        if [[ \"\$lastLine\" == \"(int) 0\" ]]; then" >>  $mergeFile
@@ -188,6 +186,7 @@ echo "    done" >> $mergeFile
 echo "echo \"\$finishedJobs completed out of \$nJobs\" >> \$mergeOutFile" >> $mergeFile 
 echo "sleep 30" >> $mergeFile
 echo "done" >> $mergeFile
+echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\"\)" >> $mergeFile
 echo "clas12root ${bincode}\(\\\"${outputdir}/merged_${rootname}.root\\\"\)" >> $mergeFile
 echo "${fitFile} ${outputdir}/merged_${rootname}.root.txt" >> $mergeFile
 
@@ -226,7 +225,7 @@ echo "lastLine=\"\"" >> $fitFile
 echo "while [ \$finishedJobs -ne \$nJobs ]" >> $fitFile
 echo "do" >> $fitFile
 echo "    finishedJobs=0" >> $fitFile
-echo "    for outputFile in ./fit*.out" >> $fitFile
+echo "    for outputFile in ../output/fit*.out" >> $fitFile
 echo "    do" >> $fitFile
 echo "        lastLine=\$(tail -1 \$outputFile)" >> $fitFile
 echo "        if [[ \"\$lastLine\" == \"(int) 0\" ]]; then" >>  $fitFile
@@ -254,9 +253,9 @@ echo "clas12root ${fitcode}\(\\\"${outputdir}\\\",\\\"merged_${rootname}.root\\\
 
 echo "Submitting analysis jobs for the selected HIPO files"
 echo " "
-#sbatch $runJobs
+sbatch $runJobs
 echo "----------------------------------------------------"
 echo "Submitting merge script"
 echo " "
-#sbatch $mergeSlurm
+sbatch $mergeSlurm
 echo "----------------------------------------------------"

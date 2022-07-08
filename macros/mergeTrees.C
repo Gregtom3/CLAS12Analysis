@@ -9,7 +9,7 @@ R__LOAD_LIBRARY(libclas12ana.so)
 using namespace std;
 
 int mergeTrees(const char * inputDir,
-	       const char * wildcard
+	       const char * rootname
 ){
   //---------------
   // Load libraries
@@ -20,9 +20,9 @@ int mergeTrees(const char * inputDir,
   // User params
   //---------------
   std::vector<std::string> dirpaths;
-  dirpaths.push_back(Form("%s",inputDir));
+  dirpaths.push_back(Form("%s/%s*.root",inputDir,rootname));
   const char* treeName = "tree_postprocess";
-  const char* outFileName = Form("%s/merged_%s.root",inputDir,inputFile);
+  const char* outFileName = Form("%s/merged_%s.root",inputDir,rootname);
   
   //-------------------------
   // Create mergeTrees Object

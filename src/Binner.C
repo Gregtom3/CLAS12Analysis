@@ -154,7 +154,7 @@ int Binner::processBins()
 }
 
 void Binner::printBinsToFile(const char * c){
-  ofstream fOut(Form("%s.txt",c),std::ofstream::out);
+  ofstream fOut(Form("%s",c),std::ofstream::out);
   for(std::string binname : _treeNames)
     fOut << binname << "\n";
   fOut.close();
