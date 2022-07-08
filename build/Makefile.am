@@ -5,16 +5,18 @@ AM_CPPFLAGS = \
   -I$(CLAS12ROOT)/Clas12Banks \
   -I$(CLAS12ROOT)/Clas12Root \
   -I$(ROOTSYS)/include \
+  -I$(BRUFIT)/core \
   -I$(includedir) 
 
 lib_LTLIBRARIES = \
    libclas12ana.la
 
-AM_CXXFLAGS = -Wall -Werror -Wno-int-in-bool-context -msse2 -std=c++14
+AM_CXXFLAGS = -Wall -Werror -Wno-int-in-bool-context -Wno-reorder -msse2 -std=c++14
 
 AM_LDFLAGS = \
   -L$(CLAS12ROOT)/lib \
   -L$(HIPO)/lib \
+  -L$(BRUFIT)/lib \
   -L$(libdir)
 
 libclas12ana_la_LIBADD = \
@@ -34,6 +36,7 @@ pkginclude_HEADERS = \
   ../src/FiducialCuts.h	\
   ../src/Merger.h \
   ../src/PID.h \
+  ../src/Fitter.h \
   ../src/HipoBankInterface.h \
   ../src/Binner.h
 
@@ -47,6 +50,7 @@ libclas12ana_la_SOURCES = \
   ../src/FiducialCuts.C \
   ../src/Merger.C \
   ../src/PID.C \
+  ../src/Fitter.C \
   ../src/HipoBankInterface.C \
   ../src/Binner.C
 
