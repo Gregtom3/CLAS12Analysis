@@ -1,6 +1,8 @@
 #ifndef Binner_h
 #define Binner_h
 
+#include <iostream>
+#include <fstream>
 #include <TFile.h>
 #include <TTree.h>
 #include <TH1F.h>
@@ -40,7 +42,8 @@ class Binner{
   
   // For each binning, pass through the main TTree and store dihadron angles
   int processBins();
-  
+
+  void printBinsToFile(const char *);
  protected:
   const char * _fName;
   const char * _tName;
