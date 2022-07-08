@@ -239,14 +239,26 @@ echo "echo \"\$finishedJobs completed out of \$nJobs\" >> \$fitOutFile" >> $fitF
 echo "sleep 30" >> $fitFile
 echo "done" >> $fitFile
 
-
-
+# Slurm job for running the fitter
+# ------------------------------------------------
+touch $fitSlurm
+chmod +x $fitSlurm
+echo "#!/bin/bash" > $fitSlurm
+echo "binname=\$1" >> $fitSlurm
+echo "#SBATCH --account=clas12" >> $fitSlurm
+echo "#SBATCH --partition=production" >> $fitSlurm
+echo "#SBATCH --mem-per-cpu=${memPerCPU}" >> $fitSlurm
+echo "#SBATCH --job-name=${rootname}_fitjob" >> $fitSlurm
+echo "#SBATCH --cpus-per-task=${nCPUs}" >> $fitSlurm
+echo "#SBATCH --time=24:00:00" >> $fitSlurm
+echo "#SBATCH --chdir=${workdir}" >> $fitSlurm
+echo "clas12root ${fitcode}\(\\\"${outputdir}\\\",\\\"merged_${rootname}.root\\\",\\\"\$binname\"\\\"\)" >> $fitSlurm
 
 echo "Submitting analysis jobs for the selected HIPO files"
 echo " "
-sbatch $runJobs
+#sbatch $runJobs
 echo "----------------------------------------------------"
 echo "Submitting merge script"
 echo " "
-sbatch $mergeSlurm
+#sbatch $mergeSlurm
 echo "----------------------------------------------------"
