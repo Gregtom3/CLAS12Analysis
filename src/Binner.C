@@ -110,41 +110,26 @@ int Binner::processBins()
     if(_helicity_flag.at(i)==0){
       outTree->Branch("helicity",&_helicity);
     }
-
+    outTree->Branch("fidmerge",&_fidmerge);
     // Fill dihadron angles into binned trees
     if(_verbosity > 0)
       cout << " Filling Bin --> " << _treeNames.at(i) << endl;
-
+    
     if(_helicity_flag.at(i)==1)
-      _dfIn.Filter(_binCuts.at(i)+" && helicity == 1").Foreach([&](double phih, double phiR, double theta, double Mdiphoton, double Mdihadron)
-							       { _phih = phih;
-								 _phiR = phiR;
-								 _theta = theta;
-								 _Mdiphoton = Mdiphoton;
-								 _Mdihadron = Mdihadron;
-								 outTree->Fill();},
-							       {"phi_h","phi_R0","th","Mdiphoton","Mdihadron"});
-
+      _binCuts.at(i)+=" && helicity == 1";
     else if(_helicity_flag.at(i)==-1)
-      _dfIn.Filter(_binCuts.at(i)+" && helicity == -1").Foreach([&](double phih, double phiR, double theta, double Mdiphoton, double Mdihadron)
-							       { _phih = phih;
-								 _phiR = phiR;
-								 _theta = theta;
-								 _Mdiphoton = Mdiphoton;
-								 _Mdihadron = Mdihadron;
-								 outTree->Fill();},
-								{"phi_h","phi_R0","th","Mdiphoton","Mdihadron"});
+      _binCuts.at(i)+=" && helicity == -1";
 
-    else if(_helicity_flag.at(i)==0)
-      _dfIn.Filter(_binCuts.at(i)).Foreach([&](double phih, double phiR, double theta, double Mdiphoton, double Mdihadron, float helicity)
-					   { _phih = phih;
-					     _phiR = phiR;
-					     _theta = theta;
-					     _Mdiphoton = Mdiphoton;
-					     _Mdihadron = Mdihadron;
-					     _helicity = helicity;
-					     outTree->Fill();},
-					   {"phi_h","phi_R0","th","Mdiphoton","Mdihadron","helicity"});
+    _dfIn.Filter(_binCuts.at(i)).Foreach([&](double phih, double phiR, double theta, double Mdiphoton, double Mdihadron,float helicity, int fidmerge)
+					 { _phih = phih;
+					   _phiR = phiR;
+					   _theta = theta;
+					   _Mdiphoton = Mdiphoton;
+					   _Mdihadron = Mdihadron;
+					   _helicity = helicity;
+					   _fidmerge = fidmerge;
+					   outTree->Fill();},
+					 {"phi_h","phi_R0","th","Mdiphoton","Mdihadron","helicity","fidmerge"});
     
     // Write TTree
     outTree->Write();
