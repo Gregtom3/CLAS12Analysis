@@ -2,6 +2,7 @@
 #define Fitter_h
 /* STL includes */
 #include <iostream>
+#include <math.h>
 /* ROOT includes */
 #include <TFile.h>
 #include <TTree.h>
@@ -20,6 +21,42 @@
 
 using namespace std;
 
+struct fitObject{
+  std::string fitOptions;
+  TF1 * binnedFit1D;
+  TF2 * binnedFit2D;
+};
+
+struct histObject{
+  std::string paramX;
+  std::string paramY;
+  std::string drawCut;
+  TH1F * h1;
+  TH2F * h2;
+};
+
+struct sidebandObject{
+  // Signal + Sideband distributions
+  fitObject signal;
+  fitObject sideband;
+  // Asymmetry distribution
+  fitObject asym;
+  // Binned Asymmetry histogram
+  histObject hist_asym;
+  // Asymmetry fit parameters & errors
+  std::vector<double> asym_params_u0;
+  std::vector<double> asym_errors_u0;
+
+  std::vector<double> asym_params_u1;
+  std::vector<double> asym_errors_u1;
+
+  std::vector<double> asym_params_u2;
+  std::vector<double> asym_errors_u2;
+
+  std::vector<double> asym_params_u3;
+  std::vector<double> asym_errors_u3;
+};
+
 struct sPlotObject{
   const char * outDir;
   const char * variable;
@@ -28,49 +65,10 @@ struct sPlotObject{
   const char * bgFactoryPDF;
 };
 
-
-struct fitObject{
-  std::string fitFunction;
-  int npars;
-  std::vector<float> initialPars;
-  std::vector<std::pair<float,float>> initialParRanges;
-  std::string fitOptions;
-  float xmin;
-  float xmax;
-  float ymin;
-  float ymax;
-};
-
-struct sidebandObject{
-  fitObject signal;
-  fitObject sideband;
-  // Purity Variables
-  // See analysis note for details
-  std::pair<double,double> u0; // value, error
-  std::pair<double,double> u1; // value, error
-  std::pair<double,double> u2; // value, error
-  std::pair<double,double> u3; // value, error
-};
-
-struct histObject{
-  std::string name;
-  std::string title;
-  std::string paramX;
-  std::string paramY;
-  float xmin;
-  float xmax;
-  int xbins;
-  float ymin;
-  float ymax;
-  int ybins;
-};
-
 class Fitter{
  public:
   // Constructor
-  Fitter(std::string);
-
-  int setWildcard(std::string wildcard);
+  Fitter(std::string, std::string, std::string);
   
   void setSideband(sidebandObject);
   void setSplot(sPlotObject);
@@ -81,29 +79,26 @@ class Fitter{
   int executeCOWs();  
 
   int extractSWeights(sPlotObject);
-  // Print keyNames in TFile
-  void printKeys();
 
   int End();
 
  protected:
   
-
+  int appendSidebandInfo();
   int perform1DBinnedFits(fitObject, histObject);
+  int perform2DBinnedFits(fitObject, histObject);
   
-  // Get keyNames within TFile given wildcard string (no * needed)
-  std::vector<std::string> getKeyNames(std::string);
-
   // Check the npars consistency of the fitObject
-  int checkFitObj(fitObject);
-
-
 
   std::string _filepath;
-  TFile *_fIn;
-  std::string _wildcard = "";
+  std::string _rootname;
+  std::string _treeName;
 
+  TFile *_fIn;
+  TTree *_tree;
+  
   sidebandObject _sideband;
   sPlotObject _splot;
+  histObject _asymHist;
 };
 #endif
