@@ -56,6 +56,7 @@ class Binner{
   std::vector<int> _helicity_flag;
 
   // Floats for dihadron angles, mass params, and helicity from output TTree
+  int _fidmerge;
   float _phih;
   float _phiR;
   float _theta;
