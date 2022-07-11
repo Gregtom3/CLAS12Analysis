@@ -49,11 +49,17 @@ struct sidebandObject{
 };
 
 struct sPlotObject{
-  const char * outDir;
+  // BRUFIT variables
   const char * variable;
   const char * idbranch;
   const char * signalFactoryPDF;
   const char * bgFactoryPDF;
+  // Histogram for 1D fitting region
+  histObject hist;
+  // Asymmetry distribution
+  fitObject asym;
+  // Binned Asymmetry histogram
+  histObject hist_asym;
 };
 
 class Fitter{
@@ -69,17 +75,17 @@ class Fitter{
   int executeSplot();  
   int executeCOWs();  
 
-  int extractSWeights(sPlotObject);
+  int extractSWeights();
 
   int End();
 
  protected:
   
-  int appendSidebandInfo();
   int perform1DBinnedFits(fitObject, histObject);
   int perform2DBinnedFits(fitObject, histObject);
+
   
-  // Check the npars consistency of the fitObject
+  
 
   std::string _filepath;
   std::string _rootname;
