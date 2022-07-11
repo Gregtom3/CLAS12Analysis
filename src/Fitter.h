@@ -15,6 +15,7 @@
 #include <TF1.h>
 #include <TF2.h>
 #include <TFitResult.h>
+#include <TROOT.h>
 /* BRUFIT includes */
 #include <sPlot.h>
 #include <Process.h>
@@ -43,18 +44,6 @@ struct sidebandObject{
   fitObject asym;
   // Binned Asymmetry histogram
   histObject hist_asym;
-  // Asymmetry fit parameters & errors
-  std::vector<double> asym_params_u0;
-  std::vector<double> asym_errors_u0;
-
-  std::vector<double> asym_params_u1;
-  std::vector<double> asym_errors_u1;
-
-  std::vector<double> asym_params_u2;
-  std::vector<double> asym_errors_u2;
-
-  std::vector<double> asym_params_u3;
-  std::vector<double> asym_errors_u3;
 };
 
 struct sPlotObject{

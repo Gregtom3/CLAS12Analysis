@@ -7,7 +7,7 @@ Fitter::Fitter(std::string filepath, std::string rootname, std::string treeName)
   _rootname = rootname;
   _treeName = treeName;
   _fIn = new TFile(Form("%s/%s.root",filepath.c_str(),rootname.c_str()),"READ");
-  _tree = (TTree*)_fIn->Get(_treeName);
+  _tree = (TTree*)_fIn->Get(_treeName.c_str());
 }
 
 void Fitter::setSideband(sidebandObject obj){
@@ -23,7 +23,7 @@ int Fitter::executeSideband(histObject histobj){
   
   cout << "\n\n\nExecuting Sideband Method\n\n\n"<<endl;
   // Create new TFile based on TTree name
-  gProcessLine(Form("mkdir %s/sideband_%s",_filepath.c_str(),_treeName.c_str()));
+  gROOT->ProcessLine(Form("mkdir %s/sideband_%s",_filepath.c_str(),_treeName.c_str()));
   TFile *fOut = new TFile(Form("%s/sideband_%s/sidebandMethod.root",_filepath.c_str(),_treeName.c_str()),"RECREATE");
   TTree *tOut = new TTree("tree","Sideband Method Related Variables");
   std::vector<double> sig_params_u0;
@@ -55,10 +55,10 @@ int Fitter::executeSideband(histObject histobj){
   cout << "Sideband Method --- Fitting Sideband Region"<<endl;
   perform1DBinnedFits(sideband,histobj);
   // Get signal and sideband fits
-  TF1 * f_peak = signal.binnedFit1D->Clone();
-  TF1 * f_sideband = sideband.binnedFit1D->Clone();
+  TF1 * f_peak = (TF1*)signal.binnedFit1D->Clone();
+  TF1 * f_sideband = (TF1*)sideband.binnedFit1D->Clone();
   // Get histogram
-  TH1F * h = histobj.h1->Clone();
+  TH1F * h = (TH1F*)histobj.h1->Clone();
   // Get +/- 2 StdDev from Gaussian peak
   // Below code may need to be re-written if signal is not fit to gaussian
   double xmin = f_peak->GetParameter(1)-2*f_peak->GetParameter(2);
@@ -70,10 +70,10 @@ int Fitter::executeSideband(histObject histobj){
   double bg_fit_integral = f_sideband->Integral(xmin,xmax)/h->GetBinWidth(1);
   double total_fit_integral = sig_fit_integral + bg_fit_integral;
   // Calculate and store purity
-  double u0 = sig_fit_integral/total_hist_sum;
-  double u1 = sig_fit_integral/total_fit_integral;
-  double u2 = 1-bg_fit_integral/total_hist_sum;
-  double u3 = 1-bg_fit_integral/total_fit_integral;
+  u0 = sig_fit_integral/total_hist_sum;
+  u1 = sig_fit_integral/total_fit_integral;
+  u2 = 1-bg_fit_integral/total_hist_sum;
+  u3 = 1-bg_fit_integral/total_fit_integral;
   double uarr[4] = {u0,u1,u2,u3};
   cout << "Sideband Method --- Purities calculated " << endl;
   cout << "u0 = " << u0 << endl;
@@ -86,8 +86,8 @@ int Fitter::executeSideband(histObject histobj){
   // Create 4 histograms for binning
   cout << "Sideband Method --- Creating 4, 2D histograms " << endl;
   TH2F * h_sigbg_plus = (TH2F*)_sideband.hist_asym.h2->Clone(); h_sigbg_plus->SetName("h_sigbg_plus");
-  TH2F * h_sigbg_minus = (TH2F*)_sideband.hist_asym.h2->Clone(); h_bg_minus->SetName("h_sigbg_minus");
-  TH2F * h_bg_plus = (TH2F*)_sideband.hist_asym.h2->Clone(); h_sigbg_plus->SetName("h_bg_plus");
+  TH2F * h_sigbg_minus = (TH2F*)_sideband.hist_asym.h2->Clone(); h_sigbg_minus->SetName("h_sigbg_minus");
+  TH2F * h_bg_plus = (TH2F*)_sideband.hist_asym.h2->Clone(); h_bg_plus->SetName("h_bg_plus");
   TH2F * h_bg_minus = (TH2F*)_sideband.hist_asym.h2->Clone(); h_bg_minus->SetName("h_bg_minus");
   // Fill each histogram from TTree
   cout << "Sideband Method --- Drawing into TH2F from TTree " << endl;
@@ -114,8 +114,10 @@ int Fitter::executeSideband(histObject histobj){
   TF2 * f_bg = (TF2*)_sideband.asym.binnedFit2D->Clone(); f_bg->SetName("f_bg");
   // For each purity u variable, get fit params
   cout << "Sideband Method --- Saving asymmetries for each purity calculation " << endl;
+  std::vector<double> sig_params;
+  std::vector<double> sig_errors;
   for(int i = 0 ; i < 4 ; i++){
-    cout << "\tPurity u" << j << endl;
+    cout << "\tPurity u" << i << endl;
     sig_params.clear();
     sig_errors.clear();
 
@@ -140,13 +142,13 @@ int Fitter::executeSideband(histObject histobj){
     hsp2->Add(hsm,1);
     hsp1->Divide(hsp2);
     cout << "\tFitting Signal+Bkg Region " << endl;
-    hsp1->Fit(f_sigbg,_sideband.asym.fitOptions);
+    hsp1->Fit(f_sigbg,TString(_sideband.asym.fitOptions));
     
     hbp1->Add(hbm,-1);
     hbp2->Add(hbm,1);
     hbp1->Divide(hbp2);
     cout << "\tFitting Bkg Region\n" << endl;
-    hbp1->Fit(f_bg,_sideband.asym.fitOptions);
+    hbp1->Fit(f_bg,TString(_sideband.asym.fitOptions));
     
     // Extract signal only asymmetries using purity
     for(int j = 0 ; j < f_sigbg->GetNpar() ; j++){
@@ -159,20 +161,20 @@ int Fitter::executeSideband(histObject histobj){
       double sig_error = sqrt( pow(sigbg_error/u,2) + pow(bg_error*(1.0-u)/u,2) );
       
       sig_params.push_back(sig_param);
-      sig_error.push_back(sig_error);
+      sig_errors.push_back(sig_error);
     }
    
-    if(j==0)
-      _sideband.asym_params_u0 = sig_params;
-    else if(j==1)
-      _sideband.asym_params_u1 = sig_params;
-    else if(j==2)
-      _sideband.asym_params_u2 = sig_params;
-    else if(j==3)
-      _sideband.asym_params_u3 = sig_params;
+    if(i==0)
+      sig_params_u0 = sig_params;
+    else if(i==1)
+      sig_params_u1 = sig_params;
+    else if(i==2)
+      sig_params_u2 = sig_params;
+    else if(i==3)
+      sig_params_u3 = sig_params;
   }
-  
-  
+  tOut->Fill();
+  fOut->Write();
   return 0;  
 }
 
@@ -196,16 +198,12 @@ int Fitter::extractSWeights(sPlotObject splot){
   return 0;
 }
 
-int Fitter::appendSidebandInfo(){
-  
-}
-
 int Fitter::perform1DBinnedFits(fitObject fitobj, histObject histobj){
   // Enter into TFile
   _fIn->cd();
 
   // Draw into histogram from TTree
-  _tree->Draw(Form("%s>>%s",histobj.paramX.c_str(),histobj.h1->GetName()),histobj.drawCut,"goff");
+  _tree->Draw(Form("%s>>%s",histobj.paramX.c_str(),histobj.h1->GetName()),histobj.drawCut.c_str(),"goff");
     
   // Fit the histogram
   histobj.h1->Fit(fitobj.binnedFit1D, TString(fitobj.fitOptions));
@@ -217,7 +215,7 @@ int Fitter::perform2DBinnedFits(fitObject fitobj, histObject histobj){
   _fIn->cd();
 
   // Draw into histogram from TTree
-  _tree->Draw(Form("%s:%s>>%s",histobj.paramY.c_str(),histobj.paramX.c_str(),histobj.h2->GetName()),histobj.drawCut,"goff");
+  _tree->Draw(Form("%s:%s>>%s",histobj.paramY.c_str(),histobj.paramX.c_str(),histobj.h2->GetName()),histobj.drawCut.c_str(),"goff");
     
   // Fit the histogram
   histobj.h2->Fit(fitobj.binnedFit2D, TString(fitobj.fitOptions));
