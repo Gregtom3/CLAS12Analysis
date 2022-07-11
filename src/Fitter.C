@@ -116,9 +116,43 @@ int Fitter::executeSideband(){
   cout << "Sideband Method --- Beginning binned asymmetry fit " << endl;
 
   // Default to binned 2D asymmetry fit
-  
+  // Create 4 histograms for binning
+  cout << "Sideband Method --- Creating 4, 2D histograms " << endl;
+  TH2F * h_sigbg_plus = (TH2F*)_sideband.hist_asym.h2->Clone(); h_sigbg_plus->SetName("h_sigbg_plus");
+  TH2F * h_sigbg_minus = (TH2F*)_sideband.hist_asym.h2->Clone(); h_sigbg_minus->SetName("h_sigbg_minus");
+  TH2F * h_bg_plus = (TH2F*)_sideband.hist_asym.h2->Clone(); h_bg_plus->SetName("h_bg_plus");
+  TH2F * h_bg_minus = (TH2F*)_sideband.hist_asym.h2->Clone(); h_bg_minus->SetName("h_bg_minus");
+  // Fill each histogram from TTree
+  cout << "Sideband Method --- Drawing into TH2F from TTree " << endl;
+  cout << "Sideband Method --- Drawing (0/4) " << endl;
+  _tree->Draw("phi_R0:phi_h>>h_sigbg_plus",Form("%s > %f && %s < %f && helicity == 1",
+						_sideband.hist.paramX.c_str(),f_peak->GetXmin(),
+						_sideband.hist.paramX.c_str(),f_peak->GetXmax()),"goff");
+  cout << "Sideband Method --- Drawing (1/4) " << endl;
+  _tree->Draw("phi_R0:phi_h>>h_sigbg_minus",Form("%s > %f && %s < %f && helicity == -1",
+						 _sideband.hist.paramX.c_str(),f_peak->GetXmin(),
+						 _sideband.hist.paramX.c_str(),f_peak->GetXmax()),"goff");
+  cout << "Sideband Method --- Drawing (2/4) " << endl;
+  _tree->Draw("phi_R0:phi_h>>h_bg_plus",Form("%s > %f && %s < %f && helicity == 1",
+					     _sideband.hist.paramX.c_str(),f_sideband->GetXmin(),
+					     _sideband.hist.paramX.c_str(),f_sideband->GetXmax()),"goff");
+  cout << "Sideband Method --- Drawing (3/4) " << endl;
+  _tree->Draw("phi_R0:phi_h>>h_bg_minus",Form("%s > %f && %s < %f && helicity == -1",
+					      _sideband.hist.paramX.c_str(),f_sideband->GetXmin(),
+					      _sideband.hist.paramX.c_str(),f_sideband->GetXmax()),"goff");
+  cout << "Sideband Method --- Drawing (4/4) --- Complete " << endl;
+  // Create two TF2's for fitting
+  cout << "Sideband Method --- Cloning Asymmetry 2D fits " << endl;
+  TF2 * f_sigbg = (TF2*)_sideband.asym.binnedFit2D->Clone(); f_sigbg->SetName("f_sigbg");
+  TF2 * f_bg = (TF2*)_sideband.asym.binnedFit2D->Clone(); f_bg->SetName("f_bg");
+  // For each purity u variable, get fit params
+  cout << "Sideband Method --- Saving asymmetries for each purity calculation " << endl;
   std::vector<double> sig_params;
   std::vector<double> sig_errors;
+  std::vector<double> sigbg_params;
+  std::vector<double> sigbg_errors;
+  std::vector<double> bg_params;
+  std::vector<double> bg_errors;
   for(int i = 0 ; i < 4 ; i++){
     cout << "\tPurity u" << i << endl;
     sig_params.clear();
@@ -135,37 +169,7 @@ int Fitter::executeSideband(){
     // Set Sumw2 for proper error propagation when dividing
     hsp1->Sumw2();
     hsp2->Sumw2();
-    // Create 4 histograms for binning
-    cout << "Sideband Method --- Creating 4, 2D histograms " << endl;
-    TH2F * h_sigbg_plus = (TH2F*)_sideband.hist_asym.h2->Clone(); h_sigbg_plus->SetName("h_sigbg_plus");
-    TH2F * h_sigbg_minus = (TH2F*)_sideband.hist_asym.h2->Clone(); h_sigbg_minus->SetName("h_sigbg_minus");
-    TH2F * h_bg_plus = (TH2F*)_sideband.hist_asym.h2->Clone(); h_bg_plus->SetName("h_bg_plus");
-    TH2F * h_bg_minus = (TH2F*)_sideband.hist_asym.h2->Clone(); h_bg_minus->SetName("h_bg_minus");
-    // Fill each histogram from TTree
-    cout << "Sideband Method --- Drawing into TH2F from TTree " << endl;
-    cout << "Sideband Method --- Drawing (0/4) " << endl;
-    _tree->Draw("phi_R0:phi_h>>h_sigbg_plus",Form("%s > %f && %s < %f && helicity == 1",
-						  _sideband.hist.paramX.c_str(),f_peak->GetXmin(),
-						  _sideband.hist.paramX.c_str(),f_peak->GetXmax()),"goff");
-    cout << "Sideband Method --- Drawing (1/4) " << endl;
-    _tree->Draw("phi_R0:phi_h>>h_sigbg_minus",Form("%s > %f && %s < %f && helicity == -1",
-						   _sideband.hist.paramX.c_str(),f_peak->GetXmin(),
-						   _sideband.hist.paramX.c_str(),f_peak->GetXmax()),"goff");
-    cout << "Sideband Method --- Drawing (2/4) " << endl;
-    _tree->Draw("phi_R0:phi_h>>h_bg_plus",Form("%s > %f && %s < %f && helicity == 1",
-					       _sideband.hist.paramX.c_str(),f_sideband->GetXmin(),
-					       _sideband.hist.paramX.c_str(),f_sideband->GetXmax()),"goff");
-    cout << "Sideband Method --- Drawing (3/4) " << endl;
-    _tree->Draw("phi_R0:phi_h>>h_bg_minus",Form("%s > %f && %s < %f && helicity == -1",
-						_sideband.hist.paramX.c_str(),f_sideband->GetXmin(),
-						_sideband.hist.paramX.c_str(),f_sideband->GetXmax()),"goff");
-    cout << "Sideband Method --- Drawing (4/4) --- Complete " << endl;
-    // Create two TF2's for fitting
-    cout << "Sideband Method --- Cloning Asymmetry 2D fits " << endl;
-    TF2 * f_sigbg = (TF2*)_sideband.asym.binnedFit2D->Clone(); f_sigbg->SetName("f_sigbg");
-    TF2 * f_bg = (TF2*)_sideband.asym.binnedFit2D->Clone(); f_bg->SetName("f_bg");
-    // For each purity u variable, get fit params
-    cout << "Sideband Method --- Saving asymmetries for each purity calculation " << endl;    hsm->Sumw2();
+    hsm->Sumw2();
     hbp1->Sumw2();
     hbp2->Sumw2();
     hbm->Sumw2();
@@ -175,13 +179,13 @@ int Fitter::executeSideband(){
     hsp2->Add(hsm,1);
     hsp1->Divide(hsp2);
     cout << "\tFitting Signal+Bkg Region " << endl;
-    //    hsp1->Fit(f_sigbg,TString(_sideband.asym.fitOptions));
+    hsp1->Fit(f_sigbg,TString(_sideband.asym.fitOptions));
     
     hbp1->Add(hbm,-1);
     hbp2->Add(hbm,1);
     hbp1->Divide(hbp2);
     cout << "\tFitting Bkg Region\n" << endl;
-    //    hbp1->Fit(f_bg,TString(_sideband.asym.fitOptions));
+    hbp1->Fit(f_bg,TString(_sideband.asym.fitOptions));
     
     // Extract signal only asymmetries using purity
     for(int j = 0 ; j < f_sigbg->GetNpar() ; j++){
@@ -222,6 +226,7 @@ int Fitter::executeSideband(){
       bg_params_u3 = bg_params;
     } 
   }
+  cout << "Sideband Method --- Writing to TFile " << endl;
   // Write asymmetry parameters to TTree to TFile
   tOut->Fill();
   // Write TF1's to TFile
@@ -268,31 +273,33 @@ int Fitter::executeSplot(){
   TH2F * h_bg_plus = (TH2F*)_splot.hist_asym.h2->Clone(); h_bg_plus->SetName("h_bg_plus");
   TH2F * h_bg_minus = (TH2F*)_splot.hist_asym.h2->Clone(); h_bg_minus->SetName("h_bg_minus");
   // Fill each histogram from TTree
+  double xmin = _splot.hist.h1->GetBinCenter(1)-0.5*_splot.hist.h1->GetBinWidth(1);
+  double xmax = _splot.hist.h1->GetBinCenter(_splot.hist.h1->GetNbinsX())+0.5*_splot.hist.h1->GetBinWidth(1);
   cout << "sWeights Method --- Drawing into TH2F from TTree " << endl;
   cout << "sWeights Method --- Drawing (0/6) " << endl;
   _tree->Draw("phi_R0:phi_h>>h_sig_plus",Form("(%s > %f && %s < %f && helicity == 1) * Signal",
-					      _splot.hist.paramX.c_str(),_splot.hist.h1->GetXmin(),
-					      _splot.hist.paramX.c_str(),_splot.hist.h1->GetXmax()), "goff");
+					      _splot.hist.paramX.c_str(),xmin,
+					      _splot.hist.paramX.c_str(),xmax), "goff");
   cout << "sWeights Method --- Drawing (1/6) " << endl;
   _tree->Draw("phi_R0:phi_h>>h_sig_minus",Form("(%s > %f && %s < %f && helicity == -1) * Signal",
-					      _splot.hist.paramX.c_str(),_splot.hist.h1->GetXmin(),
-					      _splot.hist.paramX.c_str(),_splot.hist.h1->GetXmax()), "goff");
+					      _splot.hist.paramX.c_str(),xmin,
+					      _splot.hist.paramX.c_str(),xmax), "goff");
   cout << "sWeights Method --- Drawing (2/6) " << endl;
   _tree->Draw("phi_R0:phi_h>>h_bg_plus",Form("(%s > %f && %s < %f && helicity == 1) * BG",
-					      _splot.hist.paramX.c_str(),_splot.hist.h1->GetXmin(),
-					      _splot.hist.paramX.c_str(),_splot.hist.h1->GetXmax()), "goff");
+					      _splot.hist.paramX.c_str(),xmin,
+					      _splot.hist.paramX.c_str(),xmax), "goff");
   cout << "sWeights Method --- Drawing (3/6) " << endl;
   _tree->Draw("phi_R0:phi_h>>h_bg_minus",Form("(%s > %f && %s < %f && helicity == -1) * BG",
-					      _splot.hist.paramX.c_str(),_splot.hist.h1->GetXmin(),
-					      _splot.hist.paramX.c_str(),_splot.hist.h1->GetXmax()), "goff");
+					      _splot.hist.paramX.c_str(),xmin,
+					      _splot.hist.paramX.c_str(),xmax), "goff");
   cout << "sWeights Method --- Drawing (4/6) " << endl;
   _tree->Draw("phi_R0:phi_h>>h_sigbg_plus",Form("(%s > %f && %s < %f && helicity == 1)",
-					      _splot.hist.paramX.c_str(),_splot.hist.h1->GetXmin(),
-					      _splot.hist.paramX.c_str(),_splot.hist.h1->GetXmax()), "goff");
+					      _splot.hist.paramX.c_str(),xmin,
+					      _splot.hist.paramX.c_str(),xmax), "goff");
   cout << "sWeights Method --- Drawing (5/6) " << endl;
   _tree->Draw("phi_R0:phi_h>>h_sigbg_minus",Form("(%s > %f && %s < %f && helicity == -1)",
-					      _splot.hist.paramX.c_str(),_splot.hist.h1->GetXmin(),
-					      _splot.hist.paramX.c_str(),_splot.hist.h1->GetXmax()), "goff");
+					      _splot.hist.paramX.c_str(),xmin,
+					      _splot.hist.paramX.c_str(),xmax), "goff");
   cout << "sWeights Method --- Drawing (6/6) --- Complete" << endl;
   // Clone histograms for (N+ - N-)/(N+ + N-)  
   cout << "sWeights Method --- Cloning drawn TH2F's " << endl;
@@ -324,15 +331,15 @@ int Fitter::executeSplot(){
   cout << "sWeights Method --- Producing asymmetry histograms " << endl;
   hsp1->Add(hsm,-1);
   hsp2->Add(hsm,1);
-  hsp1->Divide(hsp2);
+  hsp1->Divide(hsp2); TH2F *h_sig = (TH2F*)hsp1->Clone();
 
   hsbp1->Add(hsbm,-1);
   hsbp2->Add(hsbm,1);
-  hsbp1->Divide(hsbp2);
+  hsbp1->Divide(hsbp2); TH2F *h_sigbg = (TH2F*)hsbp1->Clone();
 
   hbp1->Add(hbm,-1);
   hbp2->Add(hbm,1);
-  hbp1->Divide(hbp2);
+  hbp1->Divide(hbp2); TH2F *h_bg = (TH2F*)hbp1->Clone();
   // Create three TF2's for fitting
   cout << "sWeights Method --- Cloning Asymmetry 2D fits " << endl;
   TF2 * f_sig = (TF2*)_splot.asym.binnedFit2D->Clone(); f_sig->SetName("f_sig");
@@ -340,10 +347,29 @@ int Fitter::executeSplot(){
   TF2 * f_bg = (TF2*)_splot.asym.binnedFit2D->Clone(); f_bg->SetName("f_bg");
   // Fit asymmetry histograms to sinusoidal modulations
   cout << "sWeights Method --- Fitting asymmetry modulations " << endl;
-  
-  
-  
-  
+  h_sig->Fit(f_sig,_splot.asym.fitOptions.c_str());
+  h_sigbg->Fit(f_sigbg,_splot.asym.fitOptions.c_str());
+  h_bg->Fit(f_bg,_splot.asym.fitOptions.c_str());
+  for(int j = 0 ; j < f_sig->GetNpar() ; j++){
+    sig_params.push_back(f_sig->GetParameter(j));
+    sig_errors.push_back(f_sig->GetParError(j));
+    sigbg_params.push_back(f_sigbg->GetParameter(j));
+    sigbg_errors.push_back(f_sigbg->GetParError(j));
+    bg_params.push_back(f_bg->GetParameter(j));
+    bg_errors.push_back(f_bg->GetParError(j));
+  }
+  cout << "sWeights Method --- Writing results to TFile " << endl;
+  fOut->cd();
+  // Save TTree to TFile
+  tOut->Fill();
+  tOut->Write();
+  // Save TF2's to TFile
+  f_sig->Write();
+  f_sigbg->Write();
+  f_bg->Write();
+  // Write TFile
+  fOut->Write();
+  return 0;
 }
 int Fitter::extractSWeights(){
   std::string outDir = Form("%s/splot_%s",_filepath.c_str(),_treeName.c_str());
