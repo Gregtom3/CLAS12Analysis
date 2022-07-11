@@ -26,6 +26,7 @@ int Fitter::executeSideband(){
   gSystem->Exec(Form("rm -r %s/sideband_%s",_filepath.c_str(),_treeName.c_str()));
   gSystem->Exec(Form("mkdir %s/sideband_%s",_filepath.c_str(),_treeName.c_str()));
   TFile *fOut = new TFile(Form("%s/sideband_%s/sidebandMethod.root",_filepath.c_str(),_treeName.c_str()),"RECREATE");
+  fOut->cd();
   TTree *tOut = new TTree("tree","Sideband Method Related Variables");
   std::vector<double> sig_params_u0;
   std::vector<double> sig_errors_u0;
@@ -125,19 +126,19 @@ int Fitter::executeSideband(){
   // Fill each histogram from TTree
   cout << "Sideband Method --- Drawing into TH2F from TTree " << endl;
   cout << "Sideband Method --- Drawing (0/4) " << endl;
-  _tree->Draw("phi_R0:phi_h>>h_sigbg_plus",Form("%s > %f && %s < %f && helicity == 1",
+  _tree->Draw(Form("%s:%s>>h_sigbg_plus",_sideband.hist_asym.paramY.c_str(), _sideband.hist_asym.paramX.c_str()),Form("%s > %f && %s < %f && helicity == 1",
 						_sideband.hist.paramX.c_str(),f_peak->GetXmin(),
 						_sideband.hist.paramX.c_str(),f_peak->GetXmax()),"goff");
   cout << "Sideband Method --- Drawing (1/4) " << endl;
-  _tree->Draw("phi_R0:phi_h>>h_sigbg_minus",Form("%s > %f && %s < %f && helicity == -1",
+  _tree->Draw(Form("%s:%s>>h_sigbg_minus",_sideband.hist_asym.paramY.c_str(), _sideband.hist_asym.paramX.c_str()),Form("%s > %f && %s < %f && helicity == -1",
 						 _sideband.hist.paramX.c_str(),f_peak->GetXmin(),
 						 _sideband.hist.paramX.c_str(),f_peak->GetXmax()),"goff");
   cout << "Sideband Method --- Drawing (2/4) " << endl;
-  _tree->Draw("phi_R0:phi_h>>h_bg_plus",Form("%s > %f && %s < %f && helicity == 1",
+  _tree->Draw(Form("%s:%s>>h_bg_plus",_sideband.hist_asym.paramY.c_str(), _sideband.hist_asym.paramX.c_str()),Form("%s > %f && %s < %f && helicity == 1",
 					     _sideband.hist.paramX.c_str(),f_sideband->GetXmin(),
 					     _sideband.hist.paramX.c_str(),f_sideband->GetXmax()),"goff");
   cout << "Sideband Method --- Drawing (3/4) " << endl;
-  _tree->Draw("phi_R0:phi_h>>h_bg_minus",Form("%s > %f && %s < %f && helicity == -1",
+  _tree->Draw(Form("%s:%s>>h_bg_minus",_sideband.hist_asym.paramY.c_str(), _sideband.hist_asym.paramX.c_str()),Form("%s > %f && %s < %f && helicity == -1",
 					      _sideband.hist.paramX.c_str(),f_sideband->GetXmin(),
 					      _sideband.hist.paramX.c_str(),f_sideband->GetXmax()),"goff");
   cout << "Sideband Method --- Drawing (4/4) --- Complete " << endl;
@@ -227,6 +228,7 @@ int Fitter::executeSideband(){
     } 
   }
   cout << "Sideband Method --- Writing to TFile " << endl;
+  fOut->cd();
   // Write asymmetry parameters to TTree to TFile
   tOut->Fill();
   // Write TF1's to TFile
@@ -237,7 +239,6 @@ int Fitter::executeSideband(){
   f_bg->Write();
   // Write TH1F to TFile
   h->Write();
-  fOut->Write();
   return 0;  
 }
 
@@ -277,27 +278,27 @@ int Fitter::executeSplot(){
   double xmax = _splot.hist.h1->GetBinCenter(_splot.hist.h1->GetNbinsX())+0.5*_splot.hist.h1->GetBinWidth(1);
   cout << "sWeights Method --- Drawing into TH2F from TTree " << endl;
   cout << "sWeights Method --- Drawing (0/6) " << endl;
-  _tree->Draw("phi_R0:phi_h>>h_sig_plus",Form("(%s > %f && %s < %f && helicity == 1) * Signal",
+  _tree->Draw(Form("%s:%s>>h_sig_plus",_splot.hist_asym.paramY.c_str(), _splot.hist_asym.paramX.c_str()),Form("(%s > %f && %s < %f && helicity == 1) * Signal",
 					      _splot.hist.paramX.c_str(),xmin,
 					      _splot.hist.paramX.c_str(),xmax), "goff");
   cout << "sWeights Method --- Drawing (1/6) " << endl;
-  _tree->Draw("phi_R0:phi_h>>h_sig_minus",Form("(%s > %f && %s < %f && helicity == -1) * Signal",
+  _tree->Draw(Form("%s:%s>>h_sig_minus",_splot.hist_asym.paramY.c_str(), _splot.hist_asym.paramX.c_str()),Form("(%s > %f && %s < %f && helicity == -1) * Signal",
 					      _splot.hist.paramX.c_str(),xmin,
 					      _splot.hist.paramX.c_str(),xmax), "goff");
   cout << "sWeights Method --- Drawing (2/6) " << endl;
-  _tree->Draw("phi_R0:phi_h>>h_bg_plus",Form("(%s > %f && %s < %f && helicity == 1) * BG",
+  _tree->Draw(Form("%s:%s>>h_bg_plus",_splot.hist_asym.paramY.c_str(), _splot.hist_asym.paramX.c_str()),Form("(%s > %f && %s < %f && helicity == 1) * BG",
 					      _splot.hist.paramX.c_str(),xmin,
 					      _splot.hist.paramX.c_str(),xmax), "goff");
   cout << "sWeights Method --- Drawing (3/6) " << endl;
-  _tree->Draw("phi_R0:phi_h>>h_bg_minus",Form("(%s > %f && %s < %f && helicity == -1) * BG",
+  _tree->Draw(Form("%s:%s>>h_bg_minus",_splot.hist_asym.paramY.c_str(), _splot.hist_asym.paramX.c_str()),Form("(%s > %f && %s < %f && helicity == -1) * BG",
 					      _splot.hist.paramX.c_str(),xmin,
 					      _splot.hist.paramX.c_str(),xmax), "goff");
   cout << "sWeights Method --- Drawing (4/6) " << endl;
-  _tree->Draw("phi_R0:phi_h>>h_sigbg_plus",Form("(%s > %f && %s < %f && helicity == 1)",
+  _tree->Draw(Form("%s:%s>>h_sigbg_plus",_splot.hist_asym.paramY.c_str(), _splot.hist_asym.paramX.c_str()),Form("(%s > %f && %s < %f && helicity == 1)",
 					      _splot.hist.paramX.c_str(),xmin,
 					      _splot.hist.paramX.c_str(),xmax), "goff");
   cout << "sWeights Method --- Drawing (5/6) " << endl;
-  _tree->Draw("phi_R0:phi_h>>h_sigbg_minus",Form("(%s > %f && %s < %f && helicity == -1)",
+  _tree->Draw(Form("%s:%s>>h_sigbg_minus",_splot.hist_asym.paramY.c_str(), _splot.hist_asym.paramX.c_str()),Form("(%s > %f && %s < %f && helicity == -1)",
 					      _splot.hist.paramX.c_str(),xmin,
 					      _splot.hist.paramX.c_str(),xmax), "goff");
   cout << "sWeights Method --- Drawing (6/6) --- Complete" << endl;
@@ -367,8 +368,6 @@ int Fitter::executeSplot(){
   f_sig->Write();
   f_sigbg->Write();
   f_bg->Write();
-  // Write TFile
-  fOut->Write();
   return 0;
 }
 int Fitter::extractSWeights(){
@@ -385,9 +384,12 @@ int Fitter::extractSWeights(){
   RF.SetUp().FactoryPDF(_splot.bgFactoryPDF);
   RF.SetUp().LoadSpeciesPDF("BG",1);
   //////////////////////////////////// Load Data
-  RF.LoadData(_treeName.c_str(),_filepath.c_str());
+  RF.LoadData(_treeName.c_str(),Form("%s/%s.root",_filepath.c_str(),_rootname.c_str()));
   HS::FIT::PROCESS::Here::Go(&RF);
   RF.saveWeightedTree(Form("%s/DataWeightedTree.root",outDir.c_str()));
+  gSystem->Exec(Form("rm %s/Tweights.root",outDir.c_str()));
+  gSystem->Exec(Form("rm %s/weights.root",outDir.c_str()));
+  gSystem->Exec(Form("rm %s/ResultsHSMinuit2.root",outDir.c_str()));
   return 0;
 }
 
