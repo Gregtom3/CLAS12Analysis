@@ -368,6 +368,8 @@ int Fitter::executeSplot(){
   f_sig->Write();
   f_sigbg->Write();
   f_bg->Write();
+  // Delete large TTree from file
+  fOut->Delete(_treeName.c_str());
   return 0;
 }
 int Fitter::extractSWeights(){
