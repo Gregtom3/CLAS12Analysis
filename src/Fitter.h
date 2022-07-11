@@ -40,6 +40,8 @@ struct sidebandObject{
   // Signal + Sideband distributions
   fitObject signal;
   fitObject sideband;
+  // Histogram across Signal + Sideband region
+  histObject hist;
   // Asymmetry distribution
   fitObject asym;
   // Binned Asymmetry histogram
@@ -63,7 +65,7 @@ class Fitter{
   void setSplot(sPlotObject);
   //  int loadCOWs(COWsObject);
   
-  int executeSideband(histObject);  
+  int executeSideband();  
   int executeSplot();  
   int executeCOWs();  
 

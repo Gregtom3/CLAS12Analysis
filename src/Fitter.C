@@ -18,12 +18,13 @@ void Fitter::setSplot(sPlotObject obj){
   _splot = obj;
 }
 
-int Fitter::executeSideband(histObject histobj){
+int Fitter::executeSideband(){
   
   
   cout << "\n\n\nExecuting Sideband Method\n\n\n"<<endl;
   // Create new TFile based on TTree name
-  gROOT->ProcessLine(Form("mkdir %s/sideband_%s",_filepath.c_str(),_treeName.c_str()));
+  gSystem->Exec(Form("rm -r %s/sideband_%s",_filepath.c_str(),_treeName.c_str()));
+  gSystem->Exec(Form("mkdir %s/sideband_%s",_filepath.c_str(),_treeName.c_str()));
   TFile *fOut = new TFile(Form("%s/sideband_%s/sidebandMethod.root",_filepath.c_str(),_treeName.c_str()),"RECREATE");
   TTree *tOut = new TTree("tree","Sideband Method Related Variables");
   std::vector<double> sig_params_u0;
@@ -51,14 +52,14 @@ int Fitter::executeSideband(histObject histobj){
   fitObject signal = _sideband.signal;
   fitObject sideband = _sideband.sideband;
   cout << "Sideband Method --- Fitting Signal Region"<<endl;
-  perform1DBinnedFits(signal,histobj);
+  perform1DBinnedFits(signal,_sideband.hist);
   cout << "Sideband Method --- Fitting Sideband Region"<<endl;
-  perform1DBinnedFits(sideband,histobj);
+  perform1DBinnedFits(sideband,_sideband.hist);
   // Get signal and sideband fits
   TF1 * f_peak = (TF1*)signal.binnedFit1D->Clone();
   TF1 * f_sideband = (TF1*)sideband.binnedFit1D->Clone();
   // Get histogram
-  TH1F * h = (TH1F*)histobj.h1->Clone();
+  TH1F * h = (TH1F*)_sideband.hist.h1->Clone();
   // Get +/- 2 StdDev from Gaussian peak
   // Below code may need to be re-written if signal is not fit to gaussian
   double xmin = f_peak->GetParameter(1)-2*f_peak->GetParameter(2);
@@ -93,20 +94,20 @@ int Fitter::executeSideband(histObject histobj){
   cout << "Sideband Method --- Drawing into TH2F from TTree " << endl;
   cout << "Sideband Method --- Drawing (0/4) " << endl;
   _tree->Draw("phi_R0:phi_h>>h_sigbg_plus",Form("%s > %f && %s < %f && helicity == 1",
-				       histobj.paramX.c_str(),f_peak->GetXmin(),
-				       histobj.paramX.c_str(),f_peak->GetXmax()),"goff");
+				       _sideband.hist.paramX.c_str(),f_peak->GetXmin(),
+				       _sideband.hist.paramX.c_str(),f_peak->GetXmax()),"goff");
   cout << "Sideband Method --- Drawing (1/4) " << endl;
   _tree->Draw("phi_R0:phi_h>>h_sigbg_minus",Form("%s > %f && %s < %f && helicity == -1",
-				       histobj.paramX.c_str(),f_peak->GetXmin(),
-				       histobj.paramX.c_str(),f_peak->GetXmax()),"goff");
+				       _sideband.hist.paramX.c_str(),f_peak->GetXmin(),
+				       _sideband.hist.paramX.c_str(),f_peak->GetXmax()),"goff");
   cout << "Sideband Method --- Drawing (2/4) " << endl;
   _tree->Draw("phi_R0:phi_h>>h_bg_plus",Form("%s > %f && %s < %f && helicity == 1",
- 				       histobj.paramX.c_str(),f_sideband->GetXmin(),
-				       histobj.paramX.c_str(),f_sideband->GetXmax()),"goff");
+ 				       _sideband.hist.paramX.c_str(),f_sideband->GetXmin(),
+				       _sideband.hist.paramX.c_str(),f_sideband->GetXmax()),"goff");
   cout << "Sideband Method --- Drawing (3/4) " << endl;
   _tree->Draw("phi_R0:phi_h>>h_bg_minus",Form("%s > %f && %s < %f && helicity == -1",
-				       histobj.paramX.c_str(),f_sideband->GetXmin(),
-				       histobj.paramX.c_str(),f_sideband->GetXmax()),"goff");
+				       _sideband.hist.paramX.c_str(),f_sideband->GetXmin(),
+				       _sideband.hist.paramX.c_str(),f_sideband->GetXmax()),"goff");
   cout << "Sideband Method --- Drawing (4/4) --- Complete " << endl;
   // Create two TF2's for fitting
   cout << "Sideband Method --- Cloning Asymmetry 2D fits " << endl;
@@ -142,13 +143,13 @@ int Fitter::executeSideband(histObject histobj){
     hsp2->Add(hsm,1);
     hsp1->Divide(hsp2);
     cout << "\tFitting Signal+Bkg Region " << endl;
-    hsp1->Fit(f_sigbg,TString(_sideband.asym.fitOptions));
+    //    hsp1->Fit(f_sigbg,TString(_sideband.asym.fitOptions));
     
     hbp1->Add(hbm,-1);
     hbp2->Add(hbm,1);
     hbp1->Divide(hbp2);
     cout << "\tFitting Bkg Region\n" << endl;
-    hbp1->Fit(f_bg,TString(_sideband.asym.fitOptions));
+    //    hbp1->Fit(f_bg,TString(_sideband.asym.fitOptions));
     
     // Extract signal only asymmetries using purity
     for(int j = 0 ; j < f_sigbg->GetNpar() ; j++){
