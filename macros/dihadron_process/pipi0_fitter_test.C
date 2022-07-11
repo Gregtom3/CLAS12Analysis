@@ -29,48 +29,66 @@ int pipi0_fitter_test(
   // Create Sideband Object
   //-----------------------
   // First, create objects for fitting Mdiphoton regions
-  fitObject signal;
-  signal.fitOptions = "SR Q0";
-  signal.binnedFit1D = new TF1("f_diphoton_sig","gaus(0)",0.108,0.160);
-  signal.binnedFit1D->SetParameters(100,0.13,0.1);
-  fitObject sideband;
-  sideband.fitOptions = "SR Q0";
-  sideband.binnedFit1D = new TF1("f_diphoton_bg","pol2",0.17,0.4);
-  sideband.binnedFit1D->SetParameters(10,10,10);
-  // Second, create 2D histogram for Mdiphoton binning
-  histObject hist_Mgg;
-  hist_Mgg.paramX = "Mdiphoton";
-  hist_Mgg.h1 = new TH1F("h1","",100,0,0.5);
+  fitObject signal_sbnd;
+  signal_sbnd.fitOptions = "SR Q0";
+  signal_sbnd.binnedFit1D = new TF1("f_diphoton_sig","gaus(0)",0.108,0.160);
+  signal_sbnd.binnedFit1D->SetParameters(100,0.13,0.1);
+  fitObject sideband_sbnd;
+  sideband_sbnd.fitOptions = "SR Q0";
+  sideband_sbnd.binnedFit1D = new TF1("f_diphoton_bg","pol2",0.17,0.4);
+  sideband_sbnd.binnedFit1D->SetParameters(10,10,10);
+  // Second, create 1D histogram for Mdiphoton binning
+  histObject hist_Mgg_sbnd;
+  hist_Mgg_sbnd.paramX = "Mdiphoton";
+  hist_Mgg_sbnd.h1 = new TH1F("h1_sbnd","",100,0,0.5);
   // Third, create asymmetry fit object
-  fitObject asym;
-  asym.fitOptions = "SR Q0";
-  asym.binnedFit2D = new TF2("f_2D","[0]*sin(2*x-2*y)+[1]*sin(x-y)+[2]*sin(-x+2*y)+[3]*sin(y)+[4]*sin(x)+[5]*sin(2*x-y)+[6]*sin(3*x-2*y)",-3.141592,3.141592,-3.141592,3.141592);
+  fitObject asym_sbnd;
+  asym_sbnd.fitOptions = "SR Q0";
+  asym_sbnd.binnedFit2D = new TF2("f_2D","[0]*sin(2*x-2*y)+[1]*sin(x-y)+[2]*sin(-x+2*y)+[3]*sin(y)+[4]*sin(x)+[5]*sin(2*x-y)+[6]*sin(3*x-2*y)",-3.141592,3.141592,-3.141592,3.141592);
   // Fourth, create 2D histogram for phih phiR binning
-  histObject hist_asym;
-  hist_asym.paramX = "phi_h";
-  hist_asym.paramY = "phi_R0";
-  hist_asym.h2 = new TH2F("h2","",8,-3.141592,3.141592,8,-3.141592,3.141592);
+  histObject hist_asym_sbnd;
+  hist_asym_sbnd.paramX = "phi_h";
+  hist_asym_sbnd.paramY = "phi_R0";
+  hist_asym_sbnd.h2 = new TH2F("h2_sbnd","",8,-3.141592,3.141592,8,-3.141592,3.141592);
   // Finally, put these pieces together to form the sideband object
-  sidebandObject sbObj;
-  sbObj.signal = signal;
-  sbObj.sideband = sideband;
-  sbObj.hist = hist_Mgg;
-  sbObj.asym = asym;
-  sbObj.hist_asym = hist_asym;
+  sidebandObject sbndObj;
+  sbndObj.signal = signal_sbnd;
+  sbndObj.sideband = sideband_sbnd;
+  sbndObj.hist = hist_Mgg_sbnd;
+  sbndObj.asym = asym_sbnd;
+  sbndObj.hist_asym = hist_asym_sbnd;
   
-  fitter->setSideband(sbObj);
+  fitter->setSideband(sbndObj);
   
   fitter->executeSideband();
   //-----------------------
   // Set sPlot Object
   //-----------------------
-  /*  sPlotObject splot;
-  splot.outDir = Form("%s/splot_%s",inputDir,wildcard);
-  splot.variable = "Mdiphoton[0.08,0.22]";
-  splot.idbranch = "fidmerge";
-  splot.signalFactoryPDF = "Gaussian::Signal(Mdiphoton, mu[0.13,0.127,0.135], sigma[0.1,0.001,0.3])";
-  splot.bgFactoryPDF = "Chebychev::BG(Mdiphoton, {a0[0.1,-1,1], a1[0.1,-1,1], a2[0.1,-1,1]})";
+  // First, create 1D histogram for Mdiphoton binning
+  histObject hist_Mgg_splot;
+  hist_Mgg_splot.paramX = "Mdiphoton";
+  hist_Mgg_splot.h1 = new TH1F("h1_splot","",100,0.08,0.22);
+  // Second, create  asymmetry fit object
+  fitObject asym_splot;
+  asym_splot.fitOptions = "SR Q0";
+  asym_splot.binnedFit2D = new TF2("f_2D","[0]*sin(2*x-2*y)+[1]*sin(x-y)+[2]*sin(-x+2*y)+[3]*sin(y)+[4]*sin(x)+[5]*sin(2*x-y)+[6]*sin(3*x-2*y)",-3.141592,3.141592,-3.141592,3.141592);
+  // Third, create 2D histogram for phih phiR binning
+  histObject hist_asym_splot;
+  hist_asym_splot.paramX = "phi_h";
+  hist_asym_splot.paramY = "phi_R0";
+  hist_asym_splot.h2 = new TH2F("h2_splot","",8,-3.141592,3.141592,8,-3.141592,3.141592);
+  // Fourth, load in brufit variables to the sPlot object
+  sPlotObject splotObj;
+  splotObj.variable = "Mdiphoton[0.08,0.22]";
+  splotObj.idbranch = "fidmerge";
+  splotObj.signalFactoryPDF = "Gaussian::Signal(Mdiphoton, mu[0.13,0.127,0.135], sigma[0.1,0.001,0.3])";
+  splotObj.bgFactoryPDF = "Chebychev::BG(Mdiphoton, {a0[0.1,-1,1], a1[0.1,-1,1], a2[0.1,-1,1]})";
+  splotObj.hist = hist_Mgg_splot;
+  splotObj.asym = asym_splot;
+  splotObj.hist_asym = hist_asym_splot;
+  
+  fitter->setSplot(splotObj);
 
-  fitter->extractSWeights(splot);*/
+  fitter->executeSplot();
   return 0;
 }
