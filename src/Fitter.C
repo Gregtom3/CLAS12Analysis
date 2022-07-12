@@ -390,7 +390,7 @@ int Fitter::extractSWeights(){
   HS::FIT::PROCESS::Here::Go(&RF);
   RF.saveWeightedTree(Form("%s/DataWeightedTree.root",outDir.c_str()));
   gSystem->Exec(Form("rm %s/Tweights.root",outDir.c_str()));
-  gSystem->Exec(Form("rm %s/weights.root",outDir.c_str()));
+  gSystem->Exec(Form("rm %s/Weights.root",outDir.c_str()));
   gSystem->Exec(Form("rm %s/ResultsHSMinuit2.root",outDir.c_str()));
   return 0;
 }

@@ -2,9 +2,9 @@
 # --------------------------
 # Hipo dir defintions
 # --------------------------
-RGA_F18_IN="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/*"
-RGA_F18_OUT="/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/nSidis/*"
-RGA_S19_IN="/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/nSidis/*"
+RGA_F18_IN="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/"
+RGA_F18_OUT="/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/nSidis/"
+RGA_S19_IN="/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/nSidis/"
 
 RGA_F18_IN_BATCH="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/nSidis_005032.hipo"
 
@@ -22,7 +22,7 @@ CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
-hipodirs=($RGA_F18_IN_BATCH)
+declare -a hipodirs=($RGA_F18_IN)
 
 # Beam energy associated with hipo files
 # --------------------------------------------------------
@@ -30,12 +30,12 @@ beamEs=(10.6)
 
 # Name of output directory
 # --------------------------------------------------------
-#outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-v1-nSidis"
+outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-v1-nSidis"
 #outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/rg-a"
-outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch"
+#outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch"
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="july8"
+rootname="july11"
 
 # Code locations
 # --------------------------------------------------------
@@ -43,7 +43,7 @@ processcode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_process.C"
 postprocesscode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_postprocess_only.C"
 mergecode="${CLAS12Analysisdir}/macros/mergeTrees.C"
 bincode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_binner.C"
-fitcode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_fitter.C"
+fitcode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_fitter_test.C"
 
 # Location of clas12root package
 # --------------------------------------------------------
@@ -84,12 +84,13 @@ mkdir $shellSlurmDir
 mkdir $outputSlurmDir
 
 i=0
-for h_idx in "${!hipodirs[@]}"
+for idx in "${!beamEs[@]}"
 do
-    hipodir=${hipodirs[$h_idx]}
-    for hipofile in "$hipodir"
+    beamE=${beamEs[$idx]}
+    hipodir=${hipodirs[$idx]}
+    for hipofile in "$hipodir"*
     do
-	beamE=${beamEs[$h_idx]}
+	echo $i
 	processFile="${shellSlurmDir}/${rootname}_${i}.sh"
 	touch $processFile
 	chmod +x $processFile
@@ -100,7 +101,6 @@ do
 	echo "cd ${outputSlurmDir}" >> $processFile
        	echo "rm ${rootname}_${i}.out" >> $processFile
 	echo "clas12root ${processcode}\\(\\\"${hipofile}\\\",\\\"${outputdir}/${rootname}_${i}.root\\\",${beamE}\\)" >> $processFile   
-
 	postprocessFile="${shellSlurmDir}/${rootname}_${i}_postprocess.sh"
 	touch $postprocessFile
 	chmod +x $postprocessFile
@@ -186,7 +186,8 @@ echo "    done" >> $mergeFile
 echo "echo \"\$finishedJobs completed out of \$nJobs\" >> \$mergeOutFile" >> $mergeFile 
 echo "sleep 10" >> $mergeFile
 echo "done" >> $mergeFile
-echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\"\)" >> $mergeFile
+echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_reco\\\"\)" >> $mergeFile
+echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_postprocess\\\"\)" >> $mergeFile
 echo "clas12root ${bincode}\(\\\"${outputdir}/merged_${rootname}.root\\\"\)" >> $mergeFile
 echo "${fitFile} ${outputdir}/merged_${rootname}.root.txt" >> $mergeFile
 
@@ -249,7 +250,7 @@ echo "#SBATCH --job-name=${rootname}_fitjob" >> $fitSlurm
 echo "#SBATCH --cpus-per-task=${nCPUs}" >> $fitSlurm
 echo "#SBATCH --time=24:00:00" >> $fitSlurm
 echo "#SBATCH --chdir=${workdir}" >> $fitSlurm
-echo "clas12root ${fitcode}\(\\\"${outputdir}\\\",\\\"merged_${rootname}.root\\\",\\\"\$binname\\\"\)" >> $fitSlurm
+echo "clas12root ${fitcode}\(\\\"${outputdir}\\\",\\\"merged_${rootname}\\\",\\\"\$binname\\\"\)" >> $fitSlurm
 
 echo "Submitting analysis jobs for the selected HIPO files"
 echo " "
