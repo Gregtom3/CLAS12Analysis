@@ -14,17 +14,18 @@ using namespace std;
 
 class Merger{
  public:
-  Merger(const char*, const char*, const char*);
+  Merger(const char*);
   
   void addDirPath(const char*);
- 
+
+  void addTree(std::string);
   int mergeTrees();
  protected:
   TFile *_fOut;
   TTree *_tOut;
   std::vector<std::string> _dirpaths;
   const char* _outFileName;
-  const char* _inTreeName;
+  std::vector<std::string> _treeNames;
   const char* _outTreeName;
   
 };
