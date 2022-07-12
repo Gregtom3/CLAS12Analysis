@@ -22,7 +22,7 @@ CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
-declare -a hipodirs=($RGA_F18_IN)
+declare -a hipodirs=($RGA_F18_IN_BATCH)
 
 # Beam energy associated with hipo files
 # --------------------------------------------------------
@@ -30,12 +30,12 @@ beamEs=(10.6)
 
 # Name of output directory
 # --------------------------------------------------------
-outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-v1-nSidis"
+#outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-v1-nSidis"
 #outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/rg-a"
-#outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch"
+outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch"
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="july11"
+rootname="july12"
 
 # Code locations
 # --------------------------------------------------------
@@ -90,7 +90,7 @@ do
     hipodir=${hipodirs[$idx]}
     for hipofile in "$hipodir"*
     do
-	echo $i
+	echo "Creating processing script for hipo file $((i+1))"
 	processFile="${shellSlurmDir}/${rootname}_${i}.sh"
 	touch $processFile
 	chmod +x $processFile
