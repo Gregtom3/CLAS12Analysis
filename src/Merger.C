@@ -14,8 +14,8 @@ void Merger::addTree(std::string treeName){
 
 int Merger::mergeTrees(){
 
-  // Open TFile 
-  _fOut = new TFile(_outFileName,"UPDATE");
+  // Open merged output file (not temporary)
+  _fOut=new TFile(_outFileName,"UPDATE");
 
   // For loop over all TTrees
   for(std::string treeName : _treeNames){
@@ -27,17 +27,16 @@ int Merger::mergeTrees(){
       chain->Add(_dirpaths.at(i).c_str());
     }
 
-    // Save tree to Root File
-    chain->Merge(_outFileName);
+    // Save tree to Temp Root File
+    TString tempFile = Form("%s_%s.root",_outFileName,treeName.c_str());
+    chain->Merge(tempFile.Data());
 
-    // Close file
-    _fOut->Close();
-
-    // Reopen file in update mode
-    _fOut=new TFile(_outFileName,"UPDATE");
+    // Open temp TFile with stored chained TTree
+    TFile *ftemp = new TFile(tempFile,"UPDATE");
+    ftemp->cd();
 
     // Open TTree
-    _tOut = (TTree*)_fOut->Get(treeName.c_str());
+    _tOut = (TTree*)ftemp->Get(treeName.c_str());
   
     // Create new branch containing id for each entry
     int row = 0;
@@ -47,7 +46,12 @@ int Merger::mergeTrees(){
       row = i;
       fidmerge->Fill();
     }
+    // Store TTree in outfile
+    _fOut->cd();
     _tOut->Write();
+    ftemp->Close();
+    // Remove temp file
+    gSystem->Exec(Form("rm %s",tempFile.Data()));
   }
   // Close file
   _fOut->Close();
