@@ -25,6 +25,7 @@ struct asymBin{
   strVect binVar;
   std::vector<float> binMin;
   std::vector<float> binMax;
+  const char * graphName;
 };
 
 class Asymmetry{

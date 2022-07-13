@@ -50,6 +50,13 @@ Asymmetry::Asymmetry(const char * inputDir){
 int Asymmetry::process(){
   // Get unique binnings
   std::vector<strVect> unique_binnings = getUniqueBinnings();
+  // Prepare parameter & error vectors from asymmetry fits
+  std::vector<float> sig_params;
+  std::vector<float> sig_errors;
+  std::vector<float> sigbg_params;
+  std::vector<float> sigbg_errors;
+  std::vector<float> bg_params;
+  std::vector<float> bg_errors;
   // For each unique binning, construct the appropriate TGraphErrors object
   // THIS IS GOING TO BE DIFFICULT TO GENERALIZE FOR ARBITRARY BINNING DIMENSIONS
   // BUT ANYWAY, I WILL PROCEED ASSUMING 1D ONLY
@@ -58,22 +65,138 @@ int Asymmetry::process(){
   for(strVect sv: unique_binnings){
     // Get subset of asymmetry bins with exact same binning
     std::vector<asymBin> ab_subset = getAsymBinSubset(sv);
-    // Create TGraphErrors object
-    TGraphErrors *tge = new TGraphErrors((int)ab_subset.size());
+    // Create vector of TGraphErrors object
+    // Vector b/c one binning can have multiple asymmetry fit parameters
+    std::vector<TGraphErrors *> tgeVect_sig_sideband;
+    std::vector<TGraphErrors *> tgeVect_sigbg_sideband;
+    std::vector<TGraphErrors *> tgeVect_bg_sideband;
+    std::vector<TGraphErrors *> tgeVect_sig_splot;
+    std::vector<TGraphErrors *> tgeVect_sigbg_splot;
+    std::vector<TGraphErrors *> tgeVect_bg_splot;
+    std::vector<TGraphErrors *> tgeVect_sig_cows;
+    std::vector<TGraphErrors *> tgeVect_sigbg_cows;
+    std::vector<TGraphErrors *> tgeVect_bg_cows;
     // Loop over each bin with identical bin scheme
+    bool first = true;
+    int idx_sideband = 0;
+    int idx_splot = 0;
+    int idx_cows = 0;
     for(asymBin ab : ab_subset){
       std::string rootname;
       std::string treeName;
       if(ab.method == sideband){
 	rootname = "sidebandMethod.root";
-	treeName = "";
+	treeName = "tree";
       }
       else if(ab.method == splot){
 	rootname = "DataWeightedTree.root";
 	treeName = "tree";
       }
+      else if(ab.method == cows){
+	rootname = "cowsMethod.root";
+	treeName = "tree";
+      }
+      else{
+	cout << "ERROR in Asymmetry::process --- Unknown asymBin method. Return -1" << endl;
+	return -1;
+      }
+      
+      // Load in subdirectory containing binned fit data
+      TFile *fIn = new TFile(Form("%s/%s",ab.dirpath,rootname.c_str()),"READ");
+      TTree *tIn = (TTree*)fIn->Get(treeName.c_str());
+      
+      // Fill TGraphErrors depending on method
+
+      // SIDEBAND METHOD
+      // ----------------------------------------------------
+      if(ab.method == sideband){
+	// Default to u3 for sideband for now
+	tIn->SetBranchAddress("A_sig_u3",&sig_params);
+	tIn->SetBranchAddress("A_sig_errors_u3",&sig_errors);
+	tIn->SetBranchAddress("A_sigbg_u3",&sigbg_params);
+	tIn->SetBranchAddress("A_sigbg_errors_u3",&sigbg_errors);
+	tIn->SetBranchAddress("A_bg_u3",&bg_params);
+	tIn->SetBranchAddress("A_bg_errors_u3",&bg_errors);
+	tIn->GetEntry(0);
+	for(unsigned int k = 0 ; k < sig_params.size() ; k++){
+	  if(first){
+	    first = false;
+	    for(unsigned int l = 0 ; l < sig_params.size() ; l++){
+	      tgeVect_sig_sideband.push_back(new TGraphErrors((int)ab_subset.size()));	 
+	      tgeVect_sigbg_sideband.push_back(new TGraphErrors((int)ab_subset.size()));	 
+	      tgeVect_bg_sideband.push_back(new TGraphErrors((int)ab_subset.size()));	 
+	      tgeVect_sig_sideband.at(l)->SetName(Form("sideband_%s_sig_%d"),ab.graphName,(int)l);
+	      tgeVect_sigbg_sideband.at(l)->SetName(Form("sideband_%s_sigbg_%d"),ab.graphName,(int)l);
+	      tgeVect_bg_sideband.at(l)->SetName(Form("sideband_%s_bg_%d"),ab.graphName,(int)l);
+	    }
+	  }
+	  // Bin center code will clearly change if we upgrade to 2D binnings
+	  float bincenter = (ab.binMin.at(0)+ab.binMax.at(0))/2;
+	  tgeVect_sig_sideband.at(k)->SetPoint(idx_sideband,bincenter,sig_params.at(k));
+	  tgeVect_sig_sideband.at(k)->SetPointError(idx_sideband,0,sig_errors.at(k));
+	  tgeVect_sigbg_sideband.at(k)->SetPoint(idx_sideband,bincenter,sigbg_params.at(k));
+	  tgeVect_sigbg_sideband.at(k)->SetPointError(idx_sideband,0,sigbg_errors.at(k));
+	  tgeVect_bg_sideband.at(k)->SetPoint(idx_sideband,bincenter,bg_params.at(k));
+	  tgeVect_bg_sideband.at(k)->SetPointError(idx_sideband,0,bg_errors.at(k));
+	} 
+	idx_sideband++;
+      }//if(ab.method == sideband)
+      
+      // SPLOT METHOD
+      // ----------------------------------------------------
+      if(ab.method == splot){
+	// Default to u3 for sideband for now
+	tIn->SetBranchAddress("A_sig",&sig_params);
+	tIn->SetBranchAddress("A_sig_errors",&sig_errors);
+	tIn->SetBranchAddress("A_sigbg",&sigbg_params);
+	tIn->SetBranchAddress("A_sigbg_errors",&sigbg_errors);
+	tIn->SetBranchAddress("A_bg",&bg_params);
+	tIn->SetBranchAddress("A_bg_errors",&bg_errors);
+	tIn->GetEntry(0);
+	for(unsigned int k = 0 ; k < sig_params.size() ; k++){
+	  if(first){
+	    first = false;
+	    for(unsigned int l = 0 ; l < sig_params.size() ; l++){
+	      tgeVect_sig_splot.push_back(new TGraphErrors((int)ab_subset.size()));	 
+	      tgeVect_sigbg_splot.push_back(new TGraphErrors((int)ab_subset.size()));	 
+	      tgeVect_bg_splot.push_back(new TGraphErrors((int)ab_subset.size()));	 
+	      tgeVect_sig_splot.at(l)->SetName(Form("splot_%s_sig_%d"),ab.graphName,(int)l);
+	      tgeVect_sigbg_splot.at(l)->SetName(Form("splot_%s_sigbg_%d"),ab.graphName,(int)l);
+	      tgeVect_bg_splot.at(l)->SetName(Form("splot_%s_bg_%d"),ab.graphName,(int)l);
+	    }
+	  }
+	  // Bin center code will clearly change if we upgrade to 2D binnings
+	  float bincenter = (ab.binMin.at(0)+ab.binMax.at(0))/2;
+	  tgeVect_sig_splot.at(k)->SetPoint(idx_splot,bincenter,sig_params.at(k));
+	  tgeVect_sig_splot.at(k)->SetPointError(idx_splot,0,sig_errors.at(k));
+	  tgeVect_sigbg_splot.at(k)->SetPoint(idx_splot,bincenter,sigbg_params.at(k));
+	  tgeVect_sigbg_splot.at(k)->SetPointError(idx_splot,0,sigbg_errors.at(k));
+	  tgeVect_bg_splot.at(k)->SetPoint(idx_splot,bincenter,bg_params.at(k));
+	  tgeVect_bg_splot.at(k)->SetPointError(idx_splot,0,bg_errors.at(k));
+	} 
+	idx_splot++;
+      }//if(ab.method == splot)
+    }//for(asymBin ab : ab_subset)
+
+
+    // Finished creating all the TGraphErrors for the unique binning
+    // Write TGraphErrors
+    _fOut->cd();
+    for(unsigned int l = 0 ; l < sig_params.size() ; l++){
+      tgeVect_sig_sideband.at(l)->Write();
+      tgeVect_sigbg_sideband.at(l)->Write();
+      tgeVect_bg_sideband.at(l)->Write();
+
+      tgeVect_sig_splot.at(l)->Write();
+      tgeVect_sigbg_splot.at(l)->Write();
+      tgeVect_bg_splot.at(l)->Write();
     }
-  }
+  }//for(strVect sv: unique_binnings)
+
+  // Finished processing all unique binnings
+  // Close TFile
+  _fOut->Close();
+
 }
 void Asymmetry::print(){
  
@@ -169,6 +292,14 @@ bool Asymmetry::setBin(strVect svect, asymBin & ab){
     ab.binMin.push_back(std::stof(strVectorFind(svect,_keyword,b*3+1)));
     ab.binMax.push_back(std::stof(strVectorFind(svect,_keyword,b*3+2)));
   }
+  
+  // Set graph name based on binning
+  std::string grName = "";
+  for(std::string s : ab.binVar){
+    grName+=(s+"_");
+  }
+  ab.graphName = grName.c_str();
+  
   return 0;
 }
 
