@@ -22,17 +22,23 @@ CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
-declare -a hipodirs=($RGA_F18_IN_BATCH)
+declare -a hipodirs=($RGA_F18_IN $RGA_F18_OUT $RGA_S19_IN)
 
 # Beam energy associated with hipo files
 # --------------------------------------------------------
-beamEs=(10.6)
+beamEs=(10.6 10.6 10.2)
+
+# Analysis chain parameters
+# Base chain = Processing  --> PostProcessing --> Merging
+# --------------------------------------------------------
+doAsymmetry=true # Binning --> Fitting --> Asymmetry 
 
 # Name of output directory
 # --------------------------------------------------------
 #outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-v1-nSidis"
-#outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/rg-a"
-outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch"
+outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/rg-a"
+#outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch"
+
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
 rootname="july12"
@@ -43,7 +49,7 @@ processcode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_process.C"
 postprocesscode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_postprocess_only.C"
 mergecode="${CLAS12Analysisdir}/macros/mergeTrees.C"
 bincode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_binner.C"
-fitcode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_fitter_test.C"
+fitcode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_fitter.C"
 
 # Location of clas12root package
 # --------------------------------------------------------
@@ -159,10 +165,7 @@ echo "sbatch $mergeSlurm" >> $runJobsPostProcess
 
 # Create a file which will wait until (int) 0 is outputted by each job
 # This signifies the end of the batch
-# When all jobs are complete, this script will proceed to then...
-#    - Queue merging of all tree_postprocess in the separate .root files
-#    - ???
-#    - ???
+# Analysis chain flags can add Binning, Fitting, and Asymmetry calculations
 # --------------------------------------------------------------------
 touch $mergeFile
 chmod +x $mergeFile
@@ -188,8 +191,11 @@ echo "sleep 10" >> $mergeFile
 echo "done" >> $mergeFile
 echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_reco\\\"\)" >> $mergeFile
 echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_postprocess\\\"\)" >> $mergeFile
-echo "clas12root ${bincode}\(\\\"${outputdir}/merged_${rootname}.root\\\"\)" >> $mergeFile
-echo "${fitFile} ${outputdir}/merged_${rootname}.root.txt" >> $mergeFile
+if [ "$doAsymmetry" == true ] ; then
+    echo "clas12root ${bincode}\(\\\"${outputdir}/merged_${rootname}.root\\\"\)" >> $mergeFile
+    echo "${fitFile} ${outputdir}/merged_${rootname}.root.txt" >> $mergeFile
+fi
+
 
 # Job for running the merge script
 # ------------------------------------------------
@@ -207,50 +213,53 @@ echo "#SBATCH --output=${outputSlurmDir}/merge.out" >> $mergeSlurm
 echo "#SBATCH --error=${outputSlurmDir}/merge.err" >> $mergeSlurm    
 echo "${mergeFile}" >> $mergeSlurm
 
-# Script for sending a job for each bin
+# Script for Binning + Fitting + Asymmetry
 # ------------------------------------------------
-touch $fitFile
-chmod +x $fitFile
-echo "#!/bin/bash" > $fitFile
-echo "j=0" >> $fitFile
-echo "while IFS= read -r line; do" >> $fitFile
-echo "    sbatch --output=${outputSlurmDir}/fit-\$line.out --error=${outputSlurmDir}/fit-\$line.err $fitSlurm \$line" >> $fitFile
-echo "    j=\$((j+1))" >> $fitFile
-echo "done < \$1" >> $fitFile
-echo "cd $outputSlurmDir" >> $fitFile
-echo "fitOutFile=\"fit.txt\"" >> $fitFile
-echo "touch \$fitOutFile" >> $fitFile
-echo "finishedJobs=0" >> $fitFile
-echo "nJobs=\$j" >> $fitFile
-echo "lastLine=\"\"" >> $fitFile
-echo "while [ \$finishedJobs -ne \$nJobs ]" >> $fitFile
-echo "do" >> $fitFile
-echo "    finishedJobs=0" >> $fitFile
-echo "    for outputFile in ../output/fit*.out" >> $fitFile
-echo "    do" >> $fitFile
-echo "        lastLine=\$(tail -1 \$outputFile)" >> $fitFile
-echo "        if [[ \"\$lastLine\" == \"(int) 0\" ]]; then" >>  $fitFile
-echo "            finishedJobs=\$((finishedJobs+1))" >> $fitFile
-echo "        fi" >> $fitFile
-echo "    done" >> $fitFile
-echo "echo \"\$finishedJobs completed out of \$nJobs\" >> \$fitOutFile" >> $fitFile 
-echo "sleep 10" >> $fitFile
-echo "done" >> $fitFile
+if [ "$doAsymmetry" == true ] ; then
+    touch $fitFile
+    chmod +x $fitFile
+    echo "#!/bin/bash" > $fitFile
+    echo "j=0" >> $fitFile
+    echo "while IFS= read -r line; do" >> $fitFile
+    echo "    sbatch --output=${outputSlurmDir}/fit-\$line.out --error=${outputSlurmDir}/fit-\$line.err $fitSlurm \$line" >> $fitFile
+    echo "    j=\$((j+1))" >> $fitFile
+    echo "done < \$1" >> $fitFile
+    echo "cd $outputSlurmDir" >> $fitFile
+    echo "fitOutFile=\"fit.txt\"" >> $fitFile
+    echo "touch \$fitOutFile" >> $fitFile
+    echo "finishedJobs=0" >> $fitFile
+    echo "nJobs=\$j" >> $fitFile
+    echo "lastLine=\"\"" >> $fitFile
+    echo "while [ \$finishedJobs -ne \$nJobs ]" >> $fitFile
+    echo "do" >> $fitFile
+    echo "    finishedJobs=0" >> $fitFile
+    echo "    for outputFile in ../output/fit*.out" >> $fitFile
+    echo "    do" >> $fitFile
+    echo "        lastLine=\$(tail -1 \$outputFile)" >> $fitFile
+    echo "        if [[ \"\$lastLine\" == \"(int) 0\" ]]; then" >>  $fitFile
+    echo "            finishedJobs=\$((finishedJobs+1))" >> $fitFile
+    echo "        fi" >> $fitFile
+    echo "    done" >> $fitFile
+    echo "echo \"\$finishedJobs completed out of \$nJobs\" >> \$fitOutFile" >> $fitFile 
+    echo "sleep 10" >> $fitFile
+    echo "done" >> $fitFile
 
-# Slurm job for running the fitter
-# ------------------------------------------------
-touch $fitSlurm
-chmod +x $fitSlurm
-echo "#!/bin/bash" > $fitSlurm
-echo "binname=\$1" >> $fitSlurm
-echo "#SBATCH --account=clas12" >> $fitSlurm
-echo "#SBATCH --partition=production" >> $fitSlurm
-echo "#SBATCH --mem-per-cpu=${memPerCPU}" >> $fitSlurm
-echo "#SBATCH --job-name=${rootname}_fitjob" >> $fitSlurm
-echo "#SBATCH --cpus-per-task=${nCPUs}" >> $fitSlurm
-echo "#SBATCH --time=24:00:00" >> $fitSlurm
-echo "#SBATCH --chdir=${workdir}" >> $fitSlurm
-echo "clas12root ${fitcode}\(\\\"${outputdir}\\\",\\\"merged_${rootname}\\\",\\\"\$binname\\\"\)" >> $fitSlurm
+    # Slurm job for running the fitter
+    # ------------------------------------------------
+    touch $fitSlurm
+    chmod +x $fitSlurm
+    echo "#!/bin/bash" > $fitSlurm
+    echo "binname=\$1" >> $fitSlurm
+    echo "#SBATCH --account=clas12" >> $fitSlurm
+    echo "#SBATCH --partition=production" >> $fitSlurm
+    echo "#SBATCH --mem-per-cpu=${memPerCPU}" >> $fitSlurm
+    echo "#SBATCH --job-name=${rootname}_fitjob" >> $fitSlurm
+    echo "#SBATCH --cpus-per-task=${nCPUs}" >> $fitSlurm
+    echo "#SBATCH --time=24:00:00" >> $fitSlurm
+    echo "#SBATCH --chdir=${workdir}" >> $fitSlurm
+    echo "clas12root ${fitcode}\(\\\"${outputdir}\\\",\\\"merged_${rootname}\\\",\\\"\$binname\\\"\)" >> $fitSlurm
+fi
+
 
 echo "Submitting analysis jobs for the selected HIPO files"
 echo " "
