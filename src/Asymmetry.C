@@ -11,10 +11,10 @@ Asymmetry::Asymmetry(const char * inputDir){
     char * subdirpath = Form("%s/%s",inputDir,subdir);
 
     // Split subdirectory by keyword "_"
-    charVect cvect = splitString(subdir,"_");
+    strVect svect = splitString(subdir,"_");
     
     // Test if subdirectory contains keyword "bin"
-    if(charVectorContains(cvect, _keyword)==false)
+    if(strVectorContains(svect, _keyword)==false)
       continue;
     
     // Create new asymmetry bin
@@ -23,35 +23,52 @@ Asymmetry::Asymmetry(const char * inputDir){
     // 3. Set bin specific variables (binVar, min, max)
     asymBin ab;
     ab.dirpath = subdirpath;
-    if(charVectorContains(cvect,"sideband")==true)
+    if(strVectorContains(svect,"sideband")==true)
       {
 	ab.method = sideband;
       }
-    else if(charVectorContains(cvect,"splot")==true)
+    else if(strVectorContains(svect,"splot")==true)
       {
 	ab.method = splot;
       }
-    else if(charVectorContains(cvect,"cows")==true)
+    else if(strVectorContains(svect,"cows")==true)
       {
 	ab.method = cows;
       }
     else
       continue;
 
-    if(setBin(cvect,ab)==-1)
+    if(setBin(svect,ab)==-1)
       continue;
     else
       _asymBins.push_back(ab);
   }
+  
+  _fOut = new TFile(Form("%s/asymmetry.root",inputDir),"RECREATE");
 }
 
+void Asymmetry::print(){
+ 
+  // Print all the unique binnings
+  for(strVect sv : getUniqueBinnings()){
+    cout << sv.size() << "-dimensional binning in ";
+    for(unsigned int j = 0 ; j < sv.size() ; j++){
+      cout << sv.at(j);
+      if(j+1<sv.size())
+	cout << " and ";
+      else
+	cout << ".\n";   
+    }
+  }
+
+}
 // Splits string/char based on delimeter
 // Example:
 // splitString("how_are_you","_") would return
 // std::vector<char *> = {"how","are","you"}
-charVect Asymmetry::splitString(char * string, const char * delimiter){
-  charVect splits;
-  std::istringstream iss(std::string(string));
+strVect Asymmetry::splitString(std::string string, const char * delimiter){
+  strVect splits;
+  std::istringstream iss(string);
   std::string token;
   while (std::getline(iss, token, delimiter))
     {
@@ -61,9 +78,9 @@ charVect Asymmetry::splitString(char * string, const char * delimiter){
 }
 
 // Checks if char * vector contains keyword
-bool Asymmetry::stringVectorContains(charVect cvect, const char* keyword){
-  for(char * c: cvect){
-    int x = std::string(c).compare(std::string(keyword));
+bool Asymmetry::stringVectorContains(strVect svect, const char* keyword){
+  for(std::string s: svect){
+    int x = std::string(s).compare(std::string(keyword));
     if(x==0)
       return true; // Match!
   }
@@ -72,46 +89,46 @@ bool Asymmetry::stringVectorContains(charVect cvect, const char* keyword){
 
 // Returns std::string exactly "skip" places after the keyword
 // Example
-// charVectorAfter({"alpha","beta","gamma","omega"} , "beta" , 2)
+// strVectorAfter({"alpha","beta","gamma","omega"} , "beta" , 2)
 // returns "omega"
-std::string Asymmetry::charVectorFind(charVect cvect, const char* keyword, int skip){
+std::string Asymmetry::strVectorFind(strVect svect, const char* keyword, int skip){
   int i = 0;
-  for(char * c : cvect){
-    int x = std::string(c).compare(std::string(keyword));
+  for(std::string s : svect){
+    int x = std::string(s).compare(std::string(keyword));
     if(x==0){
-      if(i+skip>cvect.size()-1 || i+skip < 0){
-	cout << "ERROR in Asymmetry::charVectorFind --- Out of bounds exception with respect to skip variable. The keyword index PLUS skip variable must be within [0," << cvect.size()-1 << "], however index+skip = " << i << "+" << skip << " = " << i+skip << ". Returning empty std::string" << endl;
+      if(i+skip>svect.size()-1 || i+skip < 0){
+	cout << "ERROR in Asymmetry::strVectorFind --- Out of bounds exception with respect to skip variable. The keyword index PLUS skip variable must be within [0," << svect.size()-1 << "], however index+skip = " << i << "+" << skip << " = " << i+skip << ". Returning empty std::string" << endl;
 	return std::string("");
       }
-      return std::string(cvect.at(i+skip));
+      return std::string(svect.at(i+skip));
     }
     else
       i++;
   }
-  cout << "WARNING in Asymmetry::charVectorFind --- No keyword found. Returning empty string" << endl;
+  cout << "WARNING in Asymmetry::strVectorFind --- No keyword found. Returning empty string" << endl;
   return std::string("");
 }
 
-// Returns index of keyword in charVect
-int Asymmetry::charVectorIndex(charVect cvect, const char* keyword){
+// Returns index of keyword in strVect
+int Asymmetry::strVectorIndex(strVect svect, const char* keyword){
   int i = 0;
-  for(char * c : cvect){
-    int x = std::string(c).compare(std::string(keyword));
+  for(std::string s : svect){
+    int x = std::string(s).compare(std::string(keyword));
     if(x==0)
       return i;
     else
       i++;
   }
-  cout << "WARNING in Asymmetry::charVectorIndex --- Cannot find keyword. Return -1" << endl;
+  cout << "WARNING in Asymmetry::strVectorIndex --- Cannot find keyword. Return -1" << endl;
   return -1;
 }
 
-// Set the bin related variables based on cvect info
-bool Asymmetry::setBin(charVect cvect, asymBin & ab){
+// Set the bin related variables based on svect info
+bool Asymmetry::setBin(strVect svect, asymBin & ab){
   // Get index of keyword in char array
-  int idx = charVectorIndex(cvect,_keyword);
+  int idx = strVectorIndex(svect,_keyword);
   // Get size of char array
-  int L = (int)cvect.size();
+  int L = (int)svect.size();
   // Extract number of binnings
   if((L-idx)%3!=0){
     cout << "ERROR in Asymmetry::setBin --- After the key word, there must be a 'N' distinct terms separate by '_' , where 'N' is divisible by 3. This is not the case. The required format from the Binning code should be 'method_bin_binVar1_min1_max1_binVar2_min2_max2... Returning -1" << endl;
@@ -120,9 +137,57 @@ bool Asymmetry::setBin(charVect cvect, asymBin & ab){
   int nBins = (L-idx)/3;
   // Set bin names, bin mins, bin maxs
   for(int b = 0 ; b < nBins; b++){
-    ab.binVar.push_back(charVectorFind(cvect,_keyword,b*3).c_str());
-    ab.binMin.push_back(std::stof(charVectorFind(cvect,_keyword,b*3+1)));
-    ab.binMax.push_back(std::stof(charVectorFind(cvect,_keyword,b*3+2)));
+    ab.binVar.push_back(strVectorFind(svect,_keyword,b*3));
+    ab.binMin.push_back(std::stof(strVectorFind(svect,_keyword,b*3+1)));
+    ab.binMax.push_back(std::stof(strVectorFind(svect,_keyword,b*3+2)));
   }
   return 0;
+}
+
+// Compare two strVectors
+// Returns true if identical
+// Returns false if not identical
+bool Asymmetry::strVectorCompare(strVect sv1, strVect sv2){
+  if(sv1.size()!=sv2.size())
+    return false;
+  
+  for(unsigned int i = 0 ; i < sv1.size() ; i++){
+    std::string s1 = sv1.at(i);
+    std::string s2 = sv2.at(i);
+    if(s1.compare(s2)!=0)
+      return false;
+  }
+  
+  return true;
+}
+
+std::vector<strVect> Asymmetry::getUniqueBinnings(){
+  std::vector<strVect> unique_binnings;
+  cout << " Consolidating the following binnings " << endl;
+  for(asymBin ab: _asymBins){
+    if(unique_binnings.size()==0)
+      unique_binnings.push_back(ab.binVar);
+    else{
+      bool seen_before = false;
+      for(strVect sv : unique_binnings){
+	if(strVectorCompare(sv,ab.binVar)==true)
+	  seen_before = true;
+      }
+      if(!seen_before)
+	unique_binnings.push_back(ab.binVar);	
+    }
+  }
+  return unique_binnings;
+}
+
+// Returns subset of AsymBins defined by their unique binning (binVar) 
+// This code essentially returns a vector of asymmetry binnings
+// of a specifically defined bin type (say, for example, x & z 2D binning)
+std::vector<asymBin> Asymmetry::getAsymBinSubset(strVect sv){
+  std::vector<asymBin> asymBinSubset;
+  for(asymBin ab : _asymBins){
+    if(strVectorCompare(ab.binVar,sv)==true)
+      asymBinSubset.push_back(ab);
+  }
+  return asymBinSubset;
 }
