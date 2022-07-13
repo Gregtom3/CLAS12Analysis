@@ -47,6 +47,34 @@ Asymmetry::Asymmetry(const char * inputDir){
   _fOut = new TFile(Form("%s/asymmetry.root",inputDir),"RECREATE");
 }
 
+int Asymmetry::process(){
+  // Get unique binnings
+  std::vector<strVect> unique_binnings = getUniqueBinnings();
+  // For each unique binning, construct the appropriate TGraphErrors object
+  // THIS IS GOING TO BE DIFFICULT TO GENERALIZE FOR ARBITRARY BINNING DIMENSIONS
+  // BUT ANYWAY, I WILL PROCEED ASSUMING 1D ONLY
+
+  // Loop over each unique binning
+  for(strVect sv: unique_binnings){
+    // Get subset of asymmetry bins with exact same binning
+    std::vector<asymBin> ab_subset = getAsymBinSubset(sv);
+    // Create TGraphErrors object
+    TGraphErrors *tge = new TGraphErrors((int)ab_subset.size());
+    // Loop over each bin with identical bin scheme
+    for(asymBin ab : ab_subset){
+      std::string rootname;
+      std::string treeName;
+      if(ab.method == sideband){
+	rootname = "sidebandMethod.root";
+	treeName = "";
+      }
+      else if(ab.method == splot){
+	rootname = "DataWeightedTree.root";
+	treeName = "tree";
+      }
+    }
+  }
+}
 void Asymmetry::print(){
  
   // Print all the unique binnings
@@ -191,3 +219,4 @@ std::vector<asymBin> Asymmetry::getAsymBinSubset(strVect sv){
   }
   return asymBinSubset;
 }
+
