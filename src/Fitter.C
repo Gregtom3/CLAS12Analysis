@@ -231,6 +231,7 @@ int Fitter::executeSideband(){
   fOut->cd();
   // Write asymmetry parameters to TTree to TFile
   tOut->Fill();
+  tOut->Write();
   // Write TF1's to TFile
   f_peak->Write();
   f_sideband->Write();

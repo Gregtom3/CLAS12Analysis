@@ -30,6 +30,7 @@ struct asymBin{
 class Asymmetry{
  public:
   Asymmetry(const char *);
+  int process();
   void print();
  protected:
   strVect splitString(std::string, const char *);
@@ -40,7 +41,6 @@ class Asymmetry{
   bool strVectorCompare(strVect, strVect);
   std::vector<strVect> getUniqueBinnings();
   std::vector<asymBin> getAsymBinSubset(strVect);
-  
 
   const char * _inputDir;
   TFile *_fOut;
