@@ -181,7 +181,7 @@ echo "    finishedJobs=0" >> $mergeFile
 echo "    for outputFile in ../output/*.out" >> $mergeFile
 echo "    do" >> $mergeFile
 echo "        lastLine=\$(tail -1 \$outputFile)" >> $mergeFile
-echo "        if [[ \"\$lastLine\" == \"(int) 0\" ]]; then" >>  $mergeFile
+echo "        if [[ \"\$lastLine\" == \"(int) 3\" ]]; then" >>  $mergeFile
 echo "            finishedJobs=\$((finishedJobs+1))" >> $mergeFile
 echo "        fi" >> $mergeFile
 echo "    done" >> $mergeFile
