@@ -191,7 +191,7 @@ echo "done" >> $mergeFile
 echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_reco\\\"\)" >> $mergeFile
 echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_postprocess\\\"\)" >> $mergeFile
 if [ "$doAsymmetry" == true ] ; then
-    echo "clas12root ${asymmetrycode}\(\\\"${outputdir}/merged_${rootname}.root\\\",\\\"\\\",\\\"\\\",1\)" >> $mergeFile
+    echo "clas12root ${asymmetrycode}\(\\\"${outputdir}\\\",\\\"merged_${rootname}\\\",\\\"\\\",1\)" >> $mergeFile
     echo "${fitFile} ${outputdir}/merged_${rootname}.root.txt" >> $mergeFile
 fi
 
