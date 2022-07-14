@@ -67,6 +67,19 @@ int mergeTrees(const char * inputDir="/lustre19/expphy/volatile/clas12/users/gma
   // Merge the TTrees
   //---------------------------
   merger->mergeTrees();
+  
+  // Special return statement for slurm
+  // If tree_MC, return 1
+  // If tree_reco, return 2
+  // If tree_postprocess, return 3
+  // Else, return 0
+  std::string str = treeName;
+  if(str.compare("tree_MC")==0)
+    return 1;
+  else if(str.compare("tree_reco")==0)
+    return 2;
+  else if(str.compare("tree_postprocess")==0)
+    return 3;
 
   return 0;
 }

@@ -65,6 +65,7 @@ bool PID::advancedRECParticleCuts(SIDISParticlev1* sp){
   // For charged pions, perform additional chi2 cuts
   // See RGA analysis note for details
   if(pid==211||pid==-211){
+    // Only do chargedPionChi2cut if user desires it
     if(_settings._chargedPionChi2cut!=Settings::chargedPionChi2cut::none){
       // Determine pion charge dependent C value
       float C = 0.0;
