@@ -390,9 +390,9 @@ int SIDISKinematicsReco::CollectParticlesFromTruth(const std::unique_ptr<clas12:
     sp->set_property( SIDISParticle::evtgen_part_vy,   vy);
     sp->set_property( SIDISParticle::evtgen_part_vz,   vz);
     //    sp->set_property( SIDISParticle::evtgen_part_vt,   vt);
-    sp->set_property( SIDISParticle::evtgen_part_pindex,   ineg999);
-    sp->set_property( SIDISParticle::evtgen_part_beta,   fneg999);
-    sp->set_property( SIDISParticle::evtgen_part_chi2,   fneg999);
+    sp->set_property( SIDISParticle::evtgen_part_pindex,   (int)-999);
+    sp->set_property( SIDISParticle::evtgen_part_beta,   (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_chi2,   (float)-999);
     sp->set_property( SIDISParticle::evtgen_part_ID,   mcparticles->getIndex());
     sp->set_property( SIDISParticle::evtgen_part_parentID,  mcparticles->getParent());
     sp->set_property( SIDISParticle::evtgen_part_parentPID, mcparticles->getPid(mcparticles->getParent()-1));

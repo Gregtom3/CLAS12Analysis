@@ -107,6 +107,8 @@ int Binner::processBins()
     outTree->Branch("phih",&_phih);
     outTree->Branch("phiR",&_phiR);
     outTree->Branch("theta",&_theta);
+    outTree->Branch("Mdiphoton",&_Mdiphoton);
+    outTree->Branch("Mdihadron",&_Mdihadron);
     if(_helicity_flag.at(i)==0){
       outTree->Branch("helicity",&_helicity);
     }
