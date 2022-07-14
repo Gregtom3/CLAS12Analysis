@@ -22,11 +22,11 @@ CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
-declare -a hipodirs=($RGA_F18_IN_BATCH)
+declare -a hipodirs=($RGA_F18_IN $RGA_F18_OUT $RGA_S19_IN)
 
 # Beam energy associated with hipo files
 # --------------------------------------------------------
-beamEs=(10.6)
+beamEs=(10.6 10.6 10.2)
 
 # Analysis chain parameters
 # Base chain = Processing  --> PostProcessing --> Merging
@@ -36,8 +36,8 @@ doAsymmetry=true # Binning --> Fitting --> Asymmetry
 # Name of output directory
 # --------------------------------------------------------
 #outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-v1-nSidis"
-#outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/rg-a"
-outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch"
+outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/rg-a"
+#outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch"
 
 # Prefix for the output files from the analysis
 # --------------------------------------------------------

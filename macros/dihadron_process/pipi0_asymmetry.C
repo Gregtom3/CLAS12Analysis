@@ -20,7 +20,7 @@ int pipi0_asymmetry(
 		    const char * inputDir = "/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch/july14",
 		    const char * rootName = "merged_july14",
 		    const char * treeName = "bin_x_0.100000_0.130000",
-		    int stage = 2
+		    int stage = 3
 )
 {
   
