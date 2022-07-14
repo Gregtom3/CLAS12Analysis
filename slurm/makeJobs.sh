@@ -104,10 +104,6 @@ do
 	echo "module load clas12/pro" >> $processFile
 	echo "set CLAS12ROOT=${clas12rootdir}" >> $processFile
 	echo "cd ${outputSlurmDir}" >> $processFile
-<<<<<<< HEAD
-=======
-       	echo "rm ${rootname}_${i}.out" >> $processFile
->>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
 	echo "clas12root ${processcode}\\(\\\"${hipofile}\\\",\\\"${outputdir}/${rootname}_${i}.root\\\",${beamE}\\)" >> $processFile   
 	postprocessFile="${shellSlurmDir}/${rootname}_${i}_postprocess.sh"
 	touch $postprocessFile
@@ -117,10 +113,6 @@ do
 	echo "module load clas12/pro" >> $postprocessFile
 	echo "set CLAS12ROOT=${clas12rootdir}" >> $postprocessFile
 	echo "cd ${outputSlurmDir}" >> $postprocessFile
-<<<<<<< HEAD
-=======
-	echo "rm ${rootname}_${i}.out" >> $postprocessFile
->>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
 	echo "clas12root ${postprocesscode}\\(\\\"${outputdir}/${rootname}_${i}.root\\\",${beamE}\\)" >> $postprocessFile   
 	i=$((i+1))
     done
@@ -163,14 +155,9 @@ echo "#SBATCH --cpus-per-task=${nCPUs}" >> $runJobsPostProcess
 echo "#SBATCH --time=24:00:00" >> $runJobsPostProcess
 echo "#SBATCH --chdir=${workdir}" >> $runJobsPostProcess
 echo "#SBATCH --array=0-${i}" >> $runJobsPostProcess
-<<<<<<< HEAD
 echo "#SBATCH --output=${outputSlurmDir}/postprocess-%x-%a.out" >> $runJobsPostProcess
 echo "#SBATCH --error=${outputSlurmDir}/postprocess-%x-%a.err" >> $runJobsPostProcess    
 echo "rm ${outputSlurmDir}/${rootname}*.out" >> $runJobsPostProcess
-=======
-echo "#SBATCH --output=${outputSlurmDir}/%x-%a.out" >> $runJobsPostProcess
-echo "#SBATCH --error=${outputSlurmDir}/%x-%a.err" >> $runJobsPostProcess    
->>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
 echo "${shellSlurmDir}/${rootname}_\${SLURM_ARRAY_TASK_ID}_postprocess.sh" >> $runJobsPostProcess
 echo "sbatch $mergeSlurm" >> $runJobsPostProcess
 
@@ -190,17 +177,10 @@ echo "lastLine=\"\"" >> $mergeFile
 echo "while [ \$finishedJobs -ne \$nJobs ]" >> $mergeFile
 echo "do" >> $mergeFile
 echo "    finishedJobs=0" >> $mergeFile
-<<<<<<< HEAD
 echo "    for outputFile in ../output/${rootname}*.out" >> $mergeFile
 echo "    do" >> $mergeFile
 echo "        lastLine=\$(tail -1 \$outputFile)" >> $mergeFile
 echo "        if [[ \"\$lastLine\" == \"(int) 0\" ]]; then" >>  $mergeFile
-=======
-echo "    for outputFile in ../output/*.out" >> $mergeFile
-echo "    do" >> $mergeFile
-echo "        lastLine=\$(tail -1 \$outputFile)" >> $mergeFile
-echo "        if [[ \"\$lastLine\" == \"(int) 3\" ]]; then" >>  $mergeFile
->>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
 echo "            finishedJobs=\$((finishedJobs+1))" >> $mergeFile
 echo "        fi" >> $mergeFile
 echo "    done" >> $mergeFile
@@ -240,19 +220,12 @@ if [ "$doAsymmetry" == true ] ; then
     chmod +x $fitFile
     echo "#!/bin/bash" > $fitFile
     echo "j=0" >> $fitFile
-<<<<<<< HEAD
     echo "cd $outputSlurmDir" >> $fitFile
     echo "rm fit*" >> $fitFile
-=======
->>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
     echo "while IFS= read -r line; do" >> $fitFile
     echo "    sbatch --output=${outputSlurmDir}/fit-\$line.out --error=${outputSlurmDir}/fit-\$line.err $fitSlurm \$line" >> $fitFile
     echo "    j=\$((j+1))" >> $fitFile
     echo "done < \$1" >> $fitFile
-<<<<<<< HEAD
-=======
-    echo "cd $outputSlurmDir" >> $fitFile
->>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
     echo "fitOutFile=\"fit.txt\"" >> $fitFile
     echo "touch \$fitOutFile" >> $fitFile
     echo "finishedJobs=0" >> $fitFile

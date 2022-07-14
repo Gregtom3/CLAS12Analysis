@@ -34,15 +34,9 @@ R__LOAD_LIBRARY(libclas12ana.so)
 
 using namespace std;
 
-<<<<<<< HEAD
 int mergeTrees(const char * inputDir="/lustre19/expphy/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch/july14",
 	       const char * rootname="july14",
 	       const char * treeName="tree_postprocess"
-=======
-int mergeTrees(const char * inputDir="/lustre19/expphy/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch/july12",
-	       const char * rootname="july12",
-	       const char * treeName="tree_reco"
->>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
 ){
   //---------------
   // Load libraries
