@@ -158,10 +158,13 @@ int Fitter::executeSideband(){
     cout << "\tPurity u" << i << endl;
     sig_params.clear();
     sig_errors.clear();
+<<<<<<< HEAD
     sigbg_params.clear();
     sigbg_errors.clear();
     bg_params.clear();
     bg_errors.clear();
+=======
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
 
     double u = uarr[i];
     TH2F * hsp1 = (TH2F*)h_sigbg_plus->Clone();
@@ -201,6 +204,10 @@ int Fitter::executeSideband(){
       
       double sig_param = (1.0/u)*sigbg_param - ((1.0-u)/u)*bg_param;
       double sig_error = sqrt( pow(sigbg_error/u,2) + pow(bg_error*(1.0-u)/u,2) );
+<<<<<<< HEAD
+=======
+      
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
       sig_params.push_back(sig_param);
       sig_errors.push_back(sig_error);
       sigbg_params.push_back(sigbg_param);
@@ -213,33 +220,45 @@ int Fitter::executeSideband(){
       sig_params_u0 = sig_params;
       sigbg_params_u0 = sigbg_params;
       bg_params_u0 = bg_params;
+<<<<<<< HEAD
       sig_errors_u0 = sig_errors;
       sigbg_errors_u0 = sigbg_errors;
       bg_errors_u0 = bg_errors;
+=======
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
     }
     else if(i==1){
       sig_params_u1 = sig_params;
       sigbg_params_u1 = sigbg_params;
       bg_params_u1 = bg_params;
+<<<<<<< HEAD
       sig_errors_u1 = sig_errors;
       sigbg_errors_u1 = sigbg_errors;
       bg_errors_u1 = bg_errors;
+=======
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
     }
     else if(i==2){
       sig_params_u2 = sig_params;
       sigbg_params_u2 = sigbg_params;
       bg_params_u2 = bg_params;
+<<<<<<< HEAD
       sig_errors_u2 = sig_errors;
       sigbg_errors_u2 = sigbg_errors;
       bg_errors_u2 = bg_errors;
+=======
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
     }
     else if(i==3){
       sig_params_u3 = sig_params;
       sigbg_params_u3 = sigbg_params;
       bg_params_u3 = bg_params;
+<<<<<<< HEAD
       sig_errors_u3 = sig_errors;
       sigbg_errors_u3 = sigbg_errors;
       bg_errors_u3 = bg_errors;
+=======
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
     } 
   }
   cout << "Sideband Method --- Writing to TFile " << endl;
@@ -255,9 +274,12 @@ int Fitter::executeSideband(){
   f_bg->Write();
   // Write TH1F to TFile
   h->Write();
+<<<<<<< HEAD
   // Close TFile
   fOut->Close();
 
+=======
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
   return 0;  
 }
 
@@ -389,7 +411,10 @@ int Fitter::executeSplot(){
   f_bg->Write();
   // Delete large TTree from file
   fOut->Delete(_treeName.c_str());
+<<<<<<< HEAD
   fOut->Close();
+=======
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
   return 0;
 }
 int Fitter::extractSWeights(){

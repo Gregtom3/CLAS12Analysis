@@ -26,12 +26,20 @@ enum Method{
 // Structure for each unique binning
 // std::vector's account for multidimensional binnings
 struct asymBin{
+<<<<<<< HEAD
   std::string dirpath;
+=======
+  const char * dirpath;
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
   Method method;
   strVect binVar;
   std::vector<float> binMin;
   std::vector<float> binMax;
+<<<<<<< HEAD
   std::string graphName;
+=======
+  const char * graphName;
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
 };
 
 class Asymmetry{

@@ -9,7 +9,11 @@ Asymmetry::Asymmetry(const char * inputDir){
   while((subdir = const_cast<char *>(gSystem->GetDirEntry(dir)))){
     // Save full path of subdirectory
     char * subdirpath = Form("%s/%s",inputDir,subdir);
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
     // Split subdirectory by keyword "_"
     strVect svect = splitString(subdir,"_");
     
@@ -17,13 +21,20 @@ Asymmetry::Asymmetry(const char * inputDir){
     if(strVectorContains(svect, _keyword)==false)
       continue;
     
+<<<<<<< HEAD
     cout << subdirpath << endl;
+=======
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
     // Create new asymmetry bin
     // 1. Set subdirpath (starting from root)
     // 2. Find method type from prefix
     // 3. Set bin specific variables (binVar, min, max)
     asymBin ab;
+<<<<<<< HEAD
     ab.dirpath = std::string(subdirpath);
+=======
+    ab.dirpath = subdirpath;
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
     if(strVectorContains(svect,"sideband")==true)
       {
 	ab.method = sideband;
@@ -52,12 +63,21 @@ int Asymmetry::process(){
   // Get unique binnings
   std::vector<strVect> unique_binnings = getUniqueBinnings();
   // Prepare parameter & error vectors from asymmetry fits
+<<<<<<< HEAD
   std::vector<float> *sig_params=0;
   std::vector<float> *sig_errors=0;
   std::vector<float> *sigbg_params=0;
   std::vector<float> *sigbg_errors=0;
   std::vector<float> *bg_params=0;
   std::vector<float> *bg_errors=0;
+=======
+  std::vector<float> sig_params;
+  std::vector<float> sig_errors;
+  std::vector<float> sigbg_params;
+  std::vector<float> sigbg_errors;
+  std::vector<float> bg_params;
+  std::vector<float> bg_errors;
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
   // For each unique binning, construct the appropriate TGraphErrors object
   // THIS IS GOING TO BE DIFFICULT TO GENERALIZE FOR ARBITRARY BINNING DIMENSIONS
   // BUT ANYWAY, I WILL PROCEED ASSUMING 1D ONLY
@@ -102,9 +122,14 @@ int Asymmetry::process(){
 	return -1;
       }
       
+<<<<<<< HEAD
       cout << ab.dirpath << endl;
       // Load in subdirectory containing binned fit data
       TFile *fIn = new TFile(Form("%s/%s",ab.dirpath.c_str(),rootname.c_str()),"READ");
+=======
+      // Load in subdirectory containing binned fit data
+      TFile *fIn = new TFile(Form("%s/%s",ab.dirpath,rootname.c_str()),"READ");
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
       TTree *tIn = (TTree*)fIn->Get(treeName.c_str());
       
       // Fill TGraphErrors depending on method
@@ -120,6 +145,7 @@ int Asymmetry::process(){
 	tIn->SetBranchAddress("A_bg_u3",&bg_params);
 	tIn->SetBranchAddress("A_bg_errors_u3",&bg_errors);
 	tIn->GetEntry(0);
+<<<<<<< HEAD
 	for(unsigned int k = 0 ; k < sig_params->size() ; k++){
 	  if(first){
 	    first = false;
@@ -130,16 +156,37 @@ int Asymmetry::process(){
 	      tgeVect_sig_sideband.at(l)->SetName(Form("sideband_%s_sig_%d",ab.graphName.c_str(),(int)l));
 	      tgeVect_sigbg_sideband.at(l)->SetName(Form("sideband_%s_sigbg_%d",ab.graphName.c_str(),(int)l));
 	      tgeVect_bg_sideband.at(l)->SetName(Form("sideband_%s_bg_%d",ab.graphName.c_str(),(int)l));
+=======
+	for(unsigned int k = 0 ; k < sig_params.size() ; k++){
+	  if(first){
+	    first = false;
+	    for(unsigned int l = 0 ; l < sig_params.size() ; l++){
+	      tgeVect_sig_sideband.push_back(new TGraphErrors((int)ab_subset.size()));	 
+	      tgeVect_sigbg_sideband.push_back(new TGraphErrors((int)ab_subset.size()));	 
+	      tgeVect_bg_sideband.push_back(new TGraphErrors((int)ab_subset.size()));	 
+	      tgeVect_sig_sideband.at(l)->SetName(Form("sideband_%s_sig_%d",ab.graphName,(int)l));
+	      tgeVect_sigbg_sideband.at(l)->SetName(Form("sideband_%s_sigbg_%d",ab.graphName,(int)l));
+	      tgeVect_bg_sideband.at(l)->SetName(Form("sideband_%s_bg_%d",ab.graphName,(int)l));
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
 	    }
 	  }
 	  // Bin center code will clearly change if we upgrade to 2D binnings
 	  float bincenter = (ab.binMin.at(0)+ab.binMax.at(0))/2;
+<<<<<<< HEAD
 	  tgeVect_sig_sideband.at(k)->SetPoint(idx_sideband,bincenter,sig_params->at(k));
 	  tgeVect_sig_sideband.at(k)->SetPointError(idx_sideband,0,sig_errors->at(k));
 	  tgeVect_sigbg_sideband.at(k)->SetPoint(idx_sideband,bincenter,sigbg_params->at(k));
 	  tgeVect_sigbg_sideband.at(k)->SetPointError(idx_sideband,0,sigbg_errors->at(k));
 	  tgeVect_bg_sideband.at(k)->SetPoint(idx_sideband,bincenter,bg_params->at(k));
 	  tgeVect_bg_sideband.at(k)->SetPointError(idx_sideband,0,bg_errors->at(k));
+=======
+	  tgeVect_sig_sideband.at(k)->SetPoint(idx_sideband,bincenter,sig_params.at(k));
+	  tgeVect_sig_sideband.at(k)->SetPointError(idx_sideband,0,sig_errors.at(k));
+	  tgeVect_sigbg_sideband.at(k)->SetPoint(idx_sideband,bincenter,sigbg_params.at(k));
+	  tgeVect_sigbg_sideband.at(k)->SetPointError(idx_sideband,0,sigbg_errors.at(k));
+	  tgeVect_bg_sideband.at(k)->SetPoint(idx_sideband,bincenter,bg_params.at(k));
+	  tgeVect_bg_sideband.at(k)->SetPointError(idx_sideband,0,bg_errors.at(k));
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
 	} 
 	idx_sideband++;
       }//if(ab.method == sideband)
@@ -155,6 +202,7 @@ int Asymmetry::process(){
 	tIn->SetBranchAddress("A_bg",&bg_params);
 	tIn->SetBranchAddress("A_bg_errors",&bg_errors);
 	tIn->GetEntry(0);
+<<<<<<< HEAD
 	for(unsigned int k = 0 ; k < sig_params->size() ; k++){
 	  if(first){
 	    first = false;
@@ -165,16 +213,37 @@ int Asymmetry::process(){
 	      tgeVect_sig_splot.at(l)->SetName(Form("splot_%s_sig_%d",ab.graphName.c_str(),(int)l));
 	      tgeVect_sigbg_splot.at(l)->SetName(Form("splot_%s_sigbg_%d",ab.graphName.c_str(),(int)l));
 	      tgeVect_bg_splot.at(l)->SetName(Form("splot_%s_bg_%d",ab.graphName.c_str(),(int)l));
+=======
+	for(unsigned int k = 0 ; k < sig_params.size() ; k++){
+	  if(first){
+	    first = false;
+	    for(unsigned int l = 0 ; l < sig_params.size() ; l++){
+	      tgeVect_sig_splot.push_back(new TGraphErrors((int)ab_subset.size()));	 
+	      tgeVect_sigbg_splot.push_back(new TGraphErrors((int)ab_subset.size()));	 
+	      tgeVect_bg_splot.push_back(new TGraphErrors((int)ab_subset.size()));	 
+	      tgeVect_sig_splot.at(l)->SetName(Form("splot_%s_sig_%d",ab.graphName,(int)l));
+	      tgeVect_sigbg_splot.at(l)->SetName(Form("splot_%s_sigbg_%d",ab.graphName,(int)l));
+	      tgeVect_bg_splot.at(l)->SetName(Form("splot_%s_bg_%d",ab.graphName,(int)l));
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
 	    }
 	  }
 	  // Bin center code will clearly change if we upgrade to 2D binnings
 	  float bincenter = (ab.binMin.at(0)+ab.binMax.at(0))/2;
+<<<<<<< HEAD
 	  tgeVect_sig_splot.at(k)->SetPoint(idx_splot,bincenter,sig_params->at(k));
 	  tgeVect_sig_splot.at(k)->SetPointError(idx_splot,0,sig_errors->at(k));
 	  tgeVect_sigbg_splot.at(k)->SetPoint(idx_splot,bincenter,sigbg_params->at(k));
 	  tgeVect_sigbg_splot.at(k)->SetPointError(idx_splot,0,sigbg_errors->at(k));
 	  tgeVect_bg_splot.at(k)->SetPoint(idx_splot,bincenter,bg_params->at(k));
 	  tgeVect_bg_splot.at(k)->SetPointError(idx_splot,0,bg_errors->at(k));
+=======
+	  tgeVect_sig_splot.at(k)->SetPoint(idx_splot,bincenter,sig_params.at(k));
+	  tgeVect_sig_splot.at(k)->SetPointError(idx_splot,0,sig_errors.at(k));
+	  tgeVect_sigbg_splot.at(k)->SetPoint(idx_splot,bincenter,sigbg_params.at(k));
+	  tgeVect_sigbg_splot.at(k)->SetPointError(idx_splot,0,sigbg_errors.at(k));
+	  tgeVect_bg_splot.at(k)->SetPoint(idx_splot,bincenter,bg_params.at(k));
+	  tgeVect_bg_splot.at(k)->SetPointError(idx_splot,0,bg_errors.at(k));
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
 	} 
 	idx_splot++;
       }//if(ab.method == splot)
@@ -184,7 +253,11 @@ int Asymmetry::process(){
     // Finished creating all the TGraphErrors for the unique binning
     // Write TGraphErrors
     _fOut->cd();
+<<<<<<< HEAD
     for(unsigned int l = 0 ; l < sig_params->size() ; l++){
+=======
+    for(unsigned int l = 0 ; l < sig_params.size() ; l++){
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
       tgeVect_sig_sideband.at(l)->Write();
       tgeVect_sigbg_sideband.at(l)->Write();
       tgeVect_bg_sideband.at(l)->Write();

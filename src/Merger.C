@@ -1,9 +1,12 @@
 #include "Merger.h"
 
+<<<<<<< HEAD
 #include <iostream>
 
 using namespace std;
 
+=======
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
 Merger::Merger(const char* outFileName){
   _outFileName = outFileName;
 }
@@ -17,6 +20,7 @@ void Merger::addTree(std::string treeName){
 }
 
 int Merger::mergeTrees(){
+<<<<<<< HEAD
 
   // For loop over all TTrees
   for(std::string treeName : _treeNames){
@@ -36,6 +40,33 @@ int Merger::mergeTrees(){
     _fOut=new TFile(_outFileName,"UPDATE");
     // Grab the merged TTree
     _tOut =(TTree*)_fOut->Get(treeName.c_str()); 
+=======
+
+  // Open merged output file (not temporary)
+  _fOut=new TFile(_outFileName,"UPDATE");
+
+  // For loop over all TTrees
+  for(std::string treeName : _treeNames){
+    // Create TChain for linking TTree files
+    TChain *chain = new TChain(treeName.c_str());
+
+    // Loop over all directories which contain files we want to link
+    for(unsigned int i = 0; i < _dirpaths.size(); i++){
+      chain->Add(_dirpaths.at(i).c_str());
+    }
+
+    // Save tree to Temp Root File
+    TString tempFile = Form("%s_%s.root",_outFileName,treeName.c_str());
+    chain->Merge(tempFile.Data());
+
+    // Open temp TFile with stored chained TTree
+    TFile *ftemp = new TFile(tempFile,"UPDATE");
+    ftemp->cd();
+
+    // Open TTree
+    _tOut = (TTree*)ftemp->Get(treeName.c_str());
+  
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
     // Create new branch containing id for each entry
     int row = 0;
     TBranch *fidmerge = _tOut->Branch("fidmerge",&row,"fidmerge/I");
@@ -47,11 +78,20 @@ int Merger::mergeTrees(){
     // Store TTree in outfile
     _fOut->cd();
     _tOut->Write();
+<<<<<<< HEAD
     // Delete original TTree
     _fOut->Delete(Form("%s;1",treeName.c_str()));
     // Close file
     _fOut->Close();
   }
+=======
+    ftemp->Close();
+    // Remove temp file
+    gSystem->Exec(Form("rm %s",tempFile.Data()));
+  }
+  // Close file
+  _fOut->Close();
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
   
   // Return
   return 0;

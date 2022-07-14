@@ -64,6 +64,37 @@ int pipi0_process(
   settings._postProcessMethod = "pipluspi0"; // Perform pipluspi0 default processing
   settings.addHipoFile(hipoFile);
   
+<<<<<<< HEAD
+=======
+  //-----------------------------------
+  // Create Binner Object
+  //-----------------------------------
+  const bool doAsymmetryBinnings = false;
+  Binner *bb = new Binner("tree_postprocess",outputFile,1);
+
+  //-----------------------------------
+  // Create Asymmetry Binning
+  //-----------------------------------
+  std::vector<float> xbins = {0.1,0.13,0.16,0.19,0.235,0.3,0.5};
+  std::vector<float> zbins = {0.35,0.43,0.49,0.55,0.62,0.7,0.83};
+  std::vector<float> Mhbins;
+  for(float mh = 0.3; mh < 1.3; mh+=1.0/7.0)
+    Mhbins.push_back(mh);
+
+  //-----------------------------------
+  // Load bins into Binner Object
+  // (true) --> split "+" and "-" helicities
+  // (false) --> combine "+" and "-" helicities
+  //-----------------------------------   
+  bb->create1DBinnings("x",xbins,true);
+  bb->create1DBinnings("z",zbins,true);
+  bb->create1DBinnings("Mdihadron",Mhbins,true);
+
+  bb->create1DBinnings("x",xbins,false);
+  bb->create1DBinnings("z",zbins,false);
+  bb->create1DBinnings("Mdihadron",Mhbins,false);
+
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
   // ----------------------------------------------------------------------------
   // -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
   // ----------------------------------------------------------------------------
@@ -88,9 +119,23 @@ int pipi0_process(
   // End processing
   //-----------------------------------
   ana->End();
+<<<<<<< HEAD
   // ----------------------------------------------------------------------------
   // -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
   // ----------------------------------------------------------------------------
+=======
+
+  // ----------------------------------------------------------------------------
+  // -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+  // ----------------------------------------------------------------------------
+
+  //-----------------------------------
+  // Process Bins, saving result into TFile
+  //-----------------------------------
+  if(doAsymmetryBinnings==true){  
+    bb->processBins();
+  }
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
   
   return 0;
 }

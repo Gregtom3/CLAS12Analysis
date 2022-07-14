@@ -17,10 +17,17 @@ void asym(const char *);
 
 
 int pipi0_asymmetry(
+<<<<<<< HEAD
 		    const char * inputDir = "/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch/july14",
 		    const char * rootName = "merged_july14",
 		    const char * treeName = "bin_x_0.100000_0.130000",
 		    int stage = 2
+=======
+		    const char * inputDir = "/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch/july12",
+		    const char * rootName = "merged_july12",
+		    const char * treeName = "tree_postprocess",
+		    int stage = 3
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
 )
 {
   
@@ -134,8 +141,13 @@ void fitter(const char *inputDir, const char *rootName, const char *treeName){
   asym_sbnd.binnedFit2D = new TF2("f_2D","[0]*sin(2*x-2*y)+[1]*sin(x-y)+[2]*sin(-x+2*y)+[3]*sin(y)+[4]*sin(x)+[5]*sin(2*x-y)+[6]*sin(3*x-2*y)",-3.141592,3.141592,-3.141592,3.141592);
   // Fourth, create 2D histogram for phih phiR binning
   histObject hist_asym_sbnd;
+<<<<<<< HEAD
   hist_asym_sbnd.paramX = "phih";
   hist_asym_sbnd.paramY = "phiR";
+=======
+  hist_asym_sbnd.paramX = "phi_h";
+  hist_asym_sbnd.paramY = "phi_R0";
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
   hist_asym_sbnd.h2 = new TH2F("h2_sbnd","",8,-3.141592,3.141592,8,-3.141592,3.141592);
   // Finally, put these pieces together to form the sideband object
   sidebandObject sbndObj;
@@ -161,8 +173,13 @@ void fitter(const char *inputDir, const char *rootName, const char *treeName){
   asym_splot.binnedFit2D = new TF2("f_2D","[0]*sin(2*x-2*y)+[1]*sin(x-y)+[2]*sin(-x+2*y)+[3]*sin(y)+[4]*sin(x)+[5]*sin(2*x-y)+[6]*sin(3*x-2*y)",-3.141592,3.141592,-3.141592,3.141592);
   // Third, create 2D histogram for phih phiR binning
   histObject hist_asym_splot;
+<<<<<<< HEAD
   hist_asym_splot.paramX = "phih";
   hist_asym_splot.paramY = "phiR";
+=======
+  hist_asym_splot.paramX = "phi_h";
+  hist_asym_splot.paramY = "phi_R0";
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
   hist_asym_splot.h2 = new TH2F("h2_splot","",8,-3.141592,3.141592,8,-3.141592,3.141592);
   // Fourth, load in brufit variables to the sPlot object
   sPlotObject splotObj;
@@ -186,6 +203,7 @@ void asym(const char * dirPath){
   //-----------------------
   Asymmetry * asymmetry = new Asymmetry(dirPath);
   //-----------------------
+<<<<<<< HEAD
   // Print asymmetry bins
   //-----------------------
   asymmetry->print();
@@ -193,5 +211,10 @@ void asym(const char * dirPath){
   // Run asymmetry module
   //-----------------------
   asymmetry->process();
+=======
+  // Print asymmetry
+  //-----------------------
+  asymmetry->print();
+>>>>>>> e46f75b74d42eaa76b0775520b0eb5e35bd7742f
   return 0;
 }
