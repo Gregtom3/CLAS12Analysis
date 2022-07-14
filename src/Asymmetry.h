@@ -5,6 +5,12 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+/* ROOT includes */
+#include <TFile.h>
+#include <TTree.h>
+#include <TROOT.h>
+#include <TGraphErrors.h>
+#include <TSystem.h>
 
 using namespace std;
 
@@ -14,7 +20,7 @@ typedef std::vector<std::string> strVect;
 enum Method{
   sideband = 0,
   splot = 1,
-  cows = 2;
+  cows = 2
 };
 
 // Structure for each unique binning
@@ -34,12 +40,15 @@ class Asymmetry{
   int process();
   void print();
  protected:
-  strVect splitString(std::string, const char *);
+
+
   bool strVectorContains(strVect, const char *);
   std::string strVectorFind(strVect, const char *, int);
   int strVectorIndex(strVect, const char *);
-  bool setBin(strVect, asymBin&);
+  int setBin(strVect, asymBin&);
   bool strVectorCompare(strVect, strVect);
+
+  strVect splitString(std::string, const char *);
   std::vector<strVect> getUniqueBinnings();
   std::vector<asymBin> getAsymBinSubset(strVect);
 
