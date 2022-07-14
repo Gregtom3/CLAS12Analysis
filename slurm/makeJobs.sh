@@ -22,11 +22,11 @@ CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
-declare -a hipodirs=($RGA_F18_IN $RGA_F18_OUT $RGA_S19_IN)
+declare -a hipodirs=($RGA_F18_IN_BATCH)
 
 # Beam energy associated with hipo files
 # --------------------------------------------------------
-beamEs=(10.6 10.6 10.2)
+beamEs=(10.6)
 
 # Analysis chain parameters
 # Base chain = Processing  --> PostProcessing --> Merging
@@ -36,20 +36,19 @@ doAsymmetry=true # Binning --> Fitting --> Asymmetry
 # Name of output directory
 # --------------------------------------------------------
 #outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-v1-nSidis"
-outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/rg-a"
-#outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch"
+#outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/rg-a"
+outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch"
 
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="july12"
+rootname="july14"
 
 # Code locations
 # --------------------------------------------------------
 processcode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_process.C"
 postprocesscode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_postprocess_only.C"
 mergecode="${CLAS12Analysisdir}/macros/mergeTrees.C"
-bincode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_binner.C"
-fitcode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_fitter.C"
+asymmetrycode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_asymmetry.C"
 
 # Location of clas12root package
 # --------------------------------------------------------
@@ -82,7 +81,7 @@ mergeFile="${shellSlurmDir}/merge.sh"
 mergeSlurm="${shellSlurmDir}/mergeSlurm.slurm"
 fitFile="${shellSlurmDir}/fit.sh"
 fitSlurm="${shellSlurmDir}/fitSlurm.slurm"
-
+asymSlurm="${shellSlurmDir}/asym.slurm"
 
 if [ -d "$outputdir" ]; then rm -Rf $outputdir; fi
 mkdir $outputdir
@@ -192,7 +191,7 @@ echo "done" >> $mergeFile
 echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_reco\\\"\)" >> $mergeFile
 echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_postprocess\\\"\)" >> $mergeFile
 if [ "$doAsymmetry" == true ] ; then
-    echo "clas12root ${bincode}\(\\\"${outputdir}/merged_${rootname}.root\\\"\)" >> $mergeFile
+    echo "clas12root ${asymmetrycode}\(\\\"${outputdir}/merged_${rootname}.root\\\",\\\"\\\",\\\"\\\",1\)" >> $mergeFile
     echo "${fitFile} ${outputdir}/merged_${rootname}.root.txt" >> $mergeFile
 fi
 
@@ -213,7 +212,9 @@ echo "#SBATCH --output=${outputSlurmDir}/merge.out" >> $mergeSlurm
 echo "#SBATCH --error=${outputSlurmDir}/merge.err" >> $mergeSlurm    
 echo "${mergeFile}" >> $mergeSlurm
 
-# Script for Binning + Fitting + Asymmetry
+# Script which sends a fitting job per bin
+# After all fitting is completed, the asymmetry
+# compilation program begins
 # ------------------------------------------------
 if [ "$doAsymmetry" == true ] ; then
     touch $fitFile
@@ -242,6 +243,7 @@ if [ "$doAsymmetry" == true ] ; then
     echo "    done" >> $fitFile
     echo "echo \"\$finishedJobs completed out of \$nJobs\" >> \$fitOutFile" >> $fitFile 
     echo "sleep 10" >> $fitFile
+    echo "sbatch $asymSlurm" >> $fitFile
     echo "done" >> $fitFile
 
     # Slurm job for running the fitter
@@ -253,11 +255,26 @@ if [ "$doAsymmetry" == true ] ; then
     echo "#SBATCH --account=clas12" >> $fitSlurm
     echo "#SBATCH --partition=production" >> $fitSlurm
     echo "#SBATCH --mem-per-cpu=${memPerCPU}" >> $fitSlurm
-    echo "#SBATCH --job-name=${rootname}_fitjob" >> $fitSlurm
+    echo "#SBATCH --job-name=${rootname}_fit" >> $fitSlurm
     echo "#SBATCH --cpus-per-task=${nCPUs}" >> $fitSlurm
     echo "#SBATCH --time=24:00:00" >> $fitSlurm
     echo "#SBATCH --chdir=${workdir}" >> $fitSlurm
-    echo "clas12root ${fitcode}\(\\\"${outputdir}\\\",\\\"merged_${rootname}\\\",\\\"\$binname\\\"\)" >> $fitSlurm
+    echo "clas12root ${asymmetrycode}\(\\\"${outputdir}\\\",\\\"merged_${rootname}\\\",\\\"\$binname\\\",2\)" >> $fitSlurm
+
+    # Slurm job for running the asymmetry compiler
+    # ------------------------------------------------
+    touch $asymSlurm
+    chmod +x $asymSlurm
+    echo "#!/bin/bash" > $asymSlurm
+    echo "binname=\$1" >> $asymSlurm
+    echo "#SBATCH --account=clas12" >> $asymSlurm
+    echo "#SBATCH --partition=production" >> $asymSlurm
+    echo "#SBATCH --mem-per-cpu=${memPerCPU}" >> $asymSlurm
+    echo "#SBATCH --job-name=${rootname}_asym" >> $asymSlurm
+    echo "#SBATCH --cpus-per-task=${nCPUs}" >> $asymSlurm
+    echo "#SBATCH --time=24:00:00" >> $asymSlurm
+    echo "#SBATCH --chdir=${workdir}" >> $asymSlurm
+    echo "clas12root ${asymmetrycode}\(\\\"\\\",\\\"\\\",\\\"\\\",3\)" >> $asymSlurm
 fi
 
 

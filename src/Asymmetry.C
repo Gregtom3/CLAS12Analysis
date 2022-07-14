@@ -80,7 +80,7 @@ int Asymmetry::process(){
     bool first = true;
     int idx_sideband = 0;
     int idx_splot = 0;
-    int idx_cows = 0;
+    //    int idx_cows = 0;
     for(asymBin ab : ab_subset){
       std::string rootname;
       std::string treeName;
@@ -125,9 +125,9 @@ int Asymmetry::process(){
 	      tgeVect_sig_sideband.push_back(new TGraphErrors((int)ab_subset.size()));	 
 	      tgeVect_sigbg_sideband.push_back(new TGraphErrors((int)ab_subset.size()));	 
 	      tgeVect_bg_sideband.push_back(new TGraphErrors((int)ab_subset.size()));	 
-	      tgeVect_sig_sideband.at(l)->SetName(Form("sideband_%s_sig_%d"),ab.graphName,(int)l);
-	      tgeVect_sigbg_sideband.at(l)->SetName(Form("sideband_%s_sigbg_%d"),ab.graphName,(int)l);
-	      tgeVect_bg_sideband.at(l)->SetName(Form("sideband_%s_bg_%d"),ab.graphName,(int)l);
+	      tgeVect_sig_sideband.at(l)->SetName(Form("sideband_%s_sig_%d",ab.graphName,(int)l));
+	      tgeVect_sigbg_sideband.at(l)->SetName(Form("sideband_%s_sigbg_%d",ab.graphName,(int)l));
+	      tgeVect_bg_sideband.at(l)->SetName(Form("sideband_%s_bg_%d",ab.graphName,(int)l));
 	    }
 	  }
 	  // Bin center code will clearly change if we upgrade to 2D binnings
@@ -160,9 +160,9 @@ int Asymmetry::process(){
 	      tgeVect_sig_splot.push_back(new TGraphErrors((int)ab_subset.size()));	 
 	      tgeVect_sigbg_splot.push_back(new TGraphErrors((int)ab_subset.size()));	 
 	      tgeVect_bg_splot.push_back(new TGraphErrors((int)ab_subset.size()));	 
-	      tgeVect_sig_splot.at(l)->SetName(Form("splot_%s_sig_%d"),ab.graphName,(int)l);
-	      tgeVect_sigbg_splot.at(l)->SetName(Form("splot_%s_sigbg_%d"),ab.graphName,(int)l);
-	      tgeVect_bg_splot.at(l)->SetName(Form("splot_%s_bg_%d"),ab.graphName,(int)l);
+	      tgeVect_sig_splot.at(l)->SetName(Form("splot_%s_sig_%d",ab.graphName,(int)l));
+	      tgeVect_sigbg_splot.at(l)->SetName(Form("splot_%s_sigbg_%d",ab.graphName,(int)l));
+	      tgeVect_bg_splot.at(l)->SetName(Form("splot_%s_bg_%d",ab.graphName,(int)l));
 	    }
 	  }
 	  // Bin center code will clearly change if we upgrade to 2D binnings
@@ -197,9 +197,9 @@ int Asymmetry::process(){
   // Close TFile
   _fOut->Close();
 
+  return 0;
 }
 void Asymmetry::print(){
- 
   // Print all the unique binnings
   for(strVect sv : getUniqueBinnings()){
     cout << sv.size() << "-dimensional binning in ";
@@ -211,7 +211,6 @@ void Asymmetry::print(){
 	cout << ".\n";   
     }
   }
-
 }
 // Splits string/char based on delimeter
 // Example:
@@ -221,7 +220,7 @@ strVect Asymmetry::splitString(std::string string, const char * delimiter){
   strVect splits;
   std::istringstream iss(string);
   std::string token;
-  while (std::getline(iss, token, delimiter))
+  while (std::getline(iss, token, (Char_t)delimiter[0]))
     {
       splits.push_back(token.c_str());
     }
@@ -229,7 +228,7 @@ strVect Asymmetry::splitString(std::string string, const char * delimiter){
 }
 
 // Checks if char * vector contains keyword
-bool Asymmetry::stringVectorContains(strVect svect, const char* keyword){
+bool Asymmetry::strVectorContains(strVect svect, const char* keyword){
   for(std::string s: svect){
     int x = std::string(s).compare(std::string(keyword));
     if(x==0)
@@ -247,7 +246,7 @@ std::string Asymmetry::strVectorFind(strVect svect, const char* keyword, int ski
   for(std::string s : svect){
     int x = std::string(s).compare(std::string(keyword));
     if(x==0){
-      if(i+skip>svect.size()-1 || i+skip < 0){
+      if(i+skip>(int)svect.size()-1 || i+skip < 0){
 	cout << "ERROR in Asymmetry::strVectorFind --- Out of bounds exception with respect to skip variable. The keyword index PLUS skip variable must be within [0," << svect.size()-1 << "], however index+skip = " << i << "+" << skip << " = " << i+skip << ". Returning empty std::string" << endl;
 	return std::string("");
       }
@@ -275,22 +274,22 @@ int Asymmetry::strVectorIndex(strVect svect, const char* keyword){
 }
 
 // Set the bin related variables based on svect info
-bool Asymmetry::setBin(strVect svect, asymBin & ab){
+int Asymmetry::setBin(strVect svect, asymBin & ab){
   // Get index of keyword in char array
   int idx = strVectorIndex(svect,_keyword);
   // Get size of char array
   int L = (int)svect.size();
   // Extract number of binnings
-  if((L-idx)%3!=0){
-    cout << "ERROR in Asymmetry::setBin --- After the key word, there must be a 'N' distinct terms separate by '_' , where 'N' is divisible by 3. This is not the case. The required format from the Binning code should be 'method_bin_binVar1_min1_max1_binVar2_min2_max2... Returning -1" << endl;
+  if((L-idx-1)%3!=0){
+    cout << "ERROR in Asymmetry::setBin --- After the key word, there must be a 'N' distinct terms separate by '_' , where 'N' is divisible by 3. This is not the case, as 'N="<<L-idx-1<<"'. The required format from the Binning code should be 'method_bin_binVar1_min1_max1_binVar2_min2_max2... Returning -1" << endl;
     return -1;
   }
-  int nBins = (L-idx)/3;
+  int nBins = (L-idx-1)/3;
   // Set bin names, bin mins, bin maxs
   for(int b = 0 ; b < nBins; b++){
-    ab.binVar.push_back(strVectorFind(svect,_keyword,b*3));
-    ab.binMin.push_back(std::stof(strVectorFind(svect,_keyword,b*3+1)));
-    ab.binMax.push_back(std::stof(strVectorFind(svect,_keyword,b*3+2)));
+    ab.binVar.push_back(strVectorFind(svect,_keyword,b*3+1));
+    ab.binMin.push_back(std::stof(strVectorFind(svect,_keyword,b*3+2)));
+    ab.binMax.push_back(std::stof(strVectorFind(svect,_keyword,b*3+3)));
   }
   
   // Set graph name based on binning
