@@ -37,7 +37,6 @@
     - tree_reco --> stored reconstructed particle info
     - tree_postprocess --> stores additional event-by-event info based on tree_reco
 
-   
 */
 
 #pragma once
@@ -54,7 +53,7 @@ using namespace std;
 
 
 int dihadron_tutorial(
-		  const char * hipoFile = "/w/hallb-scshelf2102/clas12/users/gmat/CLAS12Analysis/data/raw/sample/Out_DIS_pass1_915_920.hipo_skim23.hipo",
+		  const char * hipoFile = "/w/hallb-scshelf2102/clas12/users/gmat/CLAS12Analysis/data/small_MC_sample.hipo",
 		  const char * outputFile = "./output.root"
 		  )
 {
@@ -78,29 +77,30 @@ int dihadron_tutorial(
   // Create Settings for Study
   //-----------------------------------
   Settings settings;
-  settings.setElectronBeamEnergy(10.6); // Do not change, since this is the beam energy for the corresponding file
+  settings._electronBeamEnergy = 10.6; // Do not change, since this is the beam energy for the corresponding file
  
   // Settings for the analysis
-  settings.setignoreOtherRecoParticles(true); // Do not save to reco tree particle info of uninterested PIDs
-  settings.setdoMC(true);             // Analyze MC::Lund
-  settings.setdoReco(true);           // Analyze REC::Particle
-  settings.setdoPostProcess(true);    // Apply further cuts
-  settings.setconnectMC2Reco(true);   // Connect pindex of REC::Particle to pindex of MC::Lund
-  settings.setPostProcessMethod("pipluspi0_MC"); // Perform monte carlo pipluspi0 processing
+  settings._ignoreOtherRecoParticles = true; // Do not save to reco tree particle info of uninterested PIDs
+  settings._doMC = true;             // Analyze MC::Lund
+  settings._doReco = true;           // Analyze REC::Particle
+  settings._doPostProcess = true;    // Apply further cuts
+  settings._connectMC2Reco = true;   // Connect pindex of REC::Particle to pindex of MC::Lund
+  settings._postProcessMethod = "pipluspi0_MC"; // Perform monte carlo pipluspi0 processing
   
   // Event cuts
-  settings.setQ2range(1,100);         // Sets the Q2 range
-  settings.setWrange(2,100);          // Sets the W range
-  settings.setyrange(0,0.8);          // Sets the y range
-  settings.addFinalState(11,1,true);  // Exactly 1 electron
-  settings.addFinalState(211,1,true); // Exactly 1 pi+
+  settings._Q2min = 1; settings._Q2max = 100;
+  settings._Wmin = 2; settings._Wmax = 100;
+  settings._ymin = 0; settings._ymax = 0.8;
+
+  settings.addFinalState(11,1,true);  // Exactly 1 electron 
+  settings.addFinalState(211,1,false); // Exactly 1 pi+
   settings.addFinalState(22,2,false); // 2 or more gammas
   
   // Particle Cuts
   settings.addPIDforEmin(22,0.6);     // Gammas must have minimum energy of 0.6 GeV
   settings.addPIDforPmin(211,1.25);   // Pi+ must have minimum momentum of 1.25 GeV
   settings.addPIDforChi2max(211,3);        // Pi+ must have abs(chi2pid) < 3 
-  settings.setEventRecoMethod(Settings::eventRecoMethod::useLargestPinFD); // Use the status < 0 trigger for identifying the reconstructed scattered electron  
+  settings._eventRecoMethod = Settings::eventRecoMethod::useLargestPinFD; // Use the status < 0 trigger for identifying the reconstructed scattered electron  
   
   //-----------------------------------
   // ***No need to edit past here***
