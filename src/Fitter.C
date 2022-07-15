@@ -421,6 +421,17 @@ int Fitter::perform1DBinnedFits(fitObject fitobj, histObject histobj){
   // Draw into histogram from TTree
   _tree->Draw(Form("%s>>%s",histobj.paramX.c_str(),histobj.h1->GetName()),histobj.drawCut.c_str(),"goff");
     
+  // If the histogram drops to 0 within xmin - xmax, adjust xmax
+  for(int i = 1; i <= histobj.h1->GetNbinsX() ; i++){
+    double bin_center = histobj.h1->GetBinCenter(i);
+    double bin_count = histobj.h1->GetBinContent(i);
+    double xmin, xmax;
+    fitobj.binnedFit1D->GetRange(xmin,xmax);
+    if(bin_center < xmin || bin_center > xmax)
+      continue;
+    if(bin_count==0)
+      fitobj.binnedFit1D->SetRange(xmin,bin_center);
+  }
   // Fit the histogram
   histobj.h1->Fit(fitobj.binnedFit1D, TString(fitobj.fitOptions));
   return 0;
