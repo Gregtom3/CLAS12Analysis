@@ -37,9 +37,8 @@ struct histObject{
 };
 
 struct sidebandObject{
-  // Signal + Sideband distributions
-  fitObject signal;
-  fitObject sideband;
+  // Signal + Sideband distribution
+  fitObject fitobj;
   // Histogram across Signal + Sideband region
   histObject hist;
   // Asymmetry distribution

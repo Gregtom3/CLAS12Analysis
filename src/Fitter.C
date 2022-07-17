@@ -23,8 +23,11 @@ int Fitter::executeSideband(){
   _fIn->cd();
   _tree = (TTree*)_fIn->Get(_treeName.c_str());
   // Create new TFile based on TTree name
+  cout << "Sideband Method --- Removing sideband bin directory | " << Form("rm -r %s/sideband_%s",_filepath.c_str(),_treeName.c_str()) << endl; 
   gSystem->Exec(Form("rm -r %s/sideband_%s",_filepath.c_str(),_treeName.c_str()));
+  cout << "Sideband Method --- Remaking sideband bin directory " << endl;
   gSystem->Exec(Form("mkdir %s/sideband_%s",_filepath.c_str(),_treeName.c_str()));
+  cout << "Sideband Method --- Creating TFile for TObject saving " << endl;
   TFile *fOut = new TFile(Form("%s/sideband_%s/sidebandMethod.root",_filepath.c_str(),_treeName.c_str()),"RECREATE");
   fOut->cd();
   TTree *tOut = new TTree("tree","Sideband Method Related Variables");
@@ -82,26 +85,34 @@ int Fitter::executeSideband(){
   tOut->Branch("A_bg_u3",&bg_params_u3);
   tOut->Branch("A_bg_errors_u3",&bg_errors_u3);
   // Perform binned fits in signal and sideband region
-  fitObject signal = _sideband.signal;
-  fitObject sideband = _sideband.sideband;
-  cout << "Sideband Method --- Fitting Signal Region"<<endl;
-  perform1DBinnedFits(signal,_sideband.hist);
-  cout << "Sideband Method --- Fitting Sideband Region"<<endl;
-  perform1DBinnedFits(sideband,_sideband.hist);
-  // Get signal and sideband fits
-  TF1 * f_peak = (TF1*)signal.binnedFit1D->Clone();
-  TF1 * f_sideband = (TF1*)sideband.binnedFit1D->Clone();
+  fitObject fitobj = _sideband.fitobj;
+  cout << "Sideband Method --- Fitting Signal+Sideband Region"<<endl;
+  perform1DBinnedFits(fitobj,_sideband.hist);
+  // Get signal+sideband fit
+  TF1 * f = (TF1*)fitobj.binnedFit1D->Clone();
+  cout << "Sideband Method --- Fit Parameters" << endl;
+  for(int i = 0 ; i < f->GetNpar(); i++){
+    cout << "\t Parameter " << i+1 << " | " << f->GetParameter(i) << " +/- " << f->GetParError(i) << endl;
+  }
   // Get histogram
   TH1F * h = (TH1F*)_sideband.hist.h1->Clone();
   // Get +/- 2 StdDev from Gaussian peak
   // Below code may need to be re-written if signal is not fit to gaussian
-  double xmin = f_peak->GetParameter(1)-2*f_peak->GetParameter(2);
-  double xmax = f_peak->GetParameter(1)+2*f_peak->GetParameter(2);
-  cout << "Sideband Method --- +/- 2 StdDev purity calculations [" << xmin << "," << xmax << "]" <<endl;
+  double xleft = f->GetParameter(1)-2*f->GetParameter(2);
+  double xright = f->GetParameter(1)+2*f->GetParameter(2);
+  double xmax = h->GetBinCenter(h->GetNbinsX());
+  cout << "Sideband Method --- +/- 2 StdDev purity calculations [" << xleft << "," << xright << "]" <<endl;
   // Get integral parameters for purity calculations
-  double total_hist_sum = h->Integral(h->FindBin(xmin), h->FindBin(xmax));
-  double sig_fit_integral = f_peak->Integral(xmin,xmax)/h->GetBinWidth(1);
-  double bg_fit_integral = f_sideband->Integral(xmin,xmax)/h->GetBinWidth(1);
+  // Going to need to change b/c we assume gaussian + pol4 below
+  TF1 * ftemp_sigbg = new TF1("ftemp_sigbg","gaus(0)",xleft,xright);
+  TF1 * ftemp_bg = new TF1("ftemp_bg","pol4(0)",xright,xmax);
+  for(int i = 0; i < 3 ; i++)
+    ftemp_sigbg->SetParameter(i,f->GetParameter(i));
+  for(int i = 3; i < 8 ; i++)
+    ftemp_bg->SetParameter(i-3,f->GetParameter(i));
+  double total_hist_sum = h->Integral(h->FindBin(xleft), h->FindBin(xright));
+  double sig_fit_integral = ftemp_sigbg->Integral(xleft,xright)/h->GetBinWidth(1);
+  double bg_fit_integral = ftemp_bg->Integral(xleft,xright)/h->GetBinWidth(1);
   double total_fit_integral = sig_fit_integral + bg_fit_integral;
   // Calculate and store purity
   u0 = sig_fit_integral/total_hist_sum;
@@ -127,20 +138,20 @@ int Fitter::executeSideband(){
   cout << "Sideband Method --- Drawing into TH2F from TTree " << endl;
   cout << "Sideband Method --- Drawing (0/4) " << endl;
   _tree->Draw(Form("%s:%s>>h_sigbg_plus",_sideband.hist_asym.paramY.c_str(), _sideband.hist_asym.paramX.c_str()),Form("%s > %f && %s < %f && helicity == 1",
-						_sideband.hist.paramX.c_str(),f_peak->GetXmin(),
-						_sideband.hist.paramX.c_str(),f_peak->GetXmax()),"goff");
+														      _sideband.hist.paramX.c_str(),xleft,
+														      _sideband.hist.paramX.c_str(),xright),"goff");
   cout << "Sideband Method --- Drawing (1/4) " << endl;
   _tree->Draw(Form("%s:%s>>h_sigbg_minus",_sideband.hist_asym.paramY.c_str(), _sideband.hist_asym.paramX.c_str()),Form("%s > %f && %s < %f && helicity == -1",
-						 _sideband.hist.paramX.c_str(),f_peak->GetXmin(),
-						 _sideband.hist.paramX.c_str(),f_peak->GetXmax()),"goff");
+														       _sideband.hist.paramX.c_str(),xleft,
+														       _sideband.hist.paramX.c_str(),xright),"goff");
   cout << "Sideband Method --- Drawing (2/4) " << endl;
   _tree->Draw(Form("%s:%s>>h_bg_plus",_sideband.hist_asym.paramY.c_str(), _sideband.hist_asym.paramX.c_str()),Form("%s > %f && %s < %f && helicity == 1",
-					     _sideband.hist.paramX.c_str(),f_sideband->GetXmin(),
-					     _sideband.hist.paramX.c_str(),f_sideband->GetXmax()),"goff");
+														   _sideband.hist.paramX.c_str(),xright,
+														   _sideband.hist.paramX.c_str(),xmax),"goff");
   cout << "Sideband Method --- Drawing (3/4) " << endl;
   _tree->Draw(Form("%s:%s>>h_bg_minus",_sideband.hist_asym.paramY.c_str(), _sideband.hist_asym.paramX.c_str()),Form("%s > %f && %s < %f && helicity == -1",
-					      _sideband.hist.paramX.c_str(),f_sideband->GetXmin(),
-					      _sideband.hist.paramX.c_str(),f_sideband->GetXmax()),"goff");
+														    _sideband.hist.paramX.c_str(),xright,
+														    _sideband.hist.paramX.c_str(),xmax),"goff");
   cout << "Sideband Method --- Drawing (4/4) --- Complete " << endl;
   // Create two TF2's for fitting
   cout << "Sideband Method --- Cloning Asymmetry 2D fits " << endl;
@@ -247,9 +258,8 @@ int Fitter::executeSideband(){
   // Write asymmetry parameters to TTree to TFile
   tOut->Fill();
   tOut->Write();
-  // Write TF1's to TFile
-  f_peak->Write();
-  f_sideband->Write();
+  // Write TF1 to TFile
+  f->Write();
   // Write TF2's to TFile
   f_sigbg->Write();
   f_bg->Write();
@@ -419,19 +429,23 @@ int Fitter::perform1DBinnedFits(fitObject fitobj, histObject histobj){
   _fIn->cd();
 
   // Draw into histogram from TTree
+  cout << "Fitter::perform1DBinnedFits --- Filling 1D " << histobj.paramX.c_str() << " histogram" << endl;
   _tree->Draw(Form("%s>>%s",histobj.paramX.c_str(),histobj.h1->GetName()),histobj.drawCut.c_str(),"goff");
-    
+  
   // If the histogram drops to 0 within xmin - xmax, adjust xmax
+  double xmin, xmax;
+  fitobj.binnedFit1D->GetRange(xmin,xmax);
   for(int i = 1; i <= histobj.h1->GetNbinsX() ; i++){
     double bin_center = histobj.h1->GetBinCenter(i);
     double bin_count = histobj.h1->GetBinContent(i);
-    double xmin, xmax;
-    fitobj.binnedFit1D->GetRange(xmin,xmax);
     if(bin_center < xmin || bin_center > xmax)
       continue;
-    if(bin_count==0)
+    else if(bin_count==0){
       fitobj.binnedFit1D->SetRange(xmin,bin_center);
+      break;   
+    }    
   }
+  histobj.h1->Scale(1/histobj.h1->Integral());
   // Fit the histogram
   histobj.h1->Fit(fitobj.binnedFit1D, TString(fitobj.fitOptions));
   return 0;
@@ -442,6 +456,7 @@ int Fitter::perform2DBinnedFits(fitObject fitobj, histObject histobj){
   _fIn->cd();
 
   // Draw into histogram from TTree
+  cout << "Fitter::perform2DBinnedFits --- Filling 2D " << histobj.paramY.c_str() << " vs. " << histobj.paramX.c_str() << " histogram" << endl;
   _tree->Draw(Form("%s:%s>>%s",histobj.paramY.c_str(),histobj.paramX.c_str(),histobj.h2->GetName()),histobj.drawCut.c_str(),"goff");
     
   // Fit the histogram

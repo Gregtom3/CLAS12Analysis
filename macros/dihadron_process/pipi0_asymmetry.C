@@ -17,10 +17,10 @@ void asym(const char *);
 
 
 int pipi0_asymmetry(
-		    const char * inputDir = "/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch/july14",
+		    const char * inputDir = "/volatile/clas12/users/gmat/clas12analysis.sidis.data/rg-a/july14",
 		    const char * rootName = "merged_july14",
-		    const char * treeName = "bin_x_0.100000_0.130000",
-		    int stage = 3
+		    const char * treeName = "bin_x_0.130000_0.160000",
+		    int stage = 2
 )
 {
   
@@ -113,21 +113,18 @@ void fitter(const char *inputDir, const char *rootName, const char *treeName){
   //-----------------------
   Fitter *fitter = new Fitter(inputDir,rootName,treeName);
   //-----------------------
-  // Create Sideband Object
+  // Create Signal + Sideband 1D fitting Object
   //-----------------------
   // First, create objects for fitting Mdiphoton regions
-  fitObject signal_sbnd;
-  signal_sbnd.fitOptions = "SR Q0";
-  signal_sbnd.binnedFit1D = new TF1("f_diphoton_sig","gaus(0)",0.108,0.160);
-  signal_sbnd.binnedFit1D->SetParameters(100,0.13,0.1);
-  fitObject sideband_sbnd;
-  sideband_sbnd.fitOptions = "SR Q0";
-  sideband_sbnd.binnedFit1D = new TF1("f_diphoton_bg","pol2",0.17,0.4);
-  sideband_sbnd.binnedFit1D->SetParameters(10,10,10);
+  fitObject mdiphoton_sbnd;
+  mdiphoton_sbnd.fitOptions = "SR Q0";
+  mdiphoton_sbnd.binnedFit1D = new TF1("f_diphoton_sig","gaus(0)+pol4(3)",0.08,0.4);
+  mdiphoton_sbnd.binnedFit1D->SetParameters(100,0.13,0.1,10,10,10,10,10);
+  mdiphoton_sbnd.binnedFit1D->SetParLimits(1,0.128,0.135);
   // Second, create 1D histogram for Mdiphoton binning
   histObject hist_Mgg_sbnd;
   hist_Mgg_sbnd.paramX = "Mdiphoton";
-  hist_Mgg_sbnd.h1 = new TH1F("h1_sbnd","",100,0,0.5);
+  hist_Mgg_sbnd.h1 = new TH1F("h1_sbnd","",100,0.08,0.4);
   // Third, create asymmetry fit object
   fitObject asym_sbnd;
   asym_sbnd.fitOptions = "SR Q0";
@@ -139,8 +136,7 @@ void fitter(const char *inputDir, const char *rootName, const char *treeName){
   hist_asym_sbnd.h2 = new TH2F("h2_sbnd","",8,-3.141592,3.141592,8,-3.141592,3.141592);
   // Finally, put these pieces together to form the sideband object
   sidebandObject sbndObj;
-  sbndObj.signal = signal_sbnd;
-  sbndObj.sideband = sideband_sbnd;
+  sbndObj.fitobj = mdiphoton_sbnd;
   sbndObj.hist = hist_Mgg_sbnd;
   sbndObj.asym = asym_sbnd;
   sbndObj.hist_asym = hist_asym_sbnd;
