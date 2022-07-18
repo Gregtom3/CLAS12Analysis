@@ -56,8 +56,7 @@ class PostProcess{
     return 0;
   }
 
-  int pipi0(TTree *);
-  int pipi0_MC(TTree *);
+  int pipi0(TTree *, int);
   
   void set_electron_beam_energy(double E){ _electron_beam_energy = E; }
 

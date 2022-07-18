@@ -36,12 +36,12 @@ doAsymmetry=true # Binning --> Fitting --> Asymmetry
 # Name of output directory
 # --------------------------------------------------------
 #outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-v1-nSidis"
-outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/rg-a"
+#outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/rg-a"
 #outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch"
-
+outdir="/work/clas12/users/gmat/CLAS12Analysis/data/rg-a"
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="july14"
+rootname="july18"
 
 # Code locations
 # --------------------------------------------------------
@@ -76,6 +76,7 @@ processdir+=$processcodelocation
 shellSlurmDir="${outputdir}/shells"
 outputSlurmDir="${outputdir}/output"
 runJobs="${shellSlurmDir}/runJobs.sh"
+makeJobsPostProcess="${shellSlurmDir}/makeJobsPostProcess.sh"
 runJobsPostProcess="${shellSlurmDir}/runJobsPostProcess.sh"
 mergeFile="${shellSlurmDir}/merge.sh"
 mergeSlurm="${shellSlurmDir}/mergeSlurm.slurm"
@@ -155,11 +156,16 @@ echo "#SBATCH --cpus-per-task=${nCPUs}" >> $runJobsPostProcess
 echo "#SBATCH --time=24:00:00" >> $runJobsPostProcess
 echo "#SBATCH --chdir=${workdir}" >> $runJobsPostProcess
 echo "#SBATCH --array=0-${i}" >> $runJobsPostProcess
-echo "#SBATCH --output=${outputSlurmDir}/postprocess-%x-%a.out" >> $runJobsPostProcess
-echo "#SBATCH --error=${outputSlurmDir}/postprocess-%x-%a.err" >> $runJobsPostProcess    
+echo "#SBATCH --output=${outputSlurmDir}/%x-%a-postprocess.out" >> $runJobsPostProcess
+echo "#SBATCH --error=${outputSlurmDir}/%x-%a-postprocess.err" >> $runJobsPostProcess    
 echo "rm ${outputSlurmDir}/${rootname}*.out" >> $runJobsPostProcess
 echo "${shellSlurmDir}/${rootname}_\${SLURM_ARRAY_TASK_ID}_postprocess.sh" >> $runJobsPostProcess
-echo "sbatch $mergeSlurm" >> $runJobsPostProcess
+
+touch $makeJobsPostProcess
+chmod +x $makeJobsPostProcess
+echo "#!/bin/bash" > $makeJobsPostProcess
+echo "sbatch $runJobsPostProcess" >> $makeJobsPostProcess
+echo "sbatch $mergeSlurm 1" >> $makeJobsPostProcess
 
 # Create a file which will wait until (int) 0 is outputted by each job
 # This signifies the end of the batch
@@ -187,7 +193,9 @@ echo "    done" >> $mergeFile
 echo "echo \"\$finishedJobs completed out of \$nJobs\" >> \$mergeOutFile" >> $mergeFile 
 echo "sleep 10" >> $mergeFile
 echo "done" >> $mergeFile
-echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_reco\\\"\)" >> $mergeFile
+echo "if [\$1 == 0] ; then" >> $mergeFile
+echo "    clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_reco\\\"\)" >> $mergeFile
+echo "done" >> $mergeFile
 echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_postprocess\\\"\)" >> $mergeFile
 if [ "$doAsymmetry" == true ] ; then
     echo "clas12root ${asymmetrycode}\(\\\"${outputdir}\\\",\\\"merged_${rootname}\\\",\\\"\\\",1\)" >> $mergeFile
@@ -209,7 +217,7 @@ echo "#SBATCH --time=24:00:00" >> $mergeSlurm
 echo "#SBATCH --chdir=${workdir}" >> $mergeSlurm
 echo "#SBATCH --output=${outputSlurmDir}/merge.out" >> $mergeSlurm
 echo "#SBATCH --error=${outputSlurmDir}/merge.err" >> $mergeSlurm    
-echo "${mergeFile}" >> $mergeSlurm
+echo "${mergeFile} \$1" >> $mergeSlurm
 
 # Script which sends a fitting job per bin
 # After all fitting is completed, the asymmetry
@@ -243,8 +251,8 @@ if [ "$doAsymmetry" == true ] ; then
     echo "    done" >> $fitFile
     echo "echo \"\$finishedJobs completed out of \$nJobs\" >> \$fitOutFile" >> $fitFile 
     echo "sleep 10" >> $fitFile
-    echo "sbatch $asymSlurm" >> $fitFile
     echo "done" >> $fitFile
+    echo "sbatch $asymSlurm" >> $fitFile
 
     # Slurm job for running the fitter
     # ------------------------------------------------
@@ -274,7 +282,7 @@ if [ "$doAsymmetry" == true ] ; then
     echo "#SBATCH --cpus-per-task=${nCPUs}" >> $asymSlurm
     echo "#SBATCH --time=24:00:00" >> $asymSlurm
     echo "#SBATCH --chdir=${workdir}" >> $asymSlurm
-    echo "clas12root ${asymmetrycode}\(\\\"\\\",\\\"\\\",\\\"\\\",3\)" >> $asymSlurm
+    echo "clas12root ${asymmetrycode}\(\\\"${outputdir}\\\",\\\"\\\",\\\"\\\",3\)" >> $asymSlurm
 fi
 
 
@@ -284,5 +292,5 @@ sbatch $runJobs
 echo "----------------------------------------------------"
 echo "Submitting merge script"
 echo " "
-sbatch $mergeSlurm
+sbatch $mergeSlurm 0
 echo "----------------------------------------------------"

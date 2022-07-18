@@ -5,7 +5,7 @@
 #include "/work/clas12/users/gmat/CLAS12Analysis/include/clas12ana/SIDISKinematicsReco.h"
 #include "/work/clas12/users/gmat/CLAS12Analysis/include/clas12ana/Settings.h"
 #include "/work/clas12/users/gmat/CLAS12Analysis/include/clas12ana/Binner.h"
-R__LOAD_LIBRARY(libclas12ana.so)
+//R__LOAD_LIBRARY(libclas12ana.so)
 #endif
 
 using namespace std;

@@ -119,8 +119,9 @@ void fitter(const char *inputDir, const char *rootName, const char *treeName){
   fitObject mdiphoton_sbnd;
   mdiphoton_sbnd.fitOptions = "SR Q0";
   mdiphoton_sbnd.binnedFit1D = new TF1("f_diphoton_sig","gaus(0)+pol4(3)",0.08,0.4);
-  mdiphoton_sbnd.binnedFit1D->SetParameters(100,0.13,0.1,10,10,10,10,10);
+  mdiphoton_sbnd.binnedFit1D->SetParameters(1,0.13,0.01,1,1,1,1,1);
   mdiphoton_sbnd.binnedFit1D->SetParLimits(1,0.128,0.135);
+  mdiphoton_sbnd.binnedFit1D->SetParLimits(2,0.001,0.2);
   // Second, create 1D histogram for Mdiphoton binning
   histObject hist_Mgg_sbnd;
   hist_Mgg_sbnd.paramX = "Mdiphoton";

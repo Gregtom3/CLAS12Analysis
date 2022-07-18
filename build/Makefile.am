@@ -38,6 +38,7 @@ pkginclude_HEADERS = \
   ../src/PID.h \
   ../src/Fitter.h \
   ../src/HipoBankInterface.h \
+  ../src/Asymmetry.h \
   ../src/Binner.h
 
 libclas12ana_la_SOURCES = \
@@ -52,6 +53,7 @@ libclas12ana_la_SOURCES = \
   ../src/PID.C \
   ../src/Fitter.C \
   ../src/HipoBankInterface.C \
+  ../src/Asymmetry.C \
   ../src/Binner.C
 
 %_Dict.C: ../src/%.h ../src/%LinkDef.h
