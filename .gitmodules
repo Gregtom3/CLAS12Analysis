@@ -1,0 +1,3 @@
+[submodule "brufit"]
+	path = brufit
+	url = https://github.com/Gregtom3/brufit
