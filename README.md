@@ -5,34 +5,40 @@ Analysis tool for reading hipo4 files with clas12root
 ---
 1. Ensure both **ROOTSYS** and **CLAS12ROOT** are environment variables (see https://github.com/JeffersonLab/clas12root for details on installing CLAS12ROOT). For ROOT, we need 6.24.06, which should automatically install with 'module load clas12/pro'
 
-2. Load in the CLAS12Analysis git
-        git clone https://www.github.com/Gregtom3/CLAS12Analysis
+2. Load in the CLAS12Analysis git repo, along with submodules (currently on brufit)
+        git clone --recurse-submodules https://www.github.com/Gregtom3/CLAS12Analysis
 
+3. Install brufit first, as the CLAS12Analysis repo depends on it heavily for fitting. To do so...
 
-3. Enter into the build directory
+   	cd brufit
+        ./setup.sh
+
+The setup script should install the specific brufit fork for you, and set the required variables in your ~/.cshrc
+
+4. Exit brufit and open the CLAS12Analysis directory. Enter into the build directory
 
         cd build
         
 
-4. Run 
+5. Run 
 
         ./autogen.sh --prefix=/path/to/CLAS12Analysis/
 
 
-5. Run `make` within the build directory
+6. Run `make` within the build directory
 
-6. Run `make install` within the build directory
+7. Run `make install` within the build directory
 
-7. Leave the build directory and check to see that a lib and include directory have been created.
+8. Leave the build directory and check to see that a lib and include directory have been created.
 
-8. In your home directory, edit the .cshrc, add the following line
+9. In your home directory, edit the .cshrc, add the following line
 
         set LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/path/to/CLAS12Analysis/lib
         
-9. Reopen your terminal or `source ~/.cshrc` to have the LD_LIBRARY_PATH appended to
+10. Reopen your terminal or `source ~/.cshrc` to have the LD_LIBRARY_PATH appended to
 
 
-10. Keep in mind that, as of the current git build, I have not figured out how to `#include "<INSERT-CLAS12ANA-HEADER.h"` in programs such as **macros/dihadron_process/pipi0_process.C**. You will need to edit the path to the corresponding header files yourself. This also goes for slurmJobs in **slurm/**
+11. Keep in mind that, as of the current git build, I have not figured out how to `#include "<INSERT-CLAS12ANA-HEADER.h"` in programs such as **macros/dihadron_process/pipi0_process.C**. You will need to edit the path to the corresponding header files yourself. This also goes for slurmJobs in **slurm/**
 
 # Structure
 ---
