@@ -8,12 +8,7 @@ Analysis tool for reading hipo4 files with clas12root
 2. Load in the CLAS12Analysis git repo, along with submodules (currently on brufit)
         git clone --recurse-submodules https://www.github.com/Gregtom3/CLAS12Analysis
 
-3. Install brufit first, as the CLAS12Analysis repo depends on it heavily for fitting. To do so...
-
-   	cd brufit
-        ./setup.sh
-
-The setup script should install the specific brufit fork for you, and set the required variables in your ~/.cshrc
+3. Install brufit first, as the CLAS12Analysis repo depends on it heavily for fitting. Read the README inside brufit for instructions
 
 4. Exit brufit and open the CLAS12Analysis directory. Enter into the build directory
 
