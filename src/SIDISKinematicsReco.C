@@ -397,13 +397,8 @@ int SIDISKinematicsReco::CollectParticlesFromTruth(const std::unique_ptr<clas12:
     sp->set_property( SIDISParticle::evtgen_part_ID,   (int)mcparticles->getIndex());
     sp->set_property( SIDISParticle::evtgen_part_parentID,  (int)mcparticles->getParent());
     sp->set_property( SIDISParticle::evtgen_part_parentPID, (int)mcparticles->getPid(mcparticles->getParent()-1));
-    //    cout << sp->get_property_int(SIDISParticle::evtgen_part_parentID) << endl;
     // Add SIDISParticle to the collection
     particleMap.insert ( make_pair( sp->get_candidate_id() , sp) );
-    cout << sp->get_property_int(SIDISParticle::evtgen_part_parentPID) << endl;    
-    sp->set_property( SIDISParticle::part_parentPID , sp->get_property_int(SIDISParticle::evtgen_part_parentPID) );
-    cout << sp->get_property_int(SIDISParticle::part_parentPID) << endl;
-    cout << "\n\n" << endl;
   }
   return 0;
 }
@@ -573,16 +568,10 @@ int SIDISKinematicsReco::ConnectTruth2Reco( type_map_part& particleMap,
 	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_theta , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_theta));
 	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_eta , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_eta));
 	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_phi , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_phi));
-	  (it_reco->second)->set_property( SIDISParticle::part_parentID , (it_mc->second)->get_property_int(SIDISParticle::part_parentID));
-	  (it_reco->second)->set_property( SIDISParticle::part_parentPID , (it_mc->second)->get_property_int(SIDISParticle::part_parentPID));
-	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_parentID , (it_mc->second)->get_property_int(SIDISParticle::part_parentID));
-	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_parentPID , (it_mc->second)->get_property_int(SIDISParticle::part_parentPID));
-	  cout << "-------------------------------------" << endl;
-	  cout << (it_reco->second)->get_property_int(SIDISParticle::evtgen_part_parentPID) << endl;
-	  cout << (it_mc->second)->get_property_int(SIDISParticle::evtgen_part_parentPID) << endl;
-	  cout << "-------------------------------------" << endl;
-
-	
+	  (it_reco->second)->set_property( SIDISParticle::part_parentID , (it_mc->second)->get_property_int(SIDISParticle::evtgen_part_parentID));
+	  (it_reco->second)->set_property( SIDISParticle::part_parentPID , (it_mc->second)->get_property_int(SIDISParticle::evtgen_part_parentPID));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_parentID , (it_mc->second)->get_property_int(SIDISParticle::evtgen_part_parentID));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_parentPID , (it_mc->second)->get_property_int(SIDISParticle::evtgen_part_parentPID));	
 	}
       }
   }
