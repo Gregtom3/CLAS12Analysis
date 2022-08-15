@@ -243,10 +243,11 @@ int SIDISKinematicsReco::process_events()
 
 
   // Move to the next event in the Hipo chain
-  while(_chain.Next()==true){
+  while(_chain.Next()==true && _ievent < _settings._maxEvents && _settings._maxEvents > 0){
     if(_verbosity > 0 && (_ievent)%_printEvery==0 && _ievent!=0){
        std::cout << _ievent << " events completed | " << _tree_Reco->GetEntriesFast() << " passed cuts --> " << _tree_Reco->GetEntriesFast()*100.0/_ievent << "%" << std::endl;
     }
+    cout << "A" << endl;
     // Get the run number from the RUN::config bank
     // Also get the event number too
     // -----------------------------------------------------
@@ -262,7 +263,7 @@ int SIDISKinematicsReco::process_events()
 
     if(_c12->getDetParticles().empty())
       continue;
-    
+    cout << "B" << endl;
     // Create map to store reconstructed SIDIS particles
     // Use the pindex as a unique key
     type_map_part recoparticleMap;
@@ -279,6 +280,7 @@ int SIDISKinematicsReco::process_events()
 	/* Skip event if certain cuts are not satisfied */
 	if(CollectParticlesFromReco( _c12, recoparticleMap )!=0)
        	  continue;
+	cout << "C" << endl;
       }
     
     // Parse through true Monte Carlo particle data
@@ -298,7 +300,7 @@ int SIDISKinematicsReco::process_events()
     // ---------------------------
     // Writing to TTrees 
     // ---------------------------
-
+    cout << "D" << endl;
     if(_settings._doReco)
       {
 	/* Reset branch map */
@@ -317,6 +319,7 @@ int SIDISKinematicsReco::process_events()
 	/* Free up memory taken by elements of the map */
 	DeleteParticlePointers( recoparticleMap );
       }
+    cout << "E" << endl;
     if(_settings._doMC)
       {
 	/* Reset branch map */
