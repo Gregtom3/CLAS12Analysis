@@ -51,7 +51,7 @@ class Settings{
   bool _doPostProcess = false;
   bool _connectMC2Reco = false;
   bool _ignoreOtherRecoParticles = false;
-  bool _doQADB = false;
+  bool _doQADB = true;
   eventRecoMethod _eventRecoMethod;
   chargedPionChi2cut _chargedPionChi2cut = chargedPionChi2cut::none;
   const char *_postProcessMethod;
