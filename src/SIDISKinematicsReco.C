@@ -243,7 +243,7 @@ int SIDISKinematicsReco::process_events()
 
 
   // Move to the next event in the Hipo chain
-  while(_chain.Next()==true && _ievent < _settings._maxEvents && _settings._maxEvents > 0){
+  while(_chain.Next()==true && (_ievent < _settings._maxEvents || _settings._maxEvents < 0)){
     if(_verbosity > 0 && (_ievent)%_printEvery==0 && _ievent!=0){
        std::cout << _ievent << " events completed | " << _tree_Reco->GetEntriesFast() << " passed cuts --> " << _tree_Reco->GetEntriesFast()*100.0/_ievent << "%" << std::endl;
     }
