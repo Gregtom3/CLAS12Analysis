@@ -43,6 +43,7 @@ int SIDISKinematicsReco::Init()
   _map_event.insert( make_pair( "helicity" , dummy ) );
   _map_event.insert( make_pair( "polarization" , dummy ) );
   _map_event.insert( make_pair( "evnum" , dummy ) );
+  _map_event.insert( make_pair( "run" , dummy ) );
   
   // Create particle map 
   // -------------------------  
@@ -258,7 +259,7 @@ int SIDISKinematicsReco::process_events()
     // -----------------------------------------------------
     _runNumber = _c12->getBank(_idx_RUNconfig)->getInt(_irun,0);   
     _evnum = _c12->getBank(_idx_RUNconfig)->getInt(_ievnum,0);   
-
+    
     // Set torus bending in fiducial
     // -----------------------------------------------------
     _fiducial.setTorusBending(runTorusBending(_runNumber));
@@ -400,6 +401,7 @@ int SIDISKinematicsReco::CollectParticlesFromTruth(const std::unique_ptr<clas12:
     sp->set_property( SIDISParticle::evtgen_part_pindex,   (int)-999);
     sp->set_property( SIDISParticle::evtgen_part_beta,   (float)-999);
     sp->set_property( SIDISParticle::evtgen_part_chi2,   (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_status,   (int)-999);
     sp->set_property( SIDISParticle::evtgen_part_ID,   (int)mcparticles->getIndex());
     sp->set_property( SIDISParticle::evtgen_part_parentID,  (int)mcparticles->getParent());
     sp->set_property( SIDISParticle::evtgen_part_parentPID, (int)mcparticles->getPid(mcparticles->getParent()-1));
@@ -441,7 +443,8 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     float vx = particle->par()->getVx();
     float vy = particle->par()->getVy();
     float vz = particle->par()->getVz();
-    //    float vt = particle->par()->getVt();
+    int status = particle->getStatus();
+   //    float vt = particle->par()->getVt();
  
     // Create new particle structure
     // -------------------------------------------------------
@@ -466,6 +469,7 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     sp->set_property( SIDISParticle::part_beta,   beta);
     sp->set_property( SIDISParticle::part_chi2,   chi2);
     sp->set_property( SIDISParticle::part_ID, pindex);
+    sp->set_property( SIDISParticle::part_status, status);
     sp->set_property( SIDISParticle::part_parentID, (int)-999);
     sp->set_property( SIDISParticle::part_parentPID, (int)-999);
 
@@ -487,6 +491,7 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     sp->set_property( SIDISParticle::evtgen_part_pindex,   (int)-999);
     sp->set_property( SIDISParticle::evtgen_part_beta,   (float)-999);
     sp->set_property( SIDISParticle::evtgen_part_chi2,   (float)-999);
+    sp->set_property( SIDISParticle::evtgen_part_status,   (int)-999);
     sp->set_property( SIDISParticle::evtgen_part_ID, (int)-999);
     sp->set_property( SIDISParticle::evtgen_part_parentID, (int)-999);
     sp->set_property( SIDISParticle::evtgen_part_parentPID, (int)-999);
@@ -620,6 +625,7 @@ int SIDISKinematicsReco::AddTruthEventInfo(const std::unique_ptr<clas12::clas12r
       (_map_event.find("W"))->second = W;
       (_map_event.find("polarization"))->second = 0;
       (_map_event.find("evnum"))->second = _evnum;
+      (_map_event.find("run"))->second = _runNumber;
       break;
     }
   }
