@@ -24,6 +24,8 @@
 #include "clas12reader.h"
 #include "region_particle.h"
 #include "clas12databases.h"
+#include "rcdb_reader.h"
+#include "rcdb_vals.h"
 
 class SIDISParticle;
 
@@ -86,9 +88,10 @@ class SIDISKinematicsReco{
   int _idx_RUNconfig;
   int _irun;
   int _ievnum;
-  int _runNumber;
+  int _runNumber = -999;
   int _evnum;
-
+  int _rcdb_hwp = 0;
+  float _rcdb_electron_beam_energy =0.0;
   std::string _outfilename="";
   TFile *_tfile;
   TTree *_tree_MC;
@@ -132,6 +135,6 @@ class SIDISKinematicsReco{
   /* Clas12root objects */
   clas12root::HipoChain _chain;
   clas12::clas12reader *_config_c12{nullptr};
-
+  clas12::clas12databases _db;
 };
 #endif
