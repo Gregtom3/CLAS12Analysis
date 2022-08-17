@@ -10,6 +10,8 @@ const double degtorad     = 0.01745329251;
 const int    ineg999      = -999;
 const float  fneg999      = -999.;
 
+int rcdb_hwp = 0;
+
 // Returns run polarization if "v" is true
 // Returns run polarization error if "v" is false
 inline float runPolarization(int run, bool v=true){

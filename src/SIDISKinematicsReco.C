@@ -44,7 +44,10 @@ int SIDISKinematicsReco::Init()
   _map_event.insert( make_pair( "polarization" , dummy ) );
   _map_event.insert( make_pair( "evnum" , dummy ) );
   _map_event.insert( make_pair( "run" , dummy ) );
-  
+  // Add extra event info if we allow access to the Run Configuration Database
+  if(_settings._doRCDB == true){
+    _map_event.insert( make_pair( "HWP" , dummy ) );
+  }
   // Create particle map 
   // -------------------------  
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_pid , vdummy) );
@@ -147,7 +150,6 @@ int SIDISKinematicsReco::Init()
   for (map< SIDISParticle::PROPERTY, std::vector<float> >::iterator it = _map_particle.begin(); it!=_map_particle.end(); ++it)
     {
       _tree_MC->Branch( SIDISParticle::get_property_info( (it->first) ).first.c_str(), &(it->second));
-      //      cout << SIDISParticle::get_property_info( (it->first) ).first.c_str() << endl;
     }
  
   // Create Reconstructed TTree
@@ -170,10 +172,6 @@ int SIDISKinematicsReco::Init()
 
   }
 
-  // Set beam energy
-  // -------------------------
-  _electron_beam_energy = _settings._electronBeamEnergy;
-
   // Configure CLAS12Reader
   // -------------------------
   _config_c12=_chain.GetC12Reader();
@@ -183,6 +181,34 @@ int SIDISKinematicsReco::Init()
   if(_settings._doQADB == false)
     _config_c12->db()->turnOffQADB();
 
+  // Configure RCDB
+  // -------------------------------
+  if(_settings._doRCDB == true){
+    if(_settings._rcdbRootPath.empty()){
+      std::cout << "ERROR in SIDISKinematicsReco.C --- User forgot to define the rcdbRootPath. Exiting" << std::endl;
+      return -1;
+    }
+    else{
+      // Attach user created rcdb.root file
+      clas12::clas12databases::SetRCDBRootConnection(_settings._rcdbRootPath);
+      // Set parameters from rcdb
+      rcdb_hwp = c12->db()->rcdb()->getIntValue(_runNumber,"half_wave_plate");
+    }
+  }
+
+  // Set beam energy
+  // -------------------------
+  // First try if Constants.h contains run info
+  if(runBeamEnergy(_runNumber)>0)
+    _electron_beam_energy = runBeamEnergy(_runNumber);
+  // Next, try the RCDB
+  else if(_settings._doRCDB == true)
+    _electron_beam_energy = c12->db()->rcdb()->getDoubleValue(_runNumber , "beam_energy")/1000.0;
+  // Just use the user defined beam energy
+  else
+    _electron_beam_energy = _settings._electronBeamEnergy;
+  cout << " Electron Beam Energy : " << _electron_beam_energy << " GeV" << endl;
+  
   // Configure PID helper
   // -------------------------
   _pidhelper = PID();
@@ -704,6 +730,9 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
       (_map_event.find("helicity"))->second = event->getHelicity();
     (_map_event.find("polarization"))->second = runPolarization(_runNumber,true);
     (_map_event.find("evnum"))->second = _evnum;
+    (_map_event.find("run"))->second = _runNumber;
+    if(_settings._doRCDB == true)
+      (_map_event.find("HWP"))->second = rcdb_hwp;
   }
   
   return 0;

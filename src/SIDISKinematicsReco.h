@@ -23,6 +23,7 @@
 #include "HipoChain.h"
 #include "clas12reader.h"
 #include "region_particle.h"
+#include "clas12databases.h"
 
 class SIDISParticle;
 
