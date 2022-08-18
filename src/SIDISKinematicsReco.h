@@ -135,6 +135,5 @@ class SIDISKinematicsReco{
   /* Clas12root objects */
   clas12root::HipoChain _chain;
   clas12::clas12reader *_config_c12{nullptr};
-  clas12::clas12databases _db;
 };
 #endif

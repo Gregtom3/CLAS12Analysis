@@ -4,14 +4,16 @@ AM_CPPFLAGS = \
   -I$(CLAS12ROOT)/hipo4 \
   -I$(CLAS12ROOT)/Clas12Banks \
   -I$(CLAS12ROOT)/Clas12Root \
+  -I$(CLAS12ROOT)/rcdb/cpp/include \
   -I$(ROOTSYS)/include \
   -I$(BRUFIT)/core \
-  -I$(includedir) 
+  -I$(includedir) \
+  -DCLAS_RCDB 
 
 lib_LTLIBRARIES = \
    libclas12ana.la
 
-AM_CXXFLAGS = -Wall -Werror -Wno-int-in-bool-context -Wno-reorder -msse2 -std=c++14
+AM_CXXFLAGS = -Wall -Werror -Wno-int-in-bool-context -Wno-reorder -Wno-class-memaccess -msse2 -std=c++14
 
 AM_LDFLAGS = \
   -L$(CLAS12ROOT)/lib \

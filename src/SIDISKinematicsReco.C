@@ -7,6 +7,7 @@
 // ----------------------------
 
 #include "SIDISKinematicsReco.h"
+
 using namespace std;
 
 SIDISKinematicsReco::SIDISKinematicsReco(std::string outfilename):
@@ -22,12 +23,8 @@ SIDISKinematicsReco::SIDISKinematicsReco(std::string outfilename):
 
 int SIDISKinematicsReco::Init()
 {
-  
   // Create TFile
   // -------------------------
-  #ifdef CLAS_RCDB
-  cout << "A"<< endl;
-  #endif
   _tfile = new TFile(_outfilename.c_str(),"RECREATE");
 
   // Create event variable map 
@@ -160,7 +157,6 @@ int SIDISKinematicsReco::Init()
   _tree_Reco->SetName("tree_reco");
   _tree_Reco->SetTitle("A Tree with *reconstructed* event and particle information");
 
-
   // Load in HipoFiles
   // -------------------------
   if(_settings._hipoFileStrings.size()==0){
@@ -176,19 +172,6 @@ int SIDISKinematicsReco::Init()
   // Configure CLAS12Reader
   // -------------------------
   _config_c12=_chain.GetC12Reader();
-
-  //  clas12::clas12databases::SetRCDBRootConnection(_settings._rcdbRootPath);
-  clas12::clas12databases::SetRCDBRootConnection("/work/clas12/users/gmat/CLAS12Analysis/rcdb/rcdb.root");
-  cout << "0" << endl;
-  clas12::clas12databases db;
-  _config_c12->connectDataBases(&db);
-  cout << "1" << endl;
-  auto& rcdbData = _config_c12->rcdb()->current();
-  cout << "2" << endl;
-  //  cout << _config_c12->rcdb()->getIntValue(16338,"event_count");
-  _rcdb_hwp = rcdbData.half_wave_plate;
-  cout << "3" << endl;
-  cout << rcdbData.event_count;
 
   // Turn on/off QADB
   // -------------------------------
@@ -262,7 +245,9 @@ int SIDISKinematicsReco::process_events()
   // Establish CLAS12 event parser
   // -------------------------
   auto &_c12= _chain.C12ref();
-
+  clas12::clas12databases::SetRCDBRootConnection(_settings._rcdbRootPath);
+  clas12::clas12databases db;
+	  
   // Configure HipoBankInterface
   // -------------------------
   _hipoInterface = HipoBankInterface(_c12); 
@@ -272,7 +257,7 @@ int SIDISKinematicsReco::process_events()
   if(_settings._doFiducialCuts)
     _fiducial = FiducialCuts();
 
-
+  
   // Move to the next event in the Hipo chain
   while(_chain.Next()==true && (_ievent < _settings._maxEvents || _settings._maxEvents < 0)){
     if(_verbosity > 0 && (_ievent)%_printEvery==0 && _ievent!=0){
@@ -285,22 +270,16 @@ int SIDISKinematicsReco::process_events()
     if(_runNumber != _c12->getBank(_idx_RUNconfig)->getInt(_irun,0)) // Run# changes
       {
 	_runNumber = _c12->getBank(_idx_RUNconfig)->getInt(_irun,0);   
-	
+
 	// Pull RCDB data from new run
+	// Very sloppy, needs polishing
 	if(_settings._doRCDB == true){
 	  auto c12 = _chain.GetC12Reader();
-	  clas12::clas12databases::SetRCDBRootConnection(_settings._rcdbRootPath);
-	  cout << "0" << endl;
-	  c12->connectDataBases(&_db);
-	  cout << "1" << endl;
-	  const clas12::rcdb_vals& rcdbData = c12->rcdb()->current();
-	  cout << "2" << endl;
-	  // _rcdb_hwp = rcdbData.half_wave_plate;
-	  cout << "3" << endl;
-	  cout << rcdbData.event_count;
-	  cout << "4" << endl;
-	  //	  _rcdb_electron_beam_energy = rcdbData.beam_energy;
-	  cout << "5" << endl;
+	  c12->connectDataBases(&db);
+	  if(_settings._doQADB == false)
+	    c12->db()->turnOffQADB();
+	  _rcdb_hwp = c12->rcdb()->current().half_wave_plate;
+	  _rcdb_electron_beam_energy = c12->rcdb()->current().beam_energy;
 	}
 
 	// Set beam energy
@@ -315,7 +294,6 @@ int SIDISKinematicsReco::process_events()
 	else
 	  _electron_beam_energy = _settings._electronBeamEnergy;	
       }
-    
     // Set event number
     // --------------------------
     _evnum = _c12->getBank(_idx_RUNconfig)->getInt(_ievnum,0);   
@@ -327,7 +305,7 @@ int SIDISKinematicsReco::process_events()
 
     /* Increase event # */
     _ievent++;
-
+    
     if(_c12->getDetParticles().empty())
       continue;
 
@@ -342,7 +320,6 @@ int SIDISKinematicsReco::process_events()
     // Parse through reconstructed particle data
     if(_settings._doReco)
       {
-		
 	/* Add reco particle information */
 	/* Skip event if certain cuts are not satisfied */
 	if(CollectParticlesFromReco( _c12, recoparticleMap )!=0)
@@ -378,10 +355,8 @@ int SIDISKinematicsReco::process_events()
 	  continue;
 	/* Write particle information to Tree */
        	WriteParticlesToTree( recoparticleMap );
-
 	/* fill reco tree */
        	_tree_Reco->Fill();
-
 	/* Free up memory taken by elements of the map */
 	DeleteParticlePointers( recoparticleMap );
       }
@@ -703,7 +678,6 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
   double reco_y = ineg999;
   double reco_nu = ineg999;
   double reco_W = ineg999;
-
   /* METHOD 1: If available, use REC::Kinematics bank for event reco */
   if(_settings._eventRecoMethod == Settings::eventRecoMethod::useRecKinematicsBank){
     reco_x=_c12->getBank(_idx_RECKin)->getDouble(_ix,0);
@@ -743,7 +717,7 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
       }
     }
   }
-  
+
   if(reco_W < _settings._Wmin || reco_W > _settings._Wmax)
     return -1;
   else if(reco_y < _settings._ymin || reco_y > _settings._ymax)
@@ -751,7 +725,6 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
   else if(reco_Q2 < _settings._Q2min || reco_Q2 > _settings._Q2max)
     return -1;
   else{
-
 
     (_map_event.find("x"))->second = reco_x; 
     (_map_event.find("Q2"))->second = reco_Q2;
