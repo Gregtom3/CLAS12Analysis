@@ -20,7 +20,9 @@ class PostProcess{
     pipluspi0 = 0,
     pipluspi0_MC = 1,
     piminuspi0 = 10,
-    piminuspi0_MC = 11
+    piminuspi0_MC = 11,
+
+    elastic = 20
 
   };
   int Init(TTree *, double);
@@ -49,6 +51,10 @@ class PostProcess{
       _piPID=-211;
     }
 
+    else if(strcmp(method, "elastic")==0){
+      _process_id = PROCESS_ID::elastic;
+    }
+
     else{
       std::cout << "ERROR in PostProcess::setPostProcessMethod -- Unrecognized method " << method << " . Breaking . . . " << std::endl;
       return -1;
@@ -57,6 +63,7 @@ class PostProcess{
   }
 
   int pipi0(TTree *, int);
+  int elastic(TTree *);
   
   void set_electron_beam_energy(double E){ _electron_beam_energy = E; }
 

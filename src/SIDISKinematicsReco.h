@@ -92,6 +92,9 @@ class SIDISKinematicsReco{
   int _evnum;
   int _rcdb_hwp = 0;
   float _rcdb_electron_beam_energy =0.0;
+  float _rcdb_target_polarization = 0.0;
+  float _rcdb_target =0.0;
+
   std::string _outfilename="";
   TFile *_tfile;
   TTree *_tree_MC;

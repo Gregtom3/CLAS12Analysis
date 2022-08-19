@@ -45,6 +45,8 @@ int SIDISKinematicsReco::Init()
   // Add extra event info if we allow access to the Run Configuration Database
   if(_settings._doRCDB == true){
     _map_event.insert( make_pair( "HWP" , dummy ) );
+    _map_event.insert( make_pair( "target_id" , dummy ) );
+    //    _map_event.insert( make_pair( "Tpol" , dummy ) );
   }
   // Create particle map 
   // -------------------------  
@@ -272,14 +274,20 @@ int SIDISKinematicsReco::process_events()
 	_runNumber = _c12->getBank(_idx_RUNconfig)->getInt(_irun,0);   
 
 	// Pull RCDB data from new run
-	// Very sloppy, needs polishing
 	if(_settings._doRCDB == true){
+	  // Convoluted way to access RC database
 	  auto c12 = _chain.GetC12Reader();
 	  c12->connectDataBases(&db);
-	  if(_settings._doQADB == false)
+	  if(_settings._doQADB == false) // silencer
 	    c12->db()->turnOffQADB();
+	  
+	  // Save RCDB parameters to event tree
+	  std::string target = c12->rcdb()->current().target;
 	  _rcdb_hwp = c12->rcdb()->current().half_wave_plate;
 	  _rcdb_electron_beam_energy = c12->rcdb()->current().beam_energy;
+	  //	  _rcdb_target_polarization  = c12->rcdb()->current().target_polarization;
+	  _rcdb_target = runTarget(target);
+	  
 	}
 
 	// Set beam energy
@@ -739,8 +747,11 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
     (_map_event.find("polarization"))->second = runPolarization(_runNumber,true);
     (_map_event.find("evnum"))->second = _evnum;
     (_map_event.find("run"))->second = _runNumber;
-    if(_settings._doRCDB == true)
+    if(_settings._doRCDB == true){
       (_map_event.find("HWP"))->second = _rcdb_hwp;
+      (_map_event.find("target_id"))->second = _rcdb_target;
+      //      (_map_event.find("Tpol"))->second = _rcdb_target_polarization;
+    }
   }
   
   return 0;

@@ -1,5 +1,6 @@
 #ifndef Constants_h
 #define Constants_h
+#include <string>
 
 const double electronMass = 0.000511;
 const double protonMass   = 0.938272;
@@ -54,4 +55,10 @@ inline int runTorusBending(int run){
     return 0.0;
 };
 
+inline float runTarget(std::string target){
+  if     (target.compare("NH3 ")==0 || target.compare("NH3")==0) return 1001;
+  else if(target.compare("ND3 ")==0 || target.compare("ND3")==0) return 1002;
+  else if(target.compare("C ")==0   || target.compare("C")==0)   return 1003;
+  else return -1;
+};
 #endif 
