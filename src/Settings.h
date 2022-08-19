@@ -26,6 +26,7 @@ class Settings{
   };
 
   void addFinalState(int, int, bool);
+  void addOpenInvite(int);
   void addPIDforEmin(int,double);
   void addPIDforPmin(int,double);
   void addPIDforVzrange(int,double, double);
@@ -35,6 +36,7 @@ class Settings{
 
   int getN_fromPID(int);
   bool isExact_fromPID(int);
+  bool isInvited_fromPID(int);
   double getEmin_fromPID(int);
   double getPmin_fromPID(int);
   double getVzmin_fromPID(int);
@@ -78,6 +80,9 @@ class Settings{
   std::vector<int> _fPID;
   std::vector<int> _fNpart;
   std::vector<bool> _fExact;
+
+  // Vectors for final state particles which can be recovered, but its not mandatory
+  std::vector<int> _fInvitePID;
 
   // std::vector of Hipo filename strings
   std::vector<std::string> _hipoFileStrings;
