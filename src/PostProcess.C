@@ -46,7 +46,7 @@ int PostProcess::Process(TTree *_tree_postprocess){
   case PROCESS_ID::piminuspi0_MC:
     pipi0(_tree_postprocess,1);
     break;
-  case PROCESS_ID::elastic:
+  case PROCESS_ID::Elastic:
     elastic(_tree_postprocess);
     break;
   }

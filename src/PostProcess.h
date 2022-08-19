@@ -22,7 +22,7 @@ class PostProcess{
     piminuspi0 = 10,
     piminuspi0_MC = 11,
 
-    elastic = 20
+    Elastic = 20
 
   };
   int Init(TTree *, double);
@@ -52,7 +52,7 @@ class PostProcess{
     }
 
     else if(strcmp(method, "elastic")==0){
-      _process_id = PROCESS_ID::elastic;
+      _process_id = PROCESS_ID::Elastic;
     }
 
     else{

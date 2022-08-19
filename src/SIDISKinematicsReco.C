@@ -42,12 +42,8 @@ int SIDISKinematicsReco::Init()
   _map_event.insert( make_pair( "polarization" , dummy ) );
   _map_event.insert( make_pair( "evnum" , dummy ) );
   _map_event.insert( make_pair( "run" , dummy ) );
-  // Add extra event info if we allow access to the Run Configuration Database
-  if(_settings._doRCDB == true){
-    _map_event.insert( make_pair( "HWP" , dummy ) );
-    _map_event.insert( make_pair( "target_id" , dummy ) );
-    //    _map_event.insert( make_pair( "Tpol" , dummy ) );
-  }
+  _map_event.insert( make_pair( "Mx"  , dummy ) );
+
   // Create particle map 
   // -------------------------  
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_pid , vdummy) );
@@ -281,15 +277,10 @@ int SIDISKinematicsReco::process_events()
 	  if(_settings._doQADB == false) // silencer
 	    c12->db()->turnOffQADB();
 	  
-	  // Save RCDB parameters to event tree
-	  std::string target = c12->rcdb()->current().target;
-	  _rcdb_hwp = c12->rcdb()->current().half_wave_plate;
 	  _rcdb_electron_beam_energy = c12->rcdb()->current().beam_energy;
-	  //	  _rcdb_target_polarization  = c12->rcdb()->current().target_polarization;
-	  _rcdb_target = runTarget(target);
-	  
 	}
-
+	
+	
 	// Set beam energy
 	// -------------------------
 	// First try if Constants.h contains run info
@@ -686,6 +677,7 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
   double reco_y = ineg999;
   double reco_nu = ineg999;
   double reco_W = ineg999;
+  double reco_Mx = ineg999;
   /* METHOD 1: If available, use REC::Kinematics bank for event reco */
   if(_settings._eventRecoMethod == Settings::eventRecoMethod::useRecKinematicsBank){
     reco_x=_c12->getBank(_idx_RECKin)->getDouble(_ix,0);
@@ -719,12 +711,13 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
 	reco_W  = _kin.W(reco_Q2,protonMass,reco_nu);
 	float s  = protonMass*protonMass+electronMass*electronMass+2*protonMass*_electron_beam_energy;
 	reco_x = _kin.x(reco_Q2,s,reco_y);
-	
+	reco_Mx = _kin.Mx(px,py,pz,E,protonMass,_electron_beam_energy);
 	// Found scattered electron, just break out of here
 	break;
       }
     }
   }
+
 
   if(reco_W < _settings._Wmin || reco_W > _settings._Wmax)
     return -1;
@@ -739,6 +732,7 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
     (_map_event.find("y"))->second = reco_y;
     (_map_event.find("nu"))->second = reco_nu;
     (_map_event.find("W"))->second = reco_W;
+    (_map_event.find("Mx"))->second = reco_Mx;
     auto event = _c12->event();
     if(runHelicityFlip(_runNumber))
       (_map_event.find("helicity"))->second = -event->getHelicity();
@@ -747,11 +741,6 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
     (_map_event.find("polarization"))->second = runPolarization(_runNumber,true);
     (_map_event.find("evnum"))->second = _evnum;
     (_map_event.find("run"))->second = _runNumber;
-    if(_settings._doRCDB == true){
-      (_map_event.find("HWP"))->second = _rcdb_hwp;
-      (_map_event.find("target_id"))->second = _rcdb_target;
-      //      (_map_event.find("Tpol"))->second = _rcdb_target_polarization;
-    }
   }
   
   return 0;
