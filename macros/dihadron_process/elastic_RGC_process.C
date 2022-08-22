@@ -43,12 +43,13 @@ int elastic_RGC_process(
   settings._eventRecoMethod = Settings::eventRecoMethod::useLargestPinFD;
   settings._connectMC2Reco = false; // Connect pindex of REC::Particle to pindex of MC::Lund
 
-  settings._Q2min = 1; settings._Q2max = 100;
+  settings._Q2min = 0; settings._Q2max = 100;
   settings._Wmin = 2; settings._Wmax = 100;
-  settings._ymin = 0; settings._ymax = 0.8;
+  settings._ymin = 0; settings._ymax = 1;
   
-  settings.addFinalState(11,1,false);  // Exactly 1 electron
-  //  settings.addFinalState(2212,1,true); // Exactly 1 proton
+  settings.addFinalState(11,1,true);  // Exactly 1 electron
+  settings.addFinalState(211,1,false); // At least 1 pi+
+  //  settings.addOpenInvite(2212); // Allow for protons to be saved if found
   settings._ignoreOtherRecoParticles = true; // Do not save to tree particle info of uninterested PIDs
 
   //  settings.addPIDforPmin(2212,1);   // Proton minimum 1 GeV
