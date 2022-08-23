@@ -243,7 +243,8 @@ int SIDISKinematicsReco::process_events()
   // Establish CLAS12 event parser
   // -------------------------
   auto &_c12= _chain.C12ref();
-  clas12::clas12databases::SetRCDBRootConnection(_settings._rcdbRootPath);
+  if(_settings._doRCDB == true)
+    clas12::clas12databases::SetRCDBRootConnection(_settings._rcdbRootPath);
   clas12::clas12databases db;
 	  
   // Configure HipoBankInterface

@@ -40,6 +40,8 @@ int pipi0_process(
   settings._electronBeamEnergy = beamE; 
   settings._doMC = true;
   settings._doReco = true;
+  settings._doQADB = true;
+  settings._doRCDB = false;
   settings._eventRecoMethod = Settings::eventRecoMethod::useLargestPinFD;
   settings._connectMC2Reco = true; // Connect pindex of REC::Particle to pindex of MC::Lund
 

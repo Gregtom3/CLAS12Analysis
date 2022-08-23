@@ -34,11 +34,12 @@ CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
-declare -a hipodirs=($RGC_SU22)
+declare -a hipodirs=($RGC_MC_MINUS_NEUTRON $RGC_MC_PLUS_NEUTRON $RGC_MC_MINUS_PROTON $RGC_MC_PLUS_PROTON)
+declare -a hiponames=("minus_neutron" "plus_neutron" "minus_proton" "plus_proton")
 
 # Beam energy associated with hipo files
 # --------------------------------------------------------
-beamEs=(10.5)
+beamEs=(10.5 10.5 10.5 10.5)
 
 # Analysis chain parameters
 # Base chain = Processing  --> PostProcessing --> Merging
@@ -47,17 +48,16 @@ doAsymmetry=false # Binning --> Fitting --> Asymmetry
 
 # Name of output directory
 # --------------------------------------------------------
-outdir="clas12analysis.sidis.data/rgc-su-train"
+outdir="clas12analysis.sidis.data/rgc-mc"
 
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="aug23_elastic"
+rootname="aug23"
 
 # Code locations
 # --------------------------------------------------------
-processcode="${CLAS12Analysisdir}/macros/dihadron_process/elastic_RGC_process.C"
+processcode="${CLAS12Analysisdir}/macros/dihadron_process/elastic_RGC_MC_process.C"
 postprocesscode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_postprocess_only.C"
-organizecode="${CLAS12Analysisdir}/macros/dihadron_process/organize_rgc.py"
 
 # Location of clas12root package
 # --------------------------------------------------------
@@ -65,8 +65,8 @@ clas12rootdir="/work/clas12/users/gmat/packages/clas12root"
 
 # Job Parameters
 # --------------------------------------------------------
-memPerCPU=4000
-nCPUs=4
+memPerCPU=2000
+nCPUs=1
 
 # --------------------------
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -103,9 +103,9 @@ for idx in "${!beamEs[@]}"
 do
     beamE=${beamEs[$idx]}
     hipodir=${hipodirs[$idx]}
+    hiponame=${hiponames[$idx]}
     for hipofile in "$hipodir"*
     do
-	read runNumber <<< $(echo $hipofile | grep -oP '(?<=sidisdvcs_0).*(?=.hipo)')
 	echo "Creating processing script for hipo file $((i+1))"
 	processFile="${shellSlurmDir}/${rootname}_${i}.sh"
 	touch $processFile
@@ -115,7 +115,7 @@ do
 	echo "module load clas12/pro" >> $processFile
 	echo "set CLAS12ROOT=${clas12rootdir}" >> $processFile
 	echo "cd ${outputSlurmDir}" >> $processFile
-	echo "clas12root ${processcode}\\(\\\"${hipofile}\\\",\\\"${outputdir}/${rootname}_${runNumber}.root\\\",${beamE}\\)" >> $processFile   
+	echo "clas12root ${processcode}\\(\\\"${hipofile}\\\",\\\"${outputdir}/${rootname}_${hiponame}_${i}.root\\\",${beamE}\\)" >> $processFile   
 	postprocessFile="${shellSlurmDir}/${rootname}_${i}_postprocess.sh"
 	touch $postprocessFile
 	chmod +x $postprocessFile
@@ -124,7 +124,7 @@ do
 	echo "module load clas12/pro" >> $postprocessFile
 	echo "set CLAS12ROOT=${clas12rootdir}" >> $postprocessFile
 	echo "cd ${outputSlurmDir}" >> $postprocessFile
-	echo "clas12root ${postprocesscode}\\(\\\"${outputdir}/${rootname}_${runNumber}.root\\\",${beamE}\\)" >> $postprocessFile   
+	echo "clas12root ${postprocesscode}\\(\\\"${outputdir}/${rootname}_${hiponame}_${i}.root\\\",${beamE}\\)" >> $postprocessFile   
 	i=$((i+1))
     done
 done
@@ -148,49 +148,6 @@ echo "#SBATCH --output=${outputSlurmDir}/%x-%a.out" >> $runJobs
 echo "#SBATCH --error=${outputSlurmDir}/%x-%a.err" >> $runJobs    
 echo "${shellSlurmDir}/${rootname}_\${SLURM_ARRAY_TASK_ID}.sh" >> $runJobs
 
-# Create a file which will wait until (int) 0 is outputted by each job
-# This signifies the end of the batch
-# Analysis chain flags can add Binning, Fitting, and Asymmetry calculations
-# --------------------------------------------------------------------
-touch $mergeFile
-chmod +x $mergeFile
-
-cat >> $mergeFile <<EOF
-#!/bin/bash
-cd \$outputSlurmDir
-mergeOutFile=\"merge.txt\"
-touch \$mergeOutFile
-jobsLeft=999
-while [ \$jobsLeft -ne 0 ]
-do
-    read jobsLeft <<< \$(echo "\$(squeue -u gmat --format="%.18i %.9P %.30j %.8u %.8T %.10M %.9l %.6D %R")" | grep run${rootname} | awk 'END{print NR}')
-    echo \$jobsLeft >> \$mergeOutFile
-sleep 30
-done 
-/apps/python/2.7.18/bin/python $organizecode $outputdir/ $rootname
-EOF
-
-# Job for running the merge script
-# ------------------------------------------------
-touch $mergeSlurm
-chmod +x $mergeSlurm
-echo "#!/bin/bash" > $mergeSlurm
-echo "#SBATCH --account=clas12" >> $mergeSlurm
-echo "#SBATCH --partition=production" >> $mergeSlurm
-echo "#SBATCH --mem-per-cpu=${memPerCPU}" >> $mergeSlurm
-echo "#SBATCH --job-name=mergejob_${rootname}" >> $mergeSlurm
-echo "#SBATCH --cpus-per-task=${nCPUs}" >> $mergeSlurm
-echo "#SBATCH --time=24:00:00" >> $mergeSlurm
-echo "#SBATCH --chdir=${workdir}" >> $mergeSlurm
-echo "#SBATCH --output=${outputSlurmDir}/merge.out" >> $mergeSlurm
-echo "#SBATCH --error=${outputSlurmDir}/merge.err" >> $mergeSlurm    
-echo "${mergeFile}" >> $mergeSlurm
-
 echo "Submitting analysis jobs for the selected HIPO files"
 echo " "
 sbatch $runJobs
-echo "----------------------------------------------------"
-echo "Submitting merge script"
-echo " "
-sbatch $mergeSlurm
-echo "----------------------------------------------------"
