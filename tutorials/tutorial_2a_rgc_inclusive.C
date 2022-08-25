@@ -52,7 +52,7 @@ using namespace std;
 
 
 
-int tutorial_2_rgc_inclusive(
+int tutorial_2a_rgc_inclusive(
 		  const char * hipoFile = "",
 		  const char * outputFile = "",
 		  const double beamE = 10.5473)
