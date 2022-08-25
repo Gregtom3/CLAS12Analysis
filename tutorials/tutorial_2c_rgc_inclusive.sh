@@ -1,9 +1,10 @@
 #!/bin/bash
+
 # --------------------------
 # Hipo dir defintions
 # --------------------------
 
-RGC_SU22="/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/"
+RGC_sidisdvcs="/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/"
 
 # --------------------------
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -15,36 +16,39 @@ RGC_SU22="/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/"
 
 # Username
 # --------------------------------------------------------
-username="gmat"
+username="<USERNAME>"
 
 # Location of CLAS12Analysis directory
 # --------------------------------------------------------
-CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
+CLAS12Analysisdir="/path/to/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
-declare -a hipodirs=($RGC_SU22)
+declare -a hipodirs=($RGC_sidisdvcs)
 
 # Beam energy associated with hipo files
 # --------------------------------------------------------
-beamEs=(10.5)
+beamEs=(10.5473 10.5473 10.5473 10.5473)
 
 # Name of output directory
 # --------------------------------------------------------
-outdir="clas12analysis.sidis.data/rgc-su-train"
+outdir="tutorial_2c"
 
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="aug23_elastic"
+rootname="test_2c"
 
-# Code locations
+# Code locations 
 # --------------------------------------------------------
-processcode="${CLAS12Analysisdir}/macros/process/rg-c/inclusive_RGC_process.C"
+processcode="${CLAS12Analysisdir}/tutorials/tutorial_2a_rgc_inclusive.C"
 organizecode="${CLAS12Analysisdir}/macros/organize_rgc.py"
+# The above macro will run after all jobs are completed
+# organize_rgc.py reads in from the RCDB to reorganize the output .root files
 
-# Location of clas12root package
+# Location of locally installed clas12root package
+# See https://github.com/JeffersonLab/clas12root
 # --------------------------------------------------------
-clas12rootdir="/work/clas12/users/gmat/packages/clas12root"
+clas12rootdir="/path/to/clas12root"
 
 # Job Parameters
 # --------------------------------------------------------
@@ -121,8 +125,8 @@ echo "#SBATCH --output=${outputSlurmDir}/%x-%a.out" >> $runJobs
 echo "#SBATCH --error=${outputSlurmDir}/%x-%a.err" >> $runJobs    
 echo "${shellSlurmDir}/${rootname}_\${SLURM_ARRAY_TASK_ID}.sh" >> $runJobs
 
-# Organize output root files
-# --------------------------------------------------------------------
+# Job for organizing output files
+# ---------------------------------
 touch $organizeFile
 chmod +x $organizeFile
 
@@ -134,7 +138,8 @@ touch \$organizeOutFile
 jobsLeft=999
 while [ \$jobsLeft -ne 0 ]
 do
-    read jobsLeft <<< \$(echo "\$(squeue -u gmat --format="%.18i %.9P %.30j %.8u %.8T %.10M %.9l %.6D %R")" | grep run${rootname} | awk 'END{print NR}')
+    read jobsLeft <<EOF
+< \$(echo "\$(squeue -u gmat --format="%.18i %.9P %.30j %.8u %.8T %.10M %.9l %.6D %R")" | grep run${rootname} | awk 'END{print NR}')
     echo \$jobsLeft >> \$organizeOutFile
 sleep 30
 done 
@@ -157,11 +162,22 @@ echo "#SBATCH --output=${outputSlurmDir}/organize.out" >> $organizeSlurm
 echo "#SBATCH --error=${outputSlurmDir}/organize.err" >> $organizeSlurm    
 echo "${organizeFile}" >> $organizeSlurm
 
+
+
+
+
+
+
 echo "Submitting analysis jobs for the selected HIPO files"
 echo " "
 sbatch $runJobs
-echo "----------------------------------------------------"
-echo "Submitting organize script"
+echo "Submitting organize job to clean up output directory following job completion"
 echo " "
 sbatch $organizeSlurm
 echo "----------------------------------------------------"
+echo "Here is how you can monitor your runs..."
+echo "----------------------------------------------------"
+echo "Location of slurm .out/.err : $outputSlurmDir"
+echo "Location of shell scripts (which run the tutorial_2a_rgc_inclusive.C file) : $shellSlurmDir"
+echo "Location of saved .root files : $outputdir"
+

@@ -74,10 +74,6 @@ shellSlurmDir="${farmoutdir}/shells"
 outputSlurmDir="${farmoutdir}/output"
 
 runJobs="${shellSlurmDir}/runJobs.sh"
-makeJobsPostProcess="${shellSlurmDir}/makeJobsPostProcess.sh"
-runJobsPostProcess="${shellSlurmDir}/runJobsPostProcess.sh"
-mergeFile="${shellSlurmDir}/merge.sh"
-mergeSlurm="${shellSlurmDir}/mergeSlurm.slurm"
 
 if [ ! -d "/farm_out/$username/$outdir/" ]; then mkdir "/farm_out/$username/$outdir/"; fi
 if [ -d "$farmoutdir" ]; then rm -Rf $farmoutdir; fi
@@ -107,15 +103,6 @@ do
 	echo "set CLAS12ROOT=${clas12rootdir}" >> $processFile
 	echo "cd ${outputSlurmDir}" >> $processFile
 	echo "clas12root ${processcode}\\(\\\"${hipofile}\\\",\\\"${outputdir}/${rootname}_${hiponame}_${i}.root\\\",${beamE}\\)" >> $processFile   
-	postprocessFile="${shellSlurmDir}/${rootname}_${i}_postprocess.sh"
-	touch $postprocessFile
-	chmod +x $postprocessFile
-	echo "#!/bin/tcsh" > $postprocessFile
-	echo "source /group/clas12/packages/setup.csh" >> $postprocessFile
-	echo "module load clas12/pro" >> $postprocessFile
-	echo "set CLAS12ROOT=${clas12rootdir}" >> $postprocessFile
-	echo "cd ${outputSlurmDir}" >> $postprocessFile
-	echo "clas12root ${postprocesscode}\\(\\\"${outputdir}/${rootname}_${hiponame}_${i}.root\\\",${beamE}\\)" >> $postprocessFile   
 	i=$((i+1))
 	j=$((j+1))
 	if [[ $j == $max ]]; then
