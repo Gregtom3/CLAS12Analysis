@@ -54,7 +54,7 @@ postprocesscode="${CLAS12Analysisdir}/macros/process/rg-a/pipi0_postprocess_only
 mergecode="${CLAS12Analysisdir}/macros/mergeTrees.C"
 asymmetrycode="${CLAS12Analysisdir}/macros/process/rg-a/pipi0_asymmetry.C"
 
-# Location of clas12root package
+# Location of locally installed clas12root package
 # --------------------------------------------------------
 clas12rootdir="/work/clas12/users/gmat/packages/clas12root"
 
@@ -88,6 +88,7 @@ fitFile="${shellSlurmDir}/fit.sh"
 fitSlurm="${shellSlurmDir}/fitSlurm.slurm"
 asymSlurm="${shellSlurmDir}/asym.slurm"
 
+if [ ! -d "/farm_out/$username/$outdir/" ]; then mkdir "/farm_out/$username/$outdir/"; fi
 if [ -d "$farmoutdir" ]; then rm -Rf $farmoutdir; fi
 if [ ! -d "$volatiledir" ]; then mkdir $volatiledir; fi
 if [ -d "$outputdir" ]; then rm -Rf $outputdir; fi

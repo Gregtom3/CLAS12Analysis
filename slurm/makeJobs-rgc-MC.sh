@@ -79,6 +79,7 @@ runJobsPostProcess="${shellSlurmDir}/runJobsPostProcess.sh"
 mergeFile="${shellSlurmDir}/merge.sh"
 mergeSlurm="${shellSlurmDir}/mergeSlurm.slurm"
 
+if [ ! -d "/farm_out/$username/$outdir/" ]; then mkdir "/farm_out/$username/$outdir/"; fi
 if [ -d "$farmoutdir" ]; then rm -Rf $farmoutdir; fi
 if [ ! -d "$volatiledir" ]; then mkdir $volatiledir; fi
 if [ -d "$outputdir" ]; then rm -Rf $outputdir; fi
