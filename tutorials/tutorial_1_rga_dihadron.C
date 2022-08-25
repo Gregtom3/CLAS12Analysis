@@ -51,7 +51,7 @@ using namespace std;
 
 int tutorial_1_rga_dihadron(
 		  const char * hipoFile = "/w/hallb-scshelf2102/clas12/users/gmat/CLAS12Analysis/data/smallhipo/small_MC_sample.hipo",
-		  const char * outputFile = "./output.root"
+		  const char * outputFile = "./tutorial_1_output.root"
 		  )
 {
   
