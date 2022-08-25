@@ -175,19 +175,6 @@ int SIDISKinematicsReco::Init()
   // -------------------------------
   if(_settings._doQADB == false)
     _config_c12->db()->turnOffQADB();
-
-  // Configure RCDB
-  // -------------------------------
-  if(_settings._doRCDB == true){
-    if(_settings._rcdbRootPath.empty()){
-      std::cout << "ERROR in SIDISKinematicsReco.C --- User forgot to define the rcdbRootPath. Exiting" << std::endl;
-      return -1;
-    }
-    else{
-      // Attach user created rcdb.root file
-      clas12::clas12databases::SetRCDBRootConnection(_settings._rcdbRootPath);
-    }
-  }
   
   // Configure PID helper
   // -------------------------
@@ -243,9 +230,6 @@ int SIDISKinematicsReco::process_events()
   // Establish CLAS12 event parser
   // -------------------------
   auto &_c12= _chain.C12ref();
-  if(_settings._doRCDB == true)
-    clas12::clas12databases::SetRCDBRootConnection(_settings._rcdbRootPath);
-  clas12::clas12databases db;
 	  
   // Configure HipoBankInterface
   // -------------------------
@@ -270,26 +254,11 @@ int SIDISKinematicsReco::process_events()
       {
 	_runNumber = _c12->getBank(_idx_RUNconfig)->getInt(_irun,0);   
 
-	// Pull RCDB data from new run
-	if(_settings._doRCDB == true){
-	  // Convoluted way to access RC database
-	  auto c12 = _chain.GetC12Reader();
-	  c12->connectDataBases(&db);
-	  if(_settings._doQADB == false) // silencer
-	    c12->db()->turnOffQADB();
-	  
-	  _rcdb_electron_beam_energy = c12->rcdb()->current().beam_energy;
-	}
-	
-	
 	// Set beam energy
 	// -------------------------
 	// First try if Constants.h contains run info
 	if(runBeamEnergy(_runNumber)>0)
 	  _electron_beam_energy = runBeamEnergy(_runNumber);
-	// Next, try the RCDB
-	else if(_settings._doRCDB == true)
-	  _electron_beam_energy = _rcdb_electron_beam_energy/1000.0;
 	// Just use the user defined beam energy
 	else
 	  _electron_beam_energy = _settings._electronBeamEnergy;	

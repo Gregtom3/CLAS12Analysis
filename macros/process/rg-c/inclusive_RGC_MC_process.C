@@ -38,8 +38,6 @@ int inclusive_RGC_MC_process(
   settings._doMC = true;
   settings._doReco = true;
   settings._doQADB = false; // Turn off QADB for RGC as of now
-  settings._doRCDB = false;  // Turn on RCDB
-  settings._eventRecoMethod = Settings::eventRecoMethod::useLargestPinFD;
   settings._connectMC2Reco = true; // Connect pindex of REC::Particle to pindex of MC::Lund
 
   settings._Q2min = 0; settings._Q2max = 100;

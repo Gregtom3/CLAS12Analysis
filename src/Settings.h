@@ -54,8 +54,6 @@ class Settings{
   bool _connectMC2Reco = false;
   bool _ignoreOtherRecoParticles = false;
   bool _doQADB = true;
-  bool _doRCDB = false;
-  std::string _rcdbRootPath = "";
 
   eventRecoMethod _eventRecoMethod;
   chargedPionChi2cut _chargedPionChi2cut = chargedPionChi2cut::none;

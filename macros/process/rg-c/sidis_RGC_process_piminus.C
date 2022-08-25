@@ -38,8 +38,6 @@ int sidis_RGC_process_piminus(
   settings._doMC = false;
   settings._doReco = true;
   settings._doQADB = false; // Turn off QADB for RGC as of now
-  settings._doRCDB = true;  // Turn on RCDB
-  settings._rcdbRootPath = "/work/clas12/users/gmat/CLAS12Analysis/rcdb/rgc-rcdb.root";
   settings._eventRecoMethod = Settings::eventRecoMethod::useLargestPinFD;
   settings._connectMC2Reco = false; // Connect pindex of REC::Particle to pindex of MC::Lund
 

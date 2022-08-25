@@ -24,8 +24,6 @@
 #include "clas12reader.h"
 #include "region_particle.h"
 #include "clas12databases.h"
-#include "rcdb_reader.h"
-#include "rcdb_vals.h"
 
 class SIDISParticle;
 
@@ -90,7 +88,6 @@ class SIDISKinematicsReco{
   int _ievnum;
   int _runNumber = -999;
   int _evnum;
-  float _rcdb_electron_beam_energy =0.0;
 
   std::string _outfilename="";
   TFile *_tfile;
