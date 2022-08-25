@@ -45,7 +45,7 @@ rootname="aug23_elastic"
 
 # Code locations
 # --------------------------------------------------------
-processcode="${CLAS12Analysisdir}/macros/process/rg-c/elastic_RGC_MC_process.C"
+processcode="${CLAS12Analysisdir}/macros/process/rg-c/inclusive_RGC_MC_process.C"
 
 # Location of clas12root package
 # --------------------------------------------------------
