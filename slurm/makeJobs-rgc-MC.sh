@@ -19,11 +19,11 @@ RGC_MC_PLUS_PROTON="/work/cebaf24gev/sidis/reconstructed/polarized-plus-10.5GeV-
 
 # Username
 # --------------------------------------------------------
-username="gmat"
+username="<USERNAME>"
 
 # Location of CLAS12Analysis directory
 # --------------------------------------------------------
-CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
+CLAS12Analysisdir="/path/to/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
@@ -37,11 +37,11 @@ beamEs=(10.5 10.5 10.5 10.5)
 
 # Name of output directory
 # --------------------------------------------------------
-outdir="clas12analysis.sidis.data/rgc-mc"
+outdir="rgc-MC"
 
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="aug23_elastic"
+rootname="my-rgc-MC"
 
 # Code locations
 # --------------------------------------------------------
@@ -49,7 +49,7 @@ processcode="${CLAS12Analysisdir}/macros/process/rg-c/inclusive_RGC_MC_process.C
 
 # Location of clas12root package
 # --------------------------------------------------------
-clas12rootdir="/work/clas12/users/gmat/packages/clas12root"
+clas12rootdir="/path/to/clas12root"
 
 # Job Parameters
 # --------------------------------------------------------

@@ -15,11 +15,11 @@ RGC_SU22="/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/"
 
 # Username
 # --------------------------------------------------------
-username="gmat"
+username="<USERNAME>"
 
 # Location of CLAS12Analysis directory
 # --------------------------------------------------------
-CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
+CLAS12Analysisdir="/path/to/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
@@ -31,11 +31,11 @@ beamEs=(10.5)
 
 # Name of output directory
 # --------------------------------------------------------
-outdir="clas12analysis.sidis.data/rgc-su-train"
+outdir="rg-c-data"
 
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="aug23_elastic"
+rootname="my-rgc-data"
 
 # Code locations
 # --------------------------------------------------------
@@ -44,7 +44,7 @@ organizecode="${CLAS12Analysisdir}/macros/organize_rgc.py"
 
 # Location of clas12root package
 # --------------------------------------------------------
-clas12rootdir="/work/clas12/users/gmat/packages/clas12root"
+clas12rootdir="/path/to/clas12root"
 
 # Job Parameters
 # --------------------------------------------------------

@@ -20,11 +20,11 @@ MC_F18_NOBG_OUT="/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus
 
 # Username
 # --------------------------------------------------------
-username="gmat"
+username="<USERNAME>"
 
 # Location of CLAS12Analysis directory
 # --------------------------------------------------------
-CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
+CLAS12Analysisdir="/path/to/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
@@ -41,11 +41,11 @@ doAsymmetry=true # Binning --> Fitting --> Asymmetry
 
 # Name of output directory
 # --------------------------------------------------------
-outdir="clas12analysis.sidis.data/rg-a"
+outdir="rg-a"
 
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="aug23"
+rootname="my-rga-data"
 
 # Code locations
 # --------------------------------------------------------
@@ -56,7 +56,7 @@ asymmetrycode="${CLAS12Analysisdir}/macros/process/rg-a/pipi0_asymmetry.C"
 
 # Location of locally installed clas12root package
 # --------------------------------------------------------
-clas12rootdir="/work/clas12/users/gmat/packages/clas12root"
+clas12rootdir="/path/to/clas12root"
 
 # Job Parameters
 # --------------------------------------------------------
