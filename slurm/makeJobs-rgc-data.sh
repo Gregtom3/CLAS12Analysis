@@ -2,20 +2,9 @@
 # --------------------------
 # Hipo dir defintions
 # --------------------------
-RGA_F18_IN="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/"
-RGA_F18_OUT="/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/nSidis/"
-RGA_S19_IN="/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/nSidis/"
-
-RGA_F18_IN_BATCH="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/nSidis_005032.hipo"
-
-MC_F18_NOBG_OUT="/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/nobkg_10604MeV/"
-
-RGC_MC_MINUS_NEUTRON="/work/cebaf24gev/sidis/reconstructed/polarized-minus-10.5GeV-neutron/hipo/"
-RGC_MC_PLUS_NEUTRON="/work/cebaf24gev/sidis/reconstructed/polarized-plus-10.5GeV-neutron/hipo/"
-RGC_MC_MINUS_PROTON="/work/cebaf24gev/sidis/reconstructed/polarized-minus-10.5GeV-proton/hipo/"
-RGC_MC_PLUS_PROTON="/work/cebaf24gev/sidis/reconstructed/polarized-plus-10.5GeV-proton/hipo/"
 
 RGC_SU22="/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/"
+
 # --------------------------
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -40,11 +29,6 @@ declare -a hipodirs=($RGC_SU22)
 # --------------------------------------------------------
 beamEs=(10.5)
 
-# Analysis chain parameters
-# Base chain = Processing  --> PostProcessing --> Merging
-# --------------------------------------------------------
-doAsymmetry=false # Binning --> Fitting --> Asymmetry 
-
 # Name of output directory
 # --------------------------------------------------------
 outdir="clas12analysis.sidis.data/rgc-su-train"
@@ -55,9 +39,8 @@ rootname="aug23_elastic"
 
 # Code locations
 # --------------------------------------------------------
-processcode="${CLAS12Analysisdir}/macros/dihadron_process/elastic_RGC_process.C"
-postprocesscode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_postprocess_only.C"
-organizecode="${CLAS12Analysisdir}/macros/dihadron_process/organize_rgc.py"
+processcode="${CLAS12Analysisdir}/macros/process/rg-c/inclusive_RGC_process.C"
+organizecode="${CLAS12Analysisdir}/macros/organize_rgc.py"
 
 # Location of clas12root package
 # --------------------------------------------------------

@@ -1,21 +1,14 @@
 #!/bin/bash
+
 # --------------------------
 # Hipo dir defintions
 # --------------------------
-RGA_F18_IN="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/"
-RGA_F18_OUT="/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/nSidis/"
-RGA_S19_IN="/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/nSidis/"
-
-RGA_F18_IN_BATCH="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/nSidis_005032.hipo"
-
-MC_F18_NOBG_OUT="/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/nobkg_10604MeV/"
 
 RGC_MC_MINUS_NEUTRON="/work/cebaf24gev/sidis/reconstructed/polarized-minus-10.5GeV-neutron/hipo/"
 RGC_MC_PLUS_NEUTRON="/work/cebaf24gev/sidis/reconstructed/polarized-plus-10.5GeV-neutron/hipo/"
 RGC_MC_MINUS_PROTON="/work/cebaf24gev/sidis/reconstructed/polarized-minus-10.5GeV-proton/hipo/"
 RGC_MC_PLUS_PROTON="/work/cebaf24gev/sidis/reconstructed/polarized-plus-10.5GeV-proton/hipo/"
 
-RGC_SU22="/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/"
 # --------------------------
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -35,16 +28,12 @@ CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
 # Location of hipo directories for analysis
 # --------------------------------------------------------
 declare -a hipodirs=($RGC_MC_MINUS_NEUTRON $RGC_MC_PLUS_NEUTRON $RGC_MC_MINUS_PROTON $RGC_MC_PLUS_PROTON)
-declare -a hiponames=("minus_neutron" "plus_neutron" "minus_proton" "plus_proton")
+declare -a hiponames=("minus_neutron" "plus_neutron" "minus_proton" "plus_proton") # Output file tags
+max=100 # Number of hipo files to analyze per folder
 
 # Beam energy associated with hipo files
 # --------------------------------------------------------
 beamEs=(10.5 10.5 10.5 10.5)
-
-# Analysis chain parameters
-# Base chain = Processing  --> PostProcessing --> Merging
-# --------------------------------------------------------
-doAsymmetry=false # Binning --> Fitting --> Asymmetry 
 
 # Name of output directory
 # --------------------------------------------------------
@@ -52,12 +41,11 @@ outdir="clas12analysis.sidis.data/rgc-mc"
 
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="aug23"
+rootname="aug23_elastic"
 
 # Code locations
 # --------------------------------------------------------
-processcode="${CLAS12Analysisdir}/macros/dihadron_process/elastic_RGC_MC_process.C"
-postprocesscode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_postprocess_only.C"
+processcode="${CLAS12Analysisdir}/macros/process/rg-c/elastic_RGC_MC_process.C"
 
 # Location of clas12root package
 # --------------------------------------------------------
@@ -75,6 +63,7 @@ nCPUs=1
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
 # --------------------------
+
 farmoutdir="/farm_out/$username/$outdir/$rootname/"
 volatiledir="/volatile/clas12/users/$username/$outdir"
 outputdir="$volatiledir/$rootname"
@@ -104,6 +93,7 @@ do
     beamE=${beamEs[$idx]}
     hipodir=${hipodirs[$idx]}
     hiponame=${hiponames[$idx]}
+    j=0
     for hipofile in "$hipodir"*
     do
 	echo "Creating processing script for hipo file $((i+1))"
@@ -126,6 +116,10 @@ do
 	echo "cd ${outputSlurmDir}" >> $postprocessFile
 	echo "clas12root ${postprocesscode}\\(\\\"${outputdir}/${rootname}_${hiponame}_${i}.root\\\",${beamE}\\)" >> $postprocessFile   
 	i=$((i+1))
+	j=$((j+1))
+	if [[ $j == $max ]]; then
+	    break
+	fi
     done
 done
 
