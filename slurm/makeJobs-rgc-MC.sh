@@ -130,6 +130,13 @@ echo "#SBATCH --output=${outputSlurmDir}/%x-%a.out" >> $runJobs
 echo "#SBATCH --error=${outputSlurmDir}/%x-%a.err" >> $runJobs    
 echo "${shellSlurmDir}/${rootname}_\${SLURM_ARRAY_TASK_ID}.sh" >> $runJobs
 
+echo "----------------------------------------------------"
 echo "Submitting analysis jobs for the selected HIPO files"
 echo " "
 sbatch $runJobs
+echo "----------------------------------------------------"
+echo "Here is how you can monitor your runs..."
+echo "----------------------------------------------------"
+echo "Location of slurm .out/.err : $outputSlurmDir"
+echo "Location of shell scripts : $shellSlurmDir"
+echo "Location of saved .root files : $outputdir"

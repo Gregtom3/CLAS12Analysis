@@ -165,3 +165,8 @@ echo "Submitting organize script"
 echo " "
 sbatch $organizeSlurm
 echo "----------------------------------------------------"
+echo "Here is how you can monitor your runs..."
+echo "----------------------------------------------------"
+echo "Location of slurm .out/.err : $outputSlurmDir"
+echo "Location of shell scripts : $shellSlurmDir"
+echo "Location of saved .root files : $outputdir"

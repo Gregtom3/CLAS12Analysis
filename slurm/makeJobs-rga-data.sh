@@ -293,7 +293,7 @@ if [ "$doAsymmetry" == true ] ; then
     echo "clas12root ${asymmetrycode}\(\\\"${outputdir}\\\",\\\"\\\",\\\"\\\",3\)" >> $asymSlurm
 fi
 
-
+echo "----------------------------------------------------"
 echo "Submitting analysis jobs for the selected HIPO files"
 echo " "
 sbatch $runJobs
@@ -302,3 +302,8 @@ echo "Submitting merge script"
 echo " "
 sbatch $mergeSlurm 0
 echo "----------------------------------------------------"
+echo "Here is how you can monitor your runs..."
+echo "----------------------------------------------------"
+echo "Location of slurm .out/.err : $outputSlurmDir"
+echo "Location of shell scripts : $shellSlurmDir"
+echo "Location of saved .root files : $outputdir"
