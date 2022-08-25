@@ -10,7 +10,7 @@ R__LOAD_LIBRARY(libclas12ana.so)
 
 using namespace std;
 
-int elastic_RGC_process(
+int elastic_RGC_MC_process(
 		  const char * hipoFile = "/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/sidisdvcs_016338.hipo",
 		  const char * outputFile = "rgc-test.root",
 		  const double beamE = 10.5
@@ -35,13 +35,13 @@ int elastic_RGC_process(
  
   settings._electronBeamEnergy = beamE; 
   //  settings._maxEvents = 10000;
-  settings._doMC = false;
+  settings._doMC = true;
   settings._doReco = true;
   settings._doQADB = false; // Turn off QADB for RGC as of now
-  settings._doRCDB = true;  // Turn on RCDB
-  settings._rcdbRootPath = "/work/clas12/users/gmat/CLAS12Analysis/rcdb/rgc-rcdb.root";
+  settings._doRCDB = false;  // Turn on RCDB
+  //settings._rcdbRootPath = "/work/clas12/users/gmat/CLAS12Analysis/rcdb/rgc-rcdb.root";
   settings._eventRecoMethod = Settings::eventRecoMethod::useLargestPinFD;
-  settings._connectMC2Reco = false; // Connect pindex of REC::Particle to pindex of MC::Lund
+  settings._connectMC2Reco = true; // Connect pindex of REC::Particle to pindex of MC::Lund
 
   settings._Q2min = 0; settings._Q2max = 100;
   settings._Wmin = 2; settings._Wmax = 100;
