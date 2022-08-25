@@ -83,7 +83,8 @@ int tutorial_2a_rgc_inclusive(
   settings._ignoreOtherRecoParticles = true; // Do not save to reco tree particle info of uninterested PIDs
   settings._doReco = true;           // Analyze REC::Particle
   settings._maxEvents = 10000;       // Only analyze 10k events per HIPO file 
-
+  settings._doQADB = false;          // No QADB currently setup for RGC
+  
   // Event cuts
   settings._Q2min = 1; settings._Q2max = 100;
   settings._Wmin = 2; settings._Wmax = 100;
