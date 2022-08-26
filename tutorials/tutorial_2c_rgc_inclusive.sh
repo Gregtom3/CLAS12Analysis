@@ -16,11 +16,11 @@ RGC_sidisdvcs="/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/"
 
 # Username
 # --------------------------------------------------------
-username="gmat"
+username="<USERNAME>"
 
 # Location of CLAS12Analysis directory
 # --------------------------------------------------------
-CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
+CLAS12Analysisdir="/path/to/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
@@ -48,7 +48,7 @@ organizecode="${CLAS12Analysisdir}/macros/organize_rgc.py"
 # Location of locally installed clas12root package
 # See https://github.com/JeffersonLab/clas12root
 # --------------------------------------------------------
-clas12rootdir="/work/clas12/users/gmat/packages/clas12root"
+clas12rootdir="/path/to/clas12root"
 
 # Job Parameters
 # --------------------------------------------------------
@@ -92,7 +92,10 @@ do
     for hipofile in "$hipodir"*
     do
 	read runNumber <<< $(echo $hipofile | grep -oP '(?<=sidisdvcs_0).*(?=.hipo)')
-	echo "Creating processing script for hipo file $((i+1))"
+	if [[ -z $runNumber ]]; then
+	    continue
+	fi
+	echo "Creating processing script for hipo file $((i+1)) and runNumber $runNumber"
 	processFile="${shellSlurmDir}/${rootname}_${i}.sh"
 	touch $processFile
 	chmod +x $processFile
