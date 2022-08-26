@@ -23,10 +23,8 @@ SIDISKinematicsReco::SIDISKinematicsReco(std::string outfilename):
 
 int SIDISKinematicsReco::Init()
 {
-  
   // Create TFile
   // -------------------------
-
   _tfile = new TFile(_outfilename.c_str(),"RECREATE");
 
   // Create event variable map 
@@ -43,7 +41,9 @@ int SIDISKinematicsReco::Init()
   _map_event.insert( make_pair( "helicity" , dummy ) );
   _map_event.insert( make_pair( "polarization" , dummy ) );
   _map_event.insert( make_pair( "evnum" , dummy ) );
-  
+  _map_event.insert( make_pair( "run" , dummy ) );
+  _map_event.insert( make_pair( "Mx"  , dummy ) );
+
   // Create particle map 
   // -------------------------  
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::part_pid , vdummy) );
@@ -153,8 +153,7 @@ int SIDISKinematicsReco::Init()
   // -------------------------
   _tree_Reco = _tree_MC->CloneTree();
   _tree_Reco->SetName("tree_reco");
-  _tree_Reco->SetTitle("A Tree with *reconstructred* event and particle information");
-
+  _tree_Reco->SetTitle("A Tree with *reconstructed* event and particle information");
 
   // Load in HipoFiles
   // -------------------------
@@ -168,13 +167,14 @@ int SIDISKinematicsReco::Init()
 
   }
 
-  // Set beam energy
-  // -------------------------
-  _electron_beam_energy = _settings._electronBeamEnergy;
-
   // Configure CLAS12Reader
   // -------------------------
   _config_c12=_chain.GetC12Reader();
+
+  // Turn on/off QADB
+  // -------------------------------
+  if(_settings._doQADB == false)
+    _config_c12->db()->turnOffQADB();
   
   // Configure PID helper
   // -------------------------
@@ -230,7 +230,7 @@ int SIDISKinematicsReco::process_events()
   // Establish CLAS12 event parser
   // -------------------------
   auto &_c12= _chain.C12ref();
-
+	  
   // Configure HipoBankInterface
   // -------------------------
   _hipoInterface = HipoBankInterface(_c12); 
@@ -240,17 +240,33 @@ int SIDISKinematicsReco::process_events()
   if(_settings._doFiducialCuts)
     _fiducial = FiducialCuts();
 
-
+  
   // Move to the next event in the Hipo chain
-  while(_chain.Next()==true){
+  while(_chain.Next()==true && (_ievent < _settings._maxEvents || _settings._maxEvents < 0)){
     if(_verbosity > 0 && (_ievent)%_printEvery==0 && _ievent!=0){
        std::cout << _ievent << " events completed | " << _tree_Reco->GetEntriesFast() << " passed cuts --> " << _tree_Reco->GetEntriesFast()*100.0/_ievent << "%" << std::endl;
     }
+
     // Get the run number from the RUN::config bank
-    // Also get the event number too
+    // If the runNumber changes, adjust run-by-run data accordingly
     // -----------------------------------------------------
-    _runNumber = _c12->getBank(_idx_RUNconfig)->getInt(_irun,0);   
+    if(_runNumber != _c12->getBank(_idx_RUNconfig)->getInt(_irun,0)) // Run# changes
+      {
+	_runNumber = _c12->getBank(_idx_RUNconfig)->getInt(_irun,0);   
+
+	// Set beam energy
+	// -------------------------
+	// First try if Constants.h contains run info
+	if(runBeamEnergy(_runNumber)>0)
+	  _electron_beam_energy = runBeamEnergy(_runNumber);
+	// Just use the user defined beam energy
+	else
+	  _electron_beam_energy = _settings._electronBeamEnergy;	
+      }
+    // Set event number
+    // --------------------------
     _evnum = _c12->getBank(_idx_RUNconfig)->getInt(_ievnum,0);   
+    
 
     // Set torus bending in fiducial
     // -----------------------------------------------------
@@ -258,10 +274,10 @@ int SIDISKinematicsReco::process_events()
 
     /* Increase event # */
     _ievent++;
-
+    
     if(_c12->getDetParticles().empty())
       continue;
-    
+
     // Create map to store reconstructed SIDIS particles
     // Use the pindex as a unique key
     type_map_part recoparticleMap;
@@ -273,11 +289,11 @@ int SIDISKinematicsReco::process_events()
     // Parse through reconstructed particle data
     if(_settings._doReco)
       {
-		
 	/* Add reco particle information */
 	/* Skip event if certain cuts are not satisfied */
 	if(CollectParticlesFromReco( _c12, recoparticleMap )!=0)
        	  continue;
+
       }
     
     // Parse through true Monte Carlo particle data
@@ -297,7 +313,6 @@ int SIDISKinematicsReco::process_events()
     // ---------------------------
     // Writing to TTrees 
     // ---------------------------
-
     if(_settings._doReco)
       {
 	/* Reset branch map */
@@ -309,10 +324,8 @@ int SIDISKinematicsReco::process_events()
 	  continue;
 	/* Write particle information to Tree */
        	WriteParticlesToTree( recoparticleMap );
-
 	/* fill reco tree */
        	_tree_Reco->Fill();
-
 	/* Free up memory taken by elements of the map */
 	DeleteParticlePointers( recoparticleMap );
       }
@@ -393,13 +406,12 @@ int SIDISKinematicsReco::CollectParticlesFromTruth(const std::unique_ptr<clas12:
     sp->set_property( SIDISParticle::evtgen_part_pindex,   (int)-999);
     sp->set_property( SIDISParticle::evtgen_part_beta,   (float)-999);
     sp->set_property( SIDISParticle::evtgen_part_chi2,   (float)-999);
-    sp->set_property( SIDISParticle::evtgen_part_ID,   mcparticles->getIndex());
-    sp->set_property( SIDISParticle::evtgen_part_parentID,  mcparticles->getParent());
-    sp->set_property( SIDISParticle::evtgen_part_parentPID, mcparticles->getPid(mcparticles->getParent()-1));
-      
+    sp->set_property( SIDISParticle::evtgen_part_status,   (int)-999);
+    sp->set_property( SIDISParticle::evtgen_part_ID,   (int)mcparticles->getIndex());
+    sp->set_property( SIDISParticle::evtgen_part_parentID,  (int)mcparticles->getParent());
+    sp->set_property( SIDISParticle::evtgen_part_parentPID, (int)mcparticles->getPid(mcparticles->getParent()-1));
     // Add SIDISParticle to the collection
     particleMap.insert ( make_pair( sp->get_candidate_id() , sp) );
-    
   }
   return 0;
 }
@@ -436,7 +448,8 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     float vx = particle->par()->getVx();
     float vy = particle->par()->getVy();
     float vz = particle->par()->getVz();
-    //    float vt = particle->par()->getVt();
+    int status = particle->getStatus();
+   //    float vt = particle->par()->getVt();
  
     // Create new particle structure
     // -------------------------------------------------------
@@ -461,8 +474,9 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     sp->set_property( SIDISParticle::part_beta,   beta);
     sp->set_property( SIDISParticle::part_chi2,   chi2);
     sp->set_property( SIDISParticle::part_ID, pindex);
-    sp->set_property( SIDISParticle::part_parentID, -999);
-    sp->set_property( SIDISParticle::part_parentPID, -999);
+    sp->set_property( SIDISParticle::part_status, status);
+    sp->set_property( SIDISParticle::part_parentID, (int)-999);
+    sp->set_property( SIDISParticle::part_parentPID, (int)-999);
 
     // ------------------- MONTE CARLO ----------------------------//
     sp->set_property( SIDISParticle::evtgen_part_pid, -999);
@@ -479,13 +493,14 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     sp->set_property( SIDISParticle::evtgen_part_vy,   (float)-999);
     sp->set_property( SIDISParticle::evtgen_part_vz,   (float)-999);
     //    sp->set_property( SIDISParticle::evtgen_part_vt,   (float)-999);
-    sp->set_property( SIDISParticle::evtgen_part_pindex,   -999);
+    sp->set_property( SIDISParticle::evtgen_part_pindex,   (int)-999);
     sp->set_property( SIDISParticle::evtgen_part_beta,   (float)-999);
     sp->set_property( SIDISParticle::evtgen_part_chi2,   (float)-999);
-    sp->set_property( SIDISParticle::evtgen_part_ID, -999);
-    sp->set_property( SIDISParticle::evtgen_part_parentID, -999);
-    sp->set_property( SIDISParticle::evtgen_part_parentPID, -999);
-
+    sp->set_property( SIDISParticle::evtgen_part_status,   (int)-999);
+    sp->set_property( SIDISParticle::evtgen_part_ID, (int)-999);
+    sp->set_property( SIDISParticle::evtgen_part_parentID, (int)-999);
+    sp->set_property( SIDISParticle::evtgen_part_parentPID, (int)-999);
+    
     // Add detector info to SIDISParticle
     // --------------------------------------------------------------------------
     //    
@@ -569,8 +584,10 @@ int SIDISKinematicsReco::ConnectTruth2Reco( type_map_part& particleMap,
 	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_theta , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_theta));
 	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_eta , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_eta));
 	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_phi , (it_mc->second)->get_property_float(SIDISParticle::evtgen_part_phi));
-	  (it_reco->second)->set_property( SIDISParticle::part_parentID , (it_mc->second)->get_property_int(SIDISParticle::part_parentID));
-	  (it_reco->second)->set_property( SIDISParticle::part_parentPID , (it_mc->second)->get_property_int(SIDISParticle::part_parentPID));
+	  (it_reco->second)->set_property( SIDISParticle::part_parentID , (it_mc->second)->get_property_int(SIDISParticle::evtgen_part_parentID));
+	  (it_reco->second)->set_property( SIDISParticle::part_parentPID , (it_mc->second)->get_property_int(SIDISParticle::evtgen_part_parentPID));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_parentID , (it_mc->second)->get_property_int(SIDISParticle::evtgen_part_parentID));
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_parentPID , (it_mc->second)->get_property_int(SIDISParticle::evtgen_part_parentPID));	
 	}
       }
   }
@@ -613,6 +630,7 @@ int SIDISKinematicsReco::AddTruthEventInfo(const std::unique_ptr<clas12::clas12r
       (_map_event.find("W"))->second = W;
       (_map_event.find("polarization"))->second = 0;
       (_map_event.find("evnum"))->second = _evnum;
+      (_map_event.find("run"))->second = _runNumber;
       break;
     }
   }
@@ -629,7 +647,7 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
   double reco_y = ineg999;
   double reco_nu = ineg999;
   double reco_W = ineg999;
-
+  double reco_Mx = ineg999;
   /* METHOD 1: If available, use REC::Kinematics bank for event reco */
   if(_settings._eventRecoMethod == Settings::eventRecoMethod::useRecKinematicsBank){
     reco_x=_c12->getBank(_idx_RECKin)->getDouble(_ix,0);
@@ -663,13 +681,14 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
 	reco_W  = _kin.W(reco_Q2,protonMass,reco_nu);
 	float s  = protonMass*protonMass+electronMass*electronMass+2*protonMass*_electron_beam_energy;
 	reco_x = _kin.x(reco_Q2,s,reco_y);
-	
+	reco_Mx = _kin.Mx(px,py,pz,E,protonMass,_electron_beam_energy);
 	// Found scattered electron, just break out of here
 	break;
       }
     }
   }
-  
+
+
   if(reco_W < _settings._Wmin || reco_W > _settings._Wmax)
     return -1;
   else if(reco_y < _settings._ymin || reco_y > _settings._ymax)
@@ -678,12 +697,12 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
     return -1;
   else{
 
-
     (_map_event.find("x"))->second = reco_x; 
     (_map_event.find("Q2"))->second = reco_Q2;
     (_map_event.find("y"))->second = reco_y;
     (_map_event.find("nu"))->second = reco_nu;
     (_map_event.find("W"))->second = reco_W;
+    (_map_event.find("Mx"))->second = reco_Mx;
     auto event = _c12->event();
     if(runHelicityFlip(_runNumber))
       (_map_event.find("helicity"))->second = -event->getHelicity();
@@ -691,6 +710,7 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
       (_map_event.find("helicity"))->second = event->getHelicity();
     (_map_event.find("polarization"))->second = runPolarization(_runNumber,true);
     (_map_event.find("evnum"))->second = _evnum;
+    (_map_event.find("run"))->second = _runNumber;
   }
   
   return 0;

@@ -11,6 +11,13 @@ double Kinematics::x(double Q2, double s, double y){
   return Q2/s/y;
 }
 
+double Kinematics::Mx(double px, double py, double pz, double E, double protonMass, double eBeam){
+  TLorentzVector init_electron(0,0,sqrt(eBeam*eBeam-electronMass*electronMass),eBeam);
+  TLorentzVector init_proton(0,0,0,protonMass);
+  TLorentzVector final_electron(px,py,pz,E);
+  return (init_electron+init_proton-final_electron).M();
+}
+
 double Kinematics::Px(double P, double th, double phi){
   return P * sin(th) * cos(phi);
 }

@@ -26,6 +26,7 @@ class Settings{
   };
 
   void addFinalState(int, int, bool);
+  void addOpenInvite(int);
   void addPIDforEmin(int,double);
   void addPIDforPmin(int,double);
   void addPIDforVzrange(int,double, double);
@@ -35,6 +36,7 @@ class Settings{
 
   int getN_fromPID(int);
   bool isExact_fromPID(int);
+  bool isInvited_fromPID(int);
   double getEmin_fromPID(int);
   double getPmin_fromPID(int);
   double getVzmin_fromPID(int);
@@ -51,9 +53,13 @@ class Settings{
   bool _doPostProcess = false;
   bool _connectMC2Reco = false;
   bool _ignoreOtherRecoParticles = false;
+  bool _doQADB = true;
+
   eventRecoMethod _eventRecoMethod;
   chargedPionChi2cut _chargedPionChi2cut = chargedPionChi2cut::none;
   const char *_postProcessMethod;
+
+  int _maxEvents = -1;
   double _electronBeamEnergy = 10.6;
   double _Q2min = -999;
   double _Q2max = 999;
@@ -72,6 +78,9 @@ class Settings{
   std::vector<int> _fPID;
   std::vector<int> _fNpart;
   std::vector<bool> _fExact;
+
+  // Vectors for final state particles which can be recovered, but its not mandatory
+  std::vector<int> _fInvitePID;
 
   // std::vector of Hipo filename strings
   std::vector<std::string> _hipoFileStrings;

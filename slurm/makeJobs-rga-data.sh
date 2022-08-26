@@ -2,12 +2,14 @@
 # --------------------------
 # Hipo dir defintions
 # --------------------------
+
 RGA_F18_IN="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/"
 RGA_F18_OUT="/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/nSidis/"
 RGA_S19_IN="/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/nSidis/"
 
 RGA_F18_IN_BATCH="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/nSidis_005032.hipo"
 
+MC_F18_NOBG_OUT="/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/nobkg_10604MeV/"
 # --------------------------
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -16,9 +18,13 @@ RGA_F18_IN_BATCH="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
 # --------------------------
 
+# Username
+# --------------------------------------------------------
+username="<USERNAME>"
+
 # Location of CLAS12Analysis directory
 # --------------------------------------------------------
-CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
+CLAS12Analysisdir="/path/to/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
@@ -26,7 +32,7 @@ declare -a hipodirs=($RGA_F18_IN $RGA_F18_OUT $RGA_S19_IN)
 
 # Beam energy associated with hipo files
 # --------------------------------------------------------
-beamEs=(10.6 10.6 10.2)
+beamEs=(10.6 10.6 10.6)
 
 # Analysis chain parameters
 # Base chain = Processing  --> PostProcessing --> Merging
@@ -35,28 +41,26 @@ doAsymmetry=true # Binning --> Fitting --> Asymmetry
 
 # Name of output directory
 # --------------------------------------------------------
-#outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-v1-nSidis"
-#outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/rg-a"
-#outdir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/fall2018-torus-1-small-batch"
-outdir="/work/clas12/users/gmat/CLAS12Analysis/data/rg-a"
+outdir="rg-a"
+
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="july18"
+rootname="my-rga-data"
 
 # Code locations
 # --------------------------------------------------------
-processcode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_process.C"
-postprocesscode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_postprocess_only.C"
+processcode="${CLAS12Analysisdir}/macros/process/rg-a/pipi0_process.C"
+postprocesscode="${CLAS12Analysisdir}/macros/process/rg-a/pipi0_postprocess_only.C"
 mergecode="${CLAS12Analysisdir}/macros/mergeTrees.C"
-asymmetrycode="${CLAS12Analysisdir}/macros/dihadron_process/pipi0_asymmetry.C"
+asymmetrycode="${CLAS12Analysisdir}/macros/process/rg-a/pipi0_asymmetry.C"
 
-# Location of clas12root package
+# Location of locally installed clas12root package
 # --------------------------------------------------------
-clas12rootdir="/work/clas12/users/gmat/packages/clas12root"
+clas12rootdir="/path/to/clas12root"
 
 # Job Parameters
 # --------------------------------------------------------
-memPerCPU=8000
+memPerCPU=4000
 nCPUs=4
 
 # --------------------------
@@ -66,15 +70,15 @@ nCPUs=4
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
 # --------------------------
-
+farmoutdir="/farm_out/$username/$outdir/$rootname"
+volatiledir="/volatile/clas12/users/$username/$outdir"
+outputdir="$volatiledir/$rootname"
 workdir=$CLAS12Analysisdir
-outputdir=$outdir
-outputdir+="/"
-outputdir+=$rootname
-processdir=$CLAS12Analysisdir
-processdir+=$processcodelocation
-shellSlurmDir="${outputdir}/shells"
-outputSlurmDir="${outputdir}/output"
+processdir="$CLAS12Analysisdir/$processcodelocation"
+
+shellSlurmDir="${farmoutdir}/shells"
+outputSlurmDir="${farmoutdir}/output"
+
 runJobs="${shellSlurmDir}/runJobs.sh"
 makeJobsPostProcess="${shellSlurmDir}/makeJobsPostProcess.sh"
 runJobsPostProcess="${shellSlurmDir}/runJobsPostProcess.sh"
@@ -84,7 +88,11 @@ fitFile="${shellSlurmDir}/fit.sh"
 fitSlurm="${shellSlurmDir}/fitSlurm.slurm"
 asymSlurm="${shellSlurmDir}/asym.slurm"
 
+if [ ! -d "/farm_out/$username/$outdir/" ]; then mkdir "/farm_out/$username/$outdir/"; fi
+if [ -d "$farmoutdir" ]; then rm -Rf $farmoutdir; fi
+if [ ! -d "$volatiledir" ]; then mkdir $volatiledir; fi
 if [ -d "$outputdir" ]; then rm -Rf $outputdir; fi
+mkdir $farmoutdir
 mkdir $outputdir
 mkdir $shellSlurmDir
 mkdir $outputSlurmDir
@@ -193,9 +201,9 @@ echo "    done" >> $mergeFile
 echo "echo \"\$finishedJobs completed out of \$nJobs\" >> \$mergeOutFile" >> $mergeFile 
 echo "sleep 10" >> $mergeFile
 echo "done" >> $mergeFile
-echo "if [\$1 == 0] ; then" >> $mergeFile
+echo "if [ \$1 == 0 ] ; then" >> $mergeFile
 echo "    clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_reco\\\"\)" >> $mergeFile
-echo "done" >> $mergeFile
+echo "fi" >> $mergeFile
 echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_postprocess\\\"\)" >> $mergeFile
 if [ "$doAsymmetry" == true ] ; then
     echo "clas12root ${asymmetrycode}\(\\\"${outputdir}\\\",\\\"merged_${rootname}\\\",\\\"\\\",1\)" >> $mergeFile
@@ -285,7 +293,7 @@ if [ "$doAsymmetry" == true ] ; then
     echo "clas12root ${asymmetrycode}\(\\\"${outputdir}\\\",\\\"\\\",\\\"\\\",3\)" >> $asymSlurm
 fi
 
-
+echo "----------------------------------------------------"
 echo "Submitting analysis jobs for the selected HIPO files"
 echo " "
 sbatch $runJobs
@@ -294,3 +302,8 @@ echo "Submitting merge script"
 echo " "
 sbatch $mergeSlurm 0
 echo "----------------------------------------------------"
+echo "Here is how you can monitor your runs..."
+echo "----------------------------------------------------"
+echo "Location of slurm .out/.err : $outputSlurmDir"
+echo "Location of shell scripts : $shellSlurmDir"
+echo "Location of saved .root files : $outputdir"

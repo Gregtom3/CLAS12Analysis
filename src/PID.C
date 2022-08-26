@@ -29,7 +29,7 @@ bool PID::basicRECParticleCuts(SIDISParticlev1* sp){
   float vz = sp->get_property_float(SIDISParticle::part_vz);
  
   // CUT pid --------------------------------------------------------------
-  if(_settings.getN_fromPID(pid)==0 && _settings._ignoreOtherRecoParticles)
+  if(_settings.getN_fromPID(pid)==0 && _settings._ignoreOtherRecoParticles && _settings.isInvited_fromPID(pid)==false)
     return false;
 
   // CUT chi2 -------------------------------------------------------------

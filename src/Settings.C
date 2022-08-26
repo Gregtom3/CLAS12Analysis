@@ -25,6 +25,9 @@ void Settings::addFinalState(int pid, int n, bool exact=false) {
   return;
 }
 
+void Settings::addOpenInvite(int pid){
+  _fInvitePID.push_back(pid);
+}
 void Settings::addHipoFile(std::string filename){
   _hipoFileStrings.push_back(filename);
 }
@@ -74,6 +77,15 @@ bool Settings::isExact_fromPID(int pid){
     {
       if(_fPID.at(idx)==pid)
 	return _fExact.at(idx);
+    }
+  return false;
+}
+
+bool Settings::isInvited_fromPID(int pid){
+  for(unsigned int idx = 0 ; idx < _fInvitePID.size() ; idx++)
+    {
+      if(_fInvitePID.at(idx)==pid)
+	return true;
     }
   return false;
 }

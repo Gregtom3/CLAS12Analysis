@@ -23,6 +23,7 @@
 #include "HipoChain.h"
 #include "clas12reader.h"
 #include "region_particle.h"
+#include "clas12databases.h"
 
 class SIDISParticle;
 
@@ -85,7 +86,7 @@ class SIDISKinematicsReco{
   int _idx_RUNconfig;
   int _irun;
   int _ievnum;
-  int _runNumber;
+  int _runNumber = -999;
   int _evnum;
 
   std::string _outfilename="";
@@ -131,6 +132,5 @@ class SIDISKinematicsReco{
   /* Clas12root objects */
   clas12root::HipoChain _chain;
   clas12::clas12reader *_config_c12{nullptr};
-
 };
 #endif
