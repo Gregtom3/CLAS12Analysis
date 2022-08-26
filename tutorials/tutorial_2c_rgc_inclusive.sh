@@ -16,11 +16,11 @@ RGC_sidisdvcs="/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/"
 
 # Username
 # --------------------------------------------------------
-username="<USERNAME>"
+username="gmat"
 
 # Location of CLAS12Analysis directory
 # --------------------------------------------------------
-CLAS12Analysisdir="/path/to/CLAS12Analysis/"
+CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
@@ -48,7 +48,7 @@ organizecode="${CLAS12Analysisdir}/macros/organize_rgc.py"
 # Location of locally installed clas12root package
 # See https://github.com/JeffersonLab/clas12root
 # --------------------------------------------------------
-clas12rootdir="/path/to/clas12root"
+clas12rootdir="/work/clas12/users/gmat/packages/clas12root"
 
 # Job Parameters
 # --------------------------------------------------------
@@ -138,8 +138,7 @@ touch \$organizeOutFile
 jobsLeft=999
 while [ \$jobsLeft -ne 0 ]
 do
-    read jobsLeft <<EOF
-< \$(echo "\$(squeue -u gmat --format="%.18i %.9P %.30j %.8u %.8T %.10M %.9l %.6D %R")" | grep run${rootname} | awk 'END{print NR}')
+    read jobsLeft <<< \$(echo "\$(squeue -u gmat --format="%.18i %.9P %.30j %.8u %.8T %.10M %.9l %.6D %R")" | grep run${rootname} | awk 'END{print NR}')
     echo \$jobsLeft >> \$organizeOutFile
 sleep 30
 done 
