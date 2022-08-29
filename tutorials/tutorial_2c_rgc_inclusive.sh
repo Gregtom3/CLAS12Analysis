@@ -109,7 +109,7 @@ do
 	echo "clas12root ${processcode}\\(\\\"${hipofile}\\\",\\\"${outputdir}/${rootname}_${runNumber}.root\\\",${beamE}\\)" >> $processFile   
 	if ! cat "${CLAS12Analysisdir}/util/runHelicityCounts.csv" | cut -d, -f1 | grep -Fxq "${runNumber}" 
 	then
-	    echo "clas12root ${CLAS12Analysisdir}/macros/scanChargeAsymmetry.C\\(\\\"${RGC_sidisdvcs_recon}0${runNumber}/\*\\\",\\\"${CLAS12Analysisdir}/util/runHelicityCounts.csv\\\"\\)" >> $processFile
+	    echo "clas12root ${CLAS12Analysisdir}/macros/scanChargeAsymmetry.C\\(\\\"${RGC_sidisdvcs_recon}0${runNumber}/rec_clas_0${runNumber}.evio.\\\",\\\"${CLAS12Analysisdir}/util/runHelicityCounts.csv\\\"\\)" >> $processFile
 	    echo "    Calculating run ${runNumber}'s beam charge asymmetry by parsing through recon"
 	fi
 	i=$((i+1))
