@@ -2,9 +2,11 @@
 
 # --------------------------
 # Hipo dir defintions
+# ** recon location added for beam charge asymmetry
 # --------------------------
 
 RGC_sidisdvcs="/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/"
+RGC_sidisdvcs_recon="/volatile/clas12/rg-c/production/ana_data/dst/recon/"
 
 # --------------------------
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -16,11 +18,11 @@ RGC_sidisdvcs="/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/"
 
 # Username
 # --------------------------------------------------------
-username="<USERNAME>"
+username="gmat"
 
 # Location of CLAS12Analysis directory
 # --------------------------------------------------------
-CLAS12Analysisdir="/path/to/CLAS12Analysis/"
+CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
@@ -48,7 +50,7 @@ organizecode="${CLAS12Analysisdir}/macros/organize_rgc.py"
 # Location of locally installed clas12root package
 # See https://github.com/JeffersonLab/clas12root
 # --------------------------------------------------------
-clas12rootdir="/path/to/clas12root"
+clas12rootdir="/work/clas12/users/gmat/packages/clas12root"
 
 # Job Parameters
 # --------------------------------------------------------
@@ -105,6 +107,11 @@ do
 	echo "set CLAS12ROOT=${clas12rootdir}" >> $processFile
 	echo "cd ${outputSlurmDir}" >> $processFile
 	echo "clas12root ${processcode}\\(\\\"${hipofile}\\\",\\\"${outputdir}/${rootname}_${runNumber}.root\\\",${beamE}\\)" >> $processFile   
+	if ! cat "${CLAS12Analysisdir}/util/runHelicityCounts.csv" | cut -d, -f1 | grep -Fxq "${runNumber}" 
+	then
+	    echo "clas12root ${CLAS12Analysisdir}/macros/scanChargeAsymmetry.C\\(\\\"${RGC_sidisdvcs_recon}0${runNumber}/\*\\\",\\\"${CLAS12Analysisdir}/util/runHelicityCounts.csv\\\"\\)" >> $processFile
+	    echo "    Calculating run ${runNumber}'s beam charge asymmetry by parsing through recon"
+	fi
 	i=$((i+1))
     done
 done
