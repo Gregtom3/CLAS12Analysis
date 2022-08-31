@@ -11,11 +11,77 @@ int scanChargeAsymmetry(std::string fileprefix_recon = "/volatile/clas12/rg-c/pr
 			int max_files = 99999, 
 			int verbosity = 0)
 {
+  cout << "READING TRAIN" << endl;
+  /* Now read in the TRAIN HIPO files */
+  clas12root::HipoChain chain_train;
+  chain_train.Add(Form("%s",filename_train.c_str()));
+  int polarization_train = 0;
+  int npos_train = 0;
+  int nneg_train = 0;
+  int nzero_train = 0;
+  int run_train = 0; 
+
+  auto config_c12_train=chain_train.GetC12Reader();
+  config_c12_train->db()->turnOffQADB();
+  auto idx_RECEvent_train= config_c12_train->addBank("REC::Event");
+  auto idx_RUNConfig_train= config_c12_train->addBank("RUN::config");
+  auto iHelicity_train = config_c12_train->getBankOrder(idx_RECEvent_train,"helicity");
+  auto iRun_train = config_c12_train->getBankOrder(idx_RUNConfig_train,"run");
+  auto& c12_train=chain_train.C12ref();
+
+  // LOOP OVER THE HIPO FILE
+  while(  chain_train.Next() ){
+    run_train = c12_train->getBank(idx_RUNConfig_train)->getInt(iRun_train,0);
+    polarization_train = c12_train->getBank(idx_RECEvent_train)->getInt(iHelicity_train,0);
+    if(polarization_train==1)
+      npos_train++;
+    else if(polarization_train==-1)
+      nneg_train++;
+    else if(polarization_train==0)
+      nzero_train++;
+    else
+      cout << "ERROR" << endl;
+    
+  }
+  cout << "READING RECON" << endl;
+  //  Now read in the RECON HIPO files
+  clas12root::HipoChain chain_recon;
+  chain_recon.Add(Form("%s*",fileprefix_recon.c_str()));
+  int polarization_recon = 0;
+  int npos_recon = 0;
+  int nneg_recon = 0;
+  int nzero_recon = 0;
+  int run_recon = 0; 
+
+  auto config_c12_recon=chain_recon.GetC12Reader();
+  config_c12_recon->db()->turnOffQADB();
+  auto idx_RECEvent_recon= config_c12_recon->addBank("REC::Event");
+  auto idx_RUNConfig_recon= config_c12_recon->addBank("RUN::config");
+  auto iHelicity_recon = config_c12_recon->getBankOrder(idx_RECEvent_recon,"helicity");
+  auto iRun_recon = config_c12_recon->getBankOrder(idx_RUNConfig_recon,"run");
+  auto& c12_recon=chain_recon.C12ref();
+
+  // LOOP OVER THE HIPO FILE
+  while(  chain_recon.Next() ){
+
+    run_recon = c12_recon->getBank(idx_RUNConfig_recon)->getInt(iRun_recon,0);
+    polarization_recon = c12_recon->getBank(idx_RECEvent_recon)->getInt(iHelicity_recon,0);
+    if(polarization_recon==1)
+      npos_recon++;
+    else if(polarization_recon==-1)
+      nneg_recon++;
+    else if(polarization_recon==0)
+      nzero_recon++;
+    else
+      cout << "ERROR" << endl;
+    
+  }
+
 
   /* Read HEL::scaler */
   /* For each entry in HEL::scaler, we use the entry's helicity to accumulate the correspond faraday cup charge */
   /* Any 'preference' for +/- helicity will be seen as an artificial asymmetry in our studies, one we must correct for */
- 
+  cout << "READING HEL::scaler" << endl; 
   double fcup = 0.0;
   double fcup_pos = 0.0;
   double fcup_neg = 0.0;
@@ -95,71 +161,6 @@ int scanChargeAsymmetry(std::string fileprefix_recon = "/volatile/clas12/rg-c/pr
 
 
   
-  //  Now read in the RECON HIPO files
-  clas12root::HipoChain chain_recon;
-  chain_recon.Add(Form("%s*",fileprefix_recon.c_str()));
-  int polarization_recon = 0;
-  int npos_recon = 0;
-  int nneg_recon = 0;
-  int nzero_recon = 0;
-  int run_recon = 0; 
-
-  auto config_c12_recon=chain_recon.GetC12Reader();
-  config_c12_recon->db()->turnOffQADB();
-  auto idx_RECEvent_recon= config_c12_recon->addBank("REC::Event");
-  auto idx_RUNConfig_recon= config_c12_recon->addBank("RUN::config");
-  auto iHelicity_recon = config_c12_recon->getBankOrder(idx_RECEvent_recon,"helicity");
-  auto iRun_recon = config_c12_recon->getBankOrder(idx_RUNConfig_recon,"run");
-  auto& c12_recon=chain_recon.C12ref();
-
-  // LOOP OVER THE HIPO FILE
-  while(  chain_recon.Next() ){
-
-    run_recon = c12_recon->getBank(idx_RUNConfig_recon)->getInt(iRun_recon,0);
-    polarization_recon = c12_recon->getBank(idx_RECEvent_recon)->getInt(iHelicity_recon,0);
-    if(polarization_recon==1)
-      npos_recon++;
-    else if(polarization_recon==-1)
-      nneg_recon++;
-    else if(polarization_recon==0)
-      nzero_recon++;
-    else
-      cout << "ERROR" << endl;
-    
-  }
-
-  /* Now read in the TRAIN HIPO files */
-  clas12root::HipoChain chain_train;
-  chain_train.Add(Form("%s",filename_train.c_str()));
-  int polarization_train = 0;
-  int npos_train = 0;
-  int nneg_train = 0;
-  int nzero_train = 0;
-  int run_train = 0; 
-
-  auto config_c12_train=chain_train.GetC12Reader();
-  config_c12_train->db()->turnOffQADB();
-  auto idx_RECEvent_train= config_c12_train->addBank("REC::Event");
-  auto idx_RUNConfig_train= config_c12_train->addBank("RUN::config");
-  auto iHelicity_train = config_c12_train->getBankOrder(idx_RECEvent_train,"helicity");
-  auto iRun_train = config_c12_train->getBankOrder(idx_RUNConfig_train,"run");
-  auto& c12_train=chain_train.C12ref();
-
-  // LOOP OVER THE HIPO FILE
-  while(  chain_train.Next() ){
-    run_train = c12_train->getBank(idx_RUNConfig_train)->getInt(iRun_train,0);
-    polarization_train = c12_train->getBank(idx_RECEvent_train)->getInt(iHelicity_train,0);
-    if(polarization_train==1)
-      npos_train++;
-    else if(polarization_train==-1)
-      nneg_train++;
-    else if(polarization_train==0)
-      nzero_train++;
-    else
-      cout << "ERROR" << endl;
-    
-  }
-
 
 
   // Add helicity counts to csv
