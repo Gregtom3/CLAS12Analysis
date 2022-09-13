@@ -98,7 +98,6 @@ int scanRecon(int run = 16904,
       entry_idx++;
     }
    
-    //    outFile_HEL << run << "," << idx_file << "," << entry_idx << "," << HEL_fcupgated << "," << HEL_fcup << "," << HEL_slmgated << "," << HEL_slm << "," << HEL_clockgated << "," << HEL_clock << "," << HEL_helicity << "," << HEL_helicityRaw << "\n";
     outFile_HEL << run << "," << idx_file << "," << entry_idx << "," << HEL_tot_fcupgated << "," << HEL_tot_fcupgated_pos << "," << HEL_tot_fcupgated_neg << "," << HEL_tot_fcupgated_zero << "\n";
 
     reader_.open(filename.data()); //keep a pointer to the reader
@@ -108,6 +107,9 @@ int scanRecon(int run = 16904,
     double RUN_fcupgated_min = 999;
     double RUN_fcupgated_max = -999;
     double RUN_tot_livetime = 0.0;
+    double RUN_fcup_min = 999;
+    double RUN_fcup_max = -999;
+
     while(reader_.next()){
       reader_.read(event_);
       event_.getStructure(RUN);
@@ -120,16 +122,28 @@ int scanRecon(int run = 16904,
       RUN_fcup = RUN.getFloat("fcup",0);
       RUN_livetime = RUN.getFloat("livetime",0);
       
+      // 9/13/2022
+      // Unsure why livetime for some scaler entries is a huge negative number
+      // For example, RUN::scaler in Run 16889
+      // Just continue if this is the case?
+      if(RUN_livetime<0)
+	continue;
+
       if(RUN_fcupgated > RUN_fcupgated_max)
 	RUN_fcupgated_max = RUN_fcupgated;
       else if(RUN_fcupgated < RUN_fcupgated_min)
 	RUN_fcupgated_min = RUN_fcupgated;
 
+      if(RUN_fcup > RUN_fcup_max)
+	RUN_fcup_max = RUN_fcup;
+      else if(RUN_fcup < RUN_fcup_min)
+	RUN_fcup_min = RUN_fcup;
+
       RUN_tot_livetime+=RUN_livetime;
       entry_idx++;
     }
 
-    outFile_RUN << run << "," << idx_file << "," << entry_idx << "," << RUN_fcupgated_min << "," << RUN_fcupgated_max << "," << RUN_fcupgated_max-RUN_fcupgated_min << "," << RUN_tot_livetime << "," << RUN_tot_livetime/entry_idx << "," << RUN_fcup << "," << RUN_tot_livetime/entry_idx * RUN_fcup << "\n";
+    outFile_RUN << run << "," << idx_file << "," << entry_idx << "," << RUN_fcupgated_min << "," << RUN_fcupgated_max << "," << RUN_fcupgated_max-RUN_fcupgated_min << "," << RUN_tot_livetime << "," << RUN_tot_livetime/entry_idx << "," << RUN_fcup_min << "," << RUN_fcup_max << "," << RUN_fcup_max - RUN_fcup_min << "," << RUN_tot_livetime/entry_idx * (RUN_fcup_max-RUN_fcup_min) << "\n";
 
   }
 
