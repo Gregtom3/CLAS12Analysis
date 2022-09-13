@@ -374,7 +374,6 @@ int PostProcess::elastic(TTree * _tree_postprocess){
   double Mmissing;
   double Ptmissing;
   double th_p_predict;
-  double phi_p_predict;
 
   TLorentzVector init_electron;
   init_electron.SetPxPyPzE(0,0,sqrt(_electron_beam_energy*_electron_beam_energy - electronMass * electronMass),_electron_beam_energy);
@@ -396,7 +395,6 @@ int PostProcess::elastic(TTree * _tree_postprocess){
   _tree_postprocess->Branch("th_p",&th_p);
   _tree_postprocess->Branch("th_p_predict",&th_p_predict);
   _tree_postprocess->Branch("phi_p",&phi_p);
-  _tree_postprocess->Branch("phi_p_predict",&phi_p_predict);
   _tree_postprocess->Branch("z_p",&z_p);
   _tree_postprocess->Branch("vz_p",&vz_p);
   _tree_postprocess->Branch("Q2",&Q2);
@@ -429,7 +427,6 @@ int PostProcess::elastic(TTree * _tree_postprocess){
     Mmissing = 0;
     Ptmissing = 0;
     th_p_predict = 0;
-    phi_p_predict = 0;
 
     TLorentzVector electron;
     TLorentzVector proton;
@@ -464,8 +461,8 @@ int PostProcess::elastic(TTree * _tree_postprocess){
     
     Mmissing = (init_target+init_electron-electron-proton).M();
     Ptmissing = (init_target+init_electron-electron-proton).Pt();
-    th_p_predict = (init_target+init_electron-electron).Theta();
-    phi_p_predict = (init_target+init_electron-electron).Phi();
+    TLorentzVector proton_predict = (init_target+init_electron-electron);
+    th_p_predict = proton_predict.Angle(proton.Vect());
 
     _tree_postprocess->Fill();    
   }  

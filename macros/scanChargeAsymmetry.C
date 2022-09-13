@@ -5,8 +5,8 @@
 //           The results of which are appended to a row in CLAS12Analysis/util/runHelicityCounts.csv
 
 
-int scanChargeAsymmetry(std::string fileprefix_recon = "/volatile/clas12/rg-c/production/ana_data/dst/recon/016292/rec_clas_016292.evio.",
-			std::string filename_train = "/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/sidisdvcs_016292.hipo", 
+int scanChargeAsymmetry(std::string fileprefix_recon = "/volatile/clas12/rg-c/production/ana_data/dst/recon/016904/rec_clas_016904.evio.",
+			std::string filename_train = "/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/sidisdvcs_016904.hipo", 
 			const char * csvfile = "/work/clas12/users/gmat/CLAS12Analysis/util/runHelicityCounts.csv",
 			int max_files = 99999, 
 			int verbosity = 0)
@@ -52,7 +52,7 @@ int scanChargeAsymmetry(std::string fileprefix_recon = "/volatile/clas12/rg-c/pr
   int nneg_recon = 0;
   int nzero_recon = 0;
   int run_recon = 0; 
-
+  /*
   auto config_c12_recon=chain_recon.GetC12Reader();
   config_c12_recon->db()->turnOffQADB();
   auto idx_RECEvent_recon= config_c12_recon->addBank("REC::Event");
@@ -63,7 +63,8 @@ int scanChargeAsymmetry(std::string fileprefix_recon = "/volatile/clas12/rg-c/pr
 
   // LOOP OVER THE HIPO FILE
   while(  chain_recon.Next() ){
-
+    // DO NOT LOOP RECON
+    break;
     run_recon = c12_recon->getBank(idx_RUNConfig_recon)->getInt(iRun_recon,0);
     polarization_recon = c12_recon->getBank(idx_RECEvent_recon)->getInt(iHelicity_recon,0);
     if(polarization_recon==1)
@@ -77,7 +78,7 @@ int scanChargeAsymmetry(std::string fileprefix_recon = "/volatile/clas12/rg-c/pr
     
   }
 
-
+  */
   /* Read HEL::scaler */
   /* For each entry in HEL::scaler, we use the entry's helicity to accumulate the correspond faraday cup charge */
   /* Any 'preference' for +/- helicity will be seen as an artificial asymmetry in our studies, one we must correct for */
@@ -127,7 +128,7 @@ int scanChargeAsymmetry(std::string fileprefix_recon = "/volatile/clas12/rg-c/pr
 
       hel = HEL.getInt("helicity",0);
       fcup = HEL.getFloat("fcupgated",0);
-    
+      
     
       if(HEL.getRows()==0){
 	fcup_bad+=fcup;
@@ -170,7 +171,7 @@ int scanChargeAsymmetry(std::string fileprefix_recon = "/volatile/clas12/rg-c/pr
     return -1;
   }
   else{
-    outFile << run_recon << "," << npos_recon << "," << nneg_recon << "," << nzero_recon << "," << npos_train << "," << nneg_train << "," << nzero_train << "," << fcup_pos << "," << fcup_neg << "," << fcup_zero << "," << fcup_bad << "\n";
+    outFile << run_train << "," << npos_recon << "," << nneg_recon << "," << nzero_recon << "," << npos_train << "," << nneg_train << "," << nzero_train << "," << fcup_pos << "," << fcup_neg << "," << fcup_zero << "," << fcup_bad << "\n";
   }
   outFile.close();
   

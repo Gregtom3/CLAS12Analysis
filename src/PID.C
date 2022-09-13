@@ -31,27 +31,21 @@ bool PID::basicRECParticleCuts(SIDISParticlev1* sp){
   // CUT pid --------------------------------------------------------------
   if(_settings.getN_fromPID(pid)==0 && _settings._ignoreOtherRecoParticles && _settings.isInvited_fromPID(pid)==false)
     return false;
-
   // CUT chi2 -------------------------------------------------------------
   if(abs(chi2) > _settings.getChi2max_fromPID(pid))
     return false;
-
   // CUT beta -------------------------------------------------------------
   if(abs(beta) > _settings.getBetamax_fromPID(pid) || abs(beta) < _settings.getBetamin_fromPID(pid))
     return false;
-
   // CUT p -------------------------------------------------------------
   if(_settings.getPmin_fromPID(pid) > p)      
     return false;
-
   // CUT E -------------------------------------------------------------
   if(_settings.getEmin_fromPID(pid) > E)
     return false;
-
   // CUT vz -------------------------------------------------------------
   if(vz < _settings.getVzmin_fromPID(pid) || vz > _settings.getVzmax_fromPID(pid))
     return false;
-  
   return true;
 }
 

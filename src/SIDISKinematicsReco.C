@@ -510,7 +510,7 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     // CUT REC::Particle
     // --------------------------------------------------------------------------
     if(_pidhelper.performPIDCuts(sp)==false)
-      {delete sp; continue;}
+      {delete sp;  continue;}
 
     // CUT Fiducial
     // --------------------------------------------------------------------------
@@ -543,7 +543,6 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     else if(exact == false && npart_map<npart)
       return -1;
   }
-
   return 0;
 }
 
@@ -687,7 +686,10 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
       }
     }
   }
-
+  else{
+    cout << "ERROR in AddRecoEventInfo() -- Unavailable/No eventRecoMethod set in processing macro. See tutorials. Leaving..." << endl;
+    return -1;
+  }
 
   if(reco_W < _settings._Wmin || reco_W > _settings._Wmax)
     return -1;

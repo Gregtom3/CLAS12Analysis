@@ -3,7 +3,8 @@
 # Hipo dir defintions
 # --------------------------
 
-RGC_SU22="/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/"
+RGC_SU22_train="/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/"
+RGC_SU22_recon="/volatile/clas12/rg-c/production/ana_data/dst/recon/"
 
 # --------------------------
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -15,27 +16,32 @@ RGC_SU22="/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/"
 
 # Username
 # --------------------------------------------------------
-username="<USERNAME>"
+username="gmat"
 
 # Location of CLAS12Analysis directory
 # --------------------------------------------------------
-CLAS12Analysisdir="/path/to/CLAS12Analysis/"
+CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis/"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
-declare -a hipodirs=($RGC_SU22)
+declare -a hipodirs=($RGC_SU22_train)
+
+# Set a run range
+# --------------------------------------------------------
+runMin=16889
+runMax=16963
 
 # Beam energy associated with hipo files
 # --------------------------------------------------------
-beamEs=(10.5)
+beamEs=(10.5473)
 
 # Name of output directory
 # --------------------------------------------------------
-outdir="rg-c-data"
+outdir="clas12analysis.sidis.data/rgc-su-train/"
 
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="my-rgc-data"
+rootname="sept13"
 
 # Code locations
 # --------------------------------------------------------
@@ -44,7 +50,7 @@ organizecode="${CLAS12Analysisdir}/macros/organize_rgc.py"
 
 # Location of clas12root package
 # --------------------------------------------------------
-clas12rootdir="/path/to/clas12root"
+clas12rootdir="/work/clas12/users/gmat/packages/clas12root"
 
 # Job Parameters
 # --------------------------------------------------------
@@ -58,6 +64,8 @@ nCPUs=4
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
 # --------------------------
+rootname="$rootname_$runMin_$runMax"
+
 farmoutdir="/farm_out/$username/$outdir/$rootname/"
 volatiledir="/volatile/clas12/users/$username/$outdir"
 outputdir="$volatiledir/$rootname"
@@ -88,6 +96,9 @@ do
     for hipofile in "$hipodir"*
     do
 	read runNumber <<< $(echo $hipofile | grep -oP '(?<=sidisdvcs_0).*(?=.hipo)')
+	if [[ "$runNumber" -gt "$runMax" || "$runNumber" -lt "$runMin" ]]; then
+	    continue
+	fi
 	echo "Creating processing script for hipo file $((i+1))"
 	processFile="${shellSlurmDir}/${rootname}_${i}.sh"
 	touch $processFile
@@ -98,6 +109,11 @@ do
 	echo "set CLAS12ROOT=${clas12rootdir}" >> $processFile
 	echo "cd ${outputSlurmDir}" >> $processFile
 	echo "clas12root ${processcode}\\(\\\"${hipofile}\\\",\\\"${outputdir}/${rootname}_${runNumber}.root\\\",${beamE}\\)" >> $processFile   
+	if ! cat "${CLAS12Analysisdir}/util/runHelicityCounts.csv" | cut -d, -f1 | grep -Fxq "${runNumber}" 
+	then
+	    echo "clas12root ${CLAS12Analysisdir}/macros/scanChargeAsymmetry.C\\(\\\"${RGC_SU22_recon}0${runNumber}/rec_clas_0${runNumber}.evio.\\\",\\\"${hipofile}\\\",\\\"${CLAS12Analysisdir}/util/runHelicityCounts.csv\\\"\\)" >> $processFile
+	    echo "    Calculating run ${runNumber}'s beam charge asymmetry by parsing through recon"
+	fi
 	i=$((i+1))
     done
 done
