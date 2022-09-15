@@ -2,16 +2,16 @@
 // Purpose: Parse through HEL::scaler and RUN::scaler for each run and save information to csv's
 // To execute properly, simply perform ./run.sh
 
-int scanRecon(int run = 16904,
+int scanReconBig(int run = 16904,
 	      std::string prefix = "/farm_out/gmat/rgc-scaler-run"){
   // Verbosity
   int verbosity = 0;
   
   // Filenames
   std::string fileprefix_recon = Form("/volatile/clas12/rg-c/production/ana_data/dst/recon/0%d/rec_clas_0%d.evio.",run,run);
-  std::string outHELScaler = Form("%s-%d-HELScaler.csv",prefix.c_str(),run);
-  std::string outRUNScaler = Form("%s-%d-RUNScaler.csv",prefix.c_str(),run);
-
+  std::string outHELScaler = Form("%s-%d-HELScaler-all.csv",prefix.c_str(),run);
+  std::string outRUNScaler = Form("%s-%d-RUNScaler-all.csv",prefix.c_str(),run);
+  
   // 5 number 
   size_t maxZeros = 5;
 
@@ -32,6 +32,10 @@ int scanRecon(int run = 16904,
 
   ofstream outFile_HEL(outHELScaler,fstream::trunc);
   ofstream outFile_RUN(outRUNScaler,fstream::trunc);
+  // Headers
+  outFile_HEL << "run,fileidx,entry,fcupgated,fcup,slmgated,slm,clockgated,clock,helicity,helicityRaw\n";
+  outFile_RUN << "run,fileidx,entry,fcupgated,fcup,livetime\n";
+
 
   int leadingZeros;
 
@@ -87,18 +91,11 @@ int scanRecon(int run = 16904,
       HEL_helicity = HEL.getInt("helicity",0);
       HEL_helicityRaw = HEL.getInt("helicityRaw",0);
       
-      HEL_tot_fcupgated+=HEL_fcupgated;
-      if(HEL_helicity==1)
-	HEL_tot_fcupgated_pos+=HEL_fcupgated;
-      if(HEL_helicity==-1)
-	HEL_tot_fcupgated_neg+=HEL_fcupgated;
-      if(HEL_helicity==0)
-	HEL_tot_fcupgated_zero+=HEL_fcupgated;
-      
+      outFile_HEL << run << "," << idx_file << "," << entry_idx << "," << HEL_fcupgated << "," << HEL_fcup << "," << HEL_slmgated << "," << HEL_slm << "," << HEL_clockgated << "," << HEL_clock << "," << HEL_helicity << "," << HEL_helicityRaw << "\n";
+
       entry_idx++;
     }
    
-    outFile_HEL << run << "," << idx_file << "," << entry_idx << "," << HEL_tot_fcupgated << "," << HEL_tot_fcupgated_pos << "," << HEL_tot_fcupgated_neg << "," << HEL_tot_fcupgated_zero << "\n";
 
     reader_.open(filename.data()); //keep a pointer to the reader
     reader_.readDictionary(factory_);
@@ -129,22 +126,10 @@ int scanRecon(int run = 16904,
       if(RUN_livetime<0)
 	continue;
 
-      if(RUN_fcupgated > RUN_fcupgated_max)
-	RUN_fcupgated_max = RUN_fcupgated;
-      else if(RUN_fcupgated < RUN_fcupgated_min)
-	RUN_fcupgated_min = RUN_fcupgated;
+      outFile_RUN << run << "," << idx_file << "," << entry_idx << "," << RUN_fcupgated << "," << RUN_fcup << "," << RUN_livetime <<"\n";
 
-      if(RUN_fcup > RUN_fcup_max)
-	RUN_fcup_max = RUN_fcup;
-      else if(RUN_fcup < RUN_fcup_min)
-	RUN_fcup_min = RUN_fcup;
-
-      RUN_tot_livetime+=RUN_livetime;
       entry_idx++;
     }
-
-    outFile_RUN << run << "," << idx_file << "," << entry_idx << "," << RUN_fcupgated_min << "," << RUN_fcupgated_max << "," << RUN_fcupgated_max-RUN_fcupgated_min << "," << RUN_tot_livetime << "," << RUN_tot_livetime/entry_idx << "," << RUN_fcup_min << "," << RUN_fcup_max << "," << RUN_fcup_max - RUN_fcup_min << "," << RUN_tot_livetime/entry_idx * (RUN_fcup_max-RUN_fcup_min) << "\n";
-
   }
 
   outFile_HEL.close();
