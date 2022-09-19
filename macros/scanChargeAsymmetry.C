@@ -5,11 +5,11 @@
 //           The results of which are appended to a row in CLAS12Analysis/util/runHelicityCounts.csv
 
 
-int scanChargeAsymmetry(std::string fileprefix_recon = "/volatile/clas12/rg-c/production/ana_data/dst/recon/016904/rec_clas_016904.evio.",
-			std::string filename_train = "/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/sidisdvcs_016904.hipo", 
+int scanChargeAsymmetry(std::string fileprefix_recon = "/volatile/clas12/rg-c/production/ana_data/dst/recon/016771/rec_clas_016771.evio.",
+			std::string filename_train = "/volatile/clas12/rg-c/production/ana_data/dst/train/sidisdvcs/sidisdvcs_016771.hipo", 
 			const char * csvfile = "/work/clas12/users/gmat/CLAS12Analysis/util/runHelicityCounts.csv",
 			int max_files = 99999, 
-			int verbosity = 0)
+			int verbosity = 3)
 {
   cout << "READING TRAIN" << endl;
   /* Now read in the TRAIN HIPO files */
@@ -165,7 +165,7 @@ int scanChargeAsymmetry(std::string fileprefix_recon = "/volatile/clas12/rg-c/pr
 
 
   // Add helicity counts to csv
-  ofstream outFile(csvfile, fstream::app);
+  /*  ofstream outFile(csvfile, fstream::app);
   if(!outFile.is_open()){
     cout << "ERROR: Could not find runHelicityCounts.csv at " << csvfile << "...Aborting..." << endl;
     return -1;
@@ -174,6 +174,6 @@ int scanChargeAsymmetry(std::string fileprefix_recon = "/volatile/clas12/rg-c/pr
     outFile << run_train << "," << npos_recon << "," << nneg_recon << "," << nzero_recon << "," << npos_train << "," << nneg_train << "," << nzero_train << "," << fcup_pos << "," << fcup_neg << "," << fcup_zero << "," << fcup_bad << "\n";
   }
   outFile.close();
-  
+  */
   return 0 ;
 }

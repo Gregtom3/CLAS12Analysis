@@ -141,7 +141,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   int flag;
   
   
-  /*double px1;
+  double px1;
   double py1;
   double pz1;
   double pt1;
@@ -152,6 +152,8 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   double vy1;
   double vz1;
   double status1;
+  double parentPID1;
+  double PID1;
   double traj_sector1;
   double traj_path1_1;
   double traj_path2_1;
@@ -201,6 +203,8 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   double vy2;
   double vz2;
   double status2;
+  double parentPID2;
+  double PID2;
   double traj_sector2;
   double traj_path1_2;
   double traj_path2_2;
@@ -250,6 +254,8 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   double vypi;
   double vzpi;
   double statuspi;
+  double parentPIDpi;
+  double PIDpi;
   double traj_sectorpi;
   double traj_path1_pi;
   double traj_path2_pi;
@@ -288,7 +294,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   double cal_lw_ECIN_pi;
   double cal_lw_ECOUT_pi;
 
-  */
+  
   _tree_postprocess->Branch("fid",&fid);
   _tree_postprocess->Branch("Mdiphoton",&Mgg);
   _tree_postprocess->Branch("E1",&E1);
@@ -310,8 +316,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   _tree_postprocess->Branch("y",&y);
   _tree_postprocess->Branch("z",&zpair);
   _tree_postprocess->Branch("polarization",&polarization);
-  _tree_postprocess->Branch("flag",&flag);
-  /* 
+  _tree_postprocess->Branch("flag",&flag); 
 
   _tree_postprocess->Branch("px1",&px1);
   _tree_postprocess->Branch("py1",&py1);
@@ -324,6 +329,8 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   _tree_postprocess->Branch("vy1",&vy1);
   _tree_postprocess->Branch("vz1",&vz1);
   _tree_postprocess->Branch("status1",&status1);
+  _tree_postprocess->Branch("PID1",&PID1);
+  _tree_postprocess->Branch("parentPID1",&parentPID1);
   _tree_postprocess->Branch("traj_sector1",&traj_sector1);
   _tree_postprocess->Branch("traj_path1_1",&traj_path1_1);
   _tree_postprocess->Branch("traj_path2_1",&traj_path2_1);
@@ -373,20 +380,22 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   _tree_postprocess->Branch("vy2",&vy2);
   _tree_postprocess->Branch("vz2",&vz2);
   _tree_postprocess->Branch("status2",&status2);
+  _tree_postprocess->Branch("PID2",&PID2);
+  _tree_postprocess->Branch("parentPID2",&parentPID2);
   _tree_postprocess->Branch("traj_sector2",&traj_sector2);
-  _tree_postprocess->Branch("traj_path2_2",&traj_path2_2);
+  _tree_postprocess->Branch("traj_path1_2",&traj_path1_2);
   _tree_postprocess->Branch("traj_path2_2",&traj_path2_2);
   _tree_postprocess->Branch("traj_path3_2",&traj_path3_2);
-  _tree_postprocess->Branch("traj_det2_2",&traj_det2_2);
+  _tree_postprocess->Branch("traj_det1_2",&traj_det1_2);
   _tree_postprocess->Branch("traj_det2_2",&traj_det2_2);
   _tree_postprocess->Branch("traj_det3_2",&traj_det3_2);
-  _tree_postprocess->Branch("traj_x2_2",&traj_x2_2);
+  _tree_postprocess->Branch("traj_x1_2",&traj_x1_2);
   _tree_postprocess->Branch("traj_x2_2",&traj_x2_2);
   _tree_postprocess->Branch("traj_x3_2",&traj_x3_2);
-  _tree_postprocess->Branch("traj_y2_2",&traj_y2_2);
+  _tree_postprocess->Branch("traj_y1_2",&traj_y1_2);
   _tree_postprocess->Branch("traj_y2_2",&traj_y2_2);
   _tree_postprocess->Branch("traj_y3_2",&traj_y3_2);
-  _tree_postprocess->Branch("traj_z2_2",&traj_z2_2);
+  _tree_postprocess->Branch("traj_z1_2",&traj_z1_2);
   _tree_postprocess->Branch("traj_z2_2",&traj_z2_2);
   _tree_postprocess->Branch("traj_z3_2",&traj_z3_2);
   _tree_postprocess->Branch("cal_sector_PCAL_2",&cal_sector_PCAL_2);
@@ -422,20 +431,22 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   _tree_postprocess->Branch("vypi",&vypi);
   _tree_postprocess->Branch("vzpi",&vzpi);
   _tree_postprocess->Branch("statuspi",&statuspi);
+  _tree_postprocess->Branch("PIDpi",&PIDpi);
+  _tree_postprocess->Branch("parentPIDpi",&parentPIDpi);
   _tree_postprocess->Branch("traj_sectorpi",&traj_sectorpi);
-  _tree_postprocess->Branch("traj_pathpi_pi",&traj_pathpi_pi);
+  _tree_postprocess->Branch("traj_path1_pi",&traj_path1_pi);
   _tree_postprocess->Branch("traj_path2_pi",&traj_path2_pi);
   _tree_postprocess->Branch("traj_path3_pi",&traj_path3_pi);
-  _tree_postprocess->Branch("traj_detpi_pi",&traj_detpi_pi);
+  _tree_postprocess->Branch("traj_det1_pi",&traj_det1_pi);
   _tree_postprocess->Branch("traj_det2_pi",&traj_det2_pi);
   _tree_postprocess->Branch("traj_det3_pi",&traj_det3_pi);
-  _tree_postprocess->Branch("traj_xpi_pi",&traj_xpi_pi);
+  _tree_postprocess->Branch("traj_x1_pi",&traj_x1_pi);
   _tree_postprocess->Branch("traj_x2_pi",&traj_x2_pi);
   _tree_postprocess->Branch("traj_x3_pi",&traj_x3_pi);
-  _tree_postprocess->Branch("traj_ypi_pi",&traj_ypi_pi);
+  _tree_postprocess->Branch("traj_y1_pi",&traj_y1_pi);
   _tree_postprocess->Branch("traj_y2_pi",&traj_y2_pi);
   _tree_postprocess->Branch("traj_y3_pi",&traj_y3_pi);
-  _tree_postprocess->Branch("traj_zpi_pi",&traj_zpi_pi);
+  _tree_postprocess->Branch("traj_z1_pi",&traj_z1_pi);
   _tree_postprocess->Branch("traj_z2_pi",&traj_z2_pi);
   _tree_postprocess->Branch("traj_z3_pi",&traj_z3_pi);
   _tree_postprocess->Branch("cal_sector_PCAL_pi",&cal_sector_PCAL_pi);
@@ -459,7 +470,6 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   _tree_postprocess->Branch("cal_lw_PCAL_pi",&cal_lw_PCAL_pi);
   _tree_postprocess->Branch("cal_lw_ECIN_pi",&cal_lw_ECIN_pi);
   _tree_postprocess->Branch("cal_lw_ECOUT_pi",&cal_lw_ECOUT_pi);
-  */
 
 
   TLorentzVector init_electron;
@@ -501,6 +511,169 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
     th=0.0;
     zpair=0.0;
     flag = 0;
+
+    px1=0;
+    py1=0;
+    pz1=0;
+    pt1=0;
+    p1=0;
+    theta1=0;
+    phi1=0;
+    vx1=0;
+    vy1=0;
+    vz1=0;
+    status1=0;
+    PID1=0;
+    parentPID1=0;
+    traj_sector1=0;
+    traj_path1_1=0;
+    traj_path2_1=0;
+    traj_path3_1=0;
+    traj_det1_1=0;
+    traj_det2_1=0;
+    traj_det3_1=0;
+    traj_x1_1=0;
+    traj_x2_1=0;
+    traj_x3_1=0;
+    traj_y1_1=0;
+    traj_y2_1=0;
+    traj_y3_1=0;
+    traj_z1_1=0;
+    traj_z2_1=0;
+    traj_z3_1=0;
+    cal_sector_PCAL_1=0;
+    cal_sector_ECIN_1=0;
+    cal_sector_ECOUT_1=0;
+    cal_energy_PCAL_1=0;
+    cal_energy_ECIN_1=0;
+    cal_energy_ECOUT_1=0;
+    cal_time_PCAL_1=0;
+    cal_time_ECIN_1=0;
+    cal_time_ECOUT_1=0;
+    cal_path_PCAL_1=0;
+    cal_path_ECIN_1=0;
+    cal_path_ECOUT_1=0;
+    cal_lu_PCAL_1=0;
+    cal_lu_ECIN_1=0;
+    cal_lu_ECOUT_1=0;
+    cal_lv_PCAL_1=0;
+    cal_lv_ECIN_1=0;
+    cal_lv_ECOUT_1=0;
+    cal_lw_PCAL_1=0;
+    cal_lw_ECIN_1=0;
+    cal_lw_ECOUT_1=0;
+
+    px2=0;
+    py2=0;
+    pz2=0;
+    pt2=0;
+    p2=0;
+    theta2=0;
+    phi2=0;
+    vx2=0;
+    vy2=0;
+    vz2=0;
+    status2=0;
+    PID2=0;
+    parentPID2=0;
+    traj_sector2=0;
+    traj_path1_2=0;
+    traj_path2_2=0;
+    traj_path3_2=0;
+    traj_det1_2=0;
+    traj_det2_2=0;
+    traj_det3_2=0;
+    traj_x1_2=0;
+    traj_x2_2=0;
+    traj_x3_2=0;
+    traj_y1_2=0;
+    traj_y2_2=0;
+    traj_y3_2=0;
+    traj_z1_2=0;
+    traj_z2_2=0;
+    traj_z3_2=0;
+    cal_sector_PCAL_2=0;
+    cal_sector_ECIN_2=0;
+    cal_sector_ECOUT_2=0;
+    cal_energy_PCAL_2=0;
+    cal_energy_ECIN_2=0;
+    cal_energy_ECOUT_2=0;
+    cal_time_PCAL_2=0;
+    cal_time_ECIN_2=0;
+    cal_time_ECOUT_2=0;
+    cal_path_PCAL_2=0;
+    cal_path_ECIN_2=0;
+    cal_path_ECOUT_2=0;
+    cal_lu_PCAL_2=0;
+    cal_lu_ECIN_2=0;
+    cal_lu_ECOUT_2=0;
+    cal_lv_PCAL_2=0;
+    cal_lv_ECIN_2=0;
+    cal_lv_ECOUT_2=0;
+    cal_lw_PCAL_2=0;
+    cal_lw_ECIN_2=0;
+    cal_lw_ECOUT_2=0;
+
+    pxpi=0;
+    pypi=0;
+    pzpi=0;
+    ptpi=0;
+    ppi=0;
+    thetapi=0;
+    phipi=0;
+    vxpi=0;
+    vypi=0;
+    vzpi=0;
+    statuspi=0;
+    PIDpi=0;
+    parentPIDpi=0;
+    traj_sectorpi=0;
+    traj_path1_pi=0;
+    traj_path2_pi=0;
+    traj_path3_pi=0;
+    traj_det1_pi=0;
+    traj_det2_pi=0;
+    traj_det3_pi=0;
+    traj_x1_pi=0;
+    traj_x2_pi=0;
+    traj_x3_pi=0;
+    traj_y1_pi=0;
+    traj_y2_pi=0;
+    traj_y3_pi=0;
+    traj_z1_pi=0;
+    traj_z2_pi=0;
+    traj_z3_pi=0;
+    cal_sector_PCAL_pi=0;
+    cal_sector_ECIN_pi=0;
+    cal_sector_ECOUT_pi=0;
+    cal_energy_PCAL_pi=0;
+    cal_energy_ECIN_pi=0;
+    cal_energy_ECOUT_pi=0;
+    cal_time_PCAL_pi=0;
+    cal_time_ECIN_pi=0;
+    cal_time_ECOUT_pi=0;
+    cal_path_PCAL_pi=0;
+    cal_path_ECIN_pi=0;
+    cal_path_ECOUT_pi=0;
+    cal_lu_PCAL_pi=0;
+    cal_lu_ECIN_pi=0;
+    cal_lu_ECOUT_pi=0;
+    cal_lv_PCAL_pi=0;
+    cal_lv_ECIN_pi=0;
+    cal_lv_ECOUT_pi=0;
+    cal_lw_PCAL_pi=0;
+    cal_lw_ECIN_pi=0;
+    cal_lw_ECOUT_pi=0;
+
+
+
+
+
+
+
+
+
+
     for(unsigned int i = 0 ; i < pid->size() ; i++){
       // Identify the scattered electron
       if(pid->at(i)==11){
@@ -572,6 +745,166 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
 		  phi_R1=(_kin.phi_R(q,init_electron,pi,pi0,1));
 		  phi_h=(_kin.phi_h(q,init_electron,pi,pi0));
 		  th = (_kin.com_th(pi,pi0));
+		  
+
+		  px1=px->at(i);
+		  py1=py->at(i);
+		  pz1=pz->at(i);
+		  pt1=pt->at(i);
+		  p1=p->at(i);
+		  theta1=theta->at(i);
+		  phi1=phi->at(i);
+		  vx1=vx->at(i);
+		  vy1=vy->at(i);
+		  vz1=vz->at(i);
+		  status1=status->at(i);
+		  parentPID1=evtgen_parentPID->at(i);
+		  PID1=evtgen_pid->at(i);
+		  traj_sector1=traj_sector->at(i);
+		  traj_path1_1=traj_path1->at(i);
+		  traj_path2_1=traj_path2->at(i);
+		  traj_path3_1=traj_path3->at(i);
+		  traj_det1_1=traj_det1->at(i);
+		  traj_det2_1=traj_det2->at(i);
+		  traj_det3_1=traj_det3->at(i);
+		  traj_x1_1=traj_x1->at(i);
+		  traj_x2_1=traj_x2->at(i);
+		  traj_x3_1=traj_x3->at(i);
+		  traj_y1_1=traj_y1->at(i);
+		  traj_y2_1=traj_y2->at(i);
+		  traj_y3_1=traj_y3->at(i);
+		  traj_z1_1=traj_z1->at(i);
+		  traj_z2_1=traj_z2->at(i);
+		  traj_z3_1=traj_z3->at(i);
+		  cal_sector_PCAL_1=cal_sector_PCAL->at(i);
+		  cal_sector_ECIN_1=cal_sector_ECIN->at(i);
+		  cal_sector_ECOUT_1=cal_sector_ECOUT->at(i);
+		  cal_energy_PCAL_1=cal_energy_PCAL->at(i);
+		  cal_energy_ECIN_1=cal_energy_ECIN->at(i);
+		  cal_energy_ECOUT_1=cal_energy_ECOUT->at(i);
+		  cal_time_PCAL_1=cal_time_PCAL->at(i);
+		  cal_time_ECIN_1=cal_time_ECIN->at(i);
+		  cal_time_ECOUT_1=cal_time_ECOUT->at(i);
+		  cal_path_PCAL_1=cal_path_PCAL->at(i);
+		  cal_path_ECIN_1=cal_path_ECIN->at(i);
+		  cal_path_ECOUT_1=cal_path_ECOUT->at(i);
+		  cal_lu_PCAL_1=cal_lu_PCAL->at(i);
+		  cal_lu_ECIN_1=cal_lu_ECIN->at(i);
+		  cal_lu_ECOUT_1=cal_lu_ECOUT->at(i);
+		  cal_lv_PCAL_1=cal_lv_PCAL->at(i);
+		  cal_lv_ECIN_1=cal_lv_ECIN->at(i);
+		  cal_lv_ECOUT_1=cal_lv_ECOUT->at(i);
+		  cal_lw_PCAL_1=cal_lw_PCAL->at(i);
+		  cal_lw_ECIN_1=cal_lw_ECIN->at(i);
+		  cal_lw_ECOUT_1=cal_lw_ECOUT->at(i);
+
+		  px2=px->at(j);
+		  py2=py->at(j);
+		  pz2=pz->at(j);
+		  pt2=pt->at(j);
+		  p2=p->at(j);
+		  theta2=theta->at(j);
+		  phi2=phi->at(j);
+		  vx2=vx->at(j);
+		  vy2=vy->at(j);
+		  vz2=vz->at(j);
+		  status2=status->at(j);
+		  parentPID2=evtgen_parentPID->at(j);
+		  PID2=evtgen_pid->at(j);
+		  traj_sector2=traj_sector->at(j);
+		  traj_path1_2=traj_path1->at(j);
+		  traj_path2_2=traj_path2->at(j);
+		  traj_path3_2=traj_path3->at(j);
+		  traj_det1_2=traj_det1->at(j);
+		  traj_det2_2=traj_det2->at(j);
+		  traj_det3_2=traj_det3->at(j);
+		  traj_x1_2=traj_x1->at(j);
+		  traj_x2_2=traj_x2->at(j);
+		  traj_x3_2=traj_x3->at(j);
+		  traj_y1_2=traj_y1->at(j);
+		  traj_y2_2=traj_y2->at(j);
+		  traj_y3_2=traj_y3->at(j);
+		  traj_z1_2=traj_z1->at(j);
+		  traj_z2_2=traj_z2->at(j);
+		  traj_z3_2=traj_z3->at(j);
+		  cal_sector_PCAL_2=cal_sector_PCAL->at(j);
+		  cal_sector_ECIN_2=cal_sector_ECIN->at(j);
+		  cal_sector_ECOUT_2=cal_sector_ECOUT->at(j);
+		  cal_energy_PCAL_2=cal_energy_PCAL->at(j);
+		  cal_energy_ECIN_2=cal_energy_ECIN->at(j);
+		  cal_energy_ECOUT_2=cal_energy_ECOUT->at(j);
+		  cal_time_PCAL_2=cal_time_PCAL->at(j);
+		  cal_time_ECIN_2=cal_time_ECIN->at(j);
+		  cal_time_ECOUT_2=cal_time_ECOUT->at(j);
+		  cal_path_PCAL_2=cal_path_PCAL->at(j);
+		  cal_path_ECIN_2=cal_path_ECIN->at(j);
+		  cal_path_ECOUT_2=cal_path_ECOUT->at(j);
+		  cal_lu_PCAL_2=cal_lu_PCAL->at(j);
+		  cal_lu_ECIN_2=cal_lu_ECIN->at(j);
+		  cal_lu_ECOUT_2=cal_lu_ECOUT->at(j);
+		  cal_lv_PCAL_2=cal_lv_PCAL->at(j);
+		  cal_lv_ECIN_2=cal_lv_ECIN->at(j);
+		  cal_lv_ECOUT_2=cal_lv_ECOUT->at(j);
+		  cal_lw_PCAL_2=cal_lw_PCAL->at(j);
+		  cal_lw_ECIN_2=cal_lw_ECIN->at(j);
+		  cal_lw_ECOUT_2=cal_lw_ECOUT->at(j);
+
+		  pxpi=px->at(k);
+		  pypi=py->at(k);
+		  pzpi=pz->at(k);
+		  ptpi=pt->at(k);
+		  ppi=p->at(k);
+		  thetapi=theta->at(k);
+		  phipi=phi->at(k);
+		  vxpi=vx->at(k);
+		  vypi=vy->at(k);
+		  vzpi=vz->at(k);
+		  statuspi=status->at(k);
+		  parentPIDpi=evtgen_parentPID->at(k);
+		  PIDpi=evtgen_pid->at(k);
+		  traj_sectorpi=traj_sector->at(k);
+		  traj_path1_pi=traj_path1->at(k);
+		  traj_path2_pi=traj_path2->at(k);
+		  traj_path3_pi=traj_path3->at(k);
+		  traj_det1_pi=traj_det1->at(k);
+		  traj_det2_pi=traj_det2->at(k);
+		  traj_det3_pi=traj_det3->at(k);
+		  traj_x1_pi=traj_x1->at(k);
+		  traj_x2_pi=traj_x2->at(k);
+		  traj_x3_pi=traj_x3->at(k);
+		  traj_y1_pi=traj_y1->at(k);
+		  traj_y2_pi=traj_y2->at(k);
+		  traj_y3_pi=traj_y3->at(k);
+		  traj_z1_pi=traj_z1->at(k);
+		  traj_z2_pi=traj_z2->at(k);
+		  traj_z3_pi=traj_z3->at(k);
+		  cal_sector_PCAL_pi=cal_sector_PCAL->at(k);
+		  cal_sector_ECIN_pi=cal_sector_ECIN->at(k);
+		  cal_sector_ECOUT_pi=cal_sector_ECOUT->at(k);
+		  cal_energy_PCAL_pi=cal_energy_PCAL->at(k);
+		  cal_energy_ECIN_pi=cal_energy_ECIN->at(k);
+		  cal_energy_ECOUT_pi=cal_energy_ECOUT->at(k);
+		  cal_time_PCAL_pi=cal_time_PCAL->at(k);
+		  cal_time_ECIN_pi=cal_time_ECIN->at(k);
+		  cal_time_ECOUT_pi=cal_time_ECOUT->at(k);
+		  cal_path_PCAL_pi=cal_path_PCAL->at(k);
+		  cal_path_ECIN_pi=cal_path_ECIN->at(k);
+		  cal_path_ECOUT_pi=cal_path_ECOUT->at(k);
+		  cal_lu_PCAL_pi=cal_lu_PCAL->at(k);
+		  cal_lu_ECIN_pi=cal_lu_ECIN->at(k);
+		  cal_lu_ECOUT_pi=cal_lu_ECOUT->at(k);
+		  cal_lv_PCAL_pi=cal_lv_PCAL->at(k);
+		  cal_lv_ECIN_pi=cal_lv_ECIN->at(k);
+		  cal_lv_ECOUT_pi=cal_lv_ECOUT->at(k);
+		  cal_lw_PCAL_pi=cal_lw_PCAL->at(k);
+		  cal_lw_ECIN_pi=cal_lw_ECIN->at(k);
+		  cal_lw_ECOUT_pi=cal_lw_ECOUT->at(k);
+
+		  
+
+
+
+
 		  _tree_postprocess->Fill();
 		  fid++;
 		}

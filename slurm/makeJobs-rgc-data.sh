@@ -28,8 +28,8 @@ declare -a hipodirs=($RGC_SU22_train)
 
 # Set a run range
 # --------------------------------------------------------
-runMin=16889
-runMax=16963
+runMin=16250
+runMax=18000
 
 # Beam energy associated with hipo files
 # --------------------------------------------------------
@@ -41,7 +41,7 @@ outdir="clas12analysis.sidis.data/rgc-su-train/"
 
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="sept13"
+rootname="sept19"
 
 # Code locations
 # --------------------------------------------------------
@@ -64,8 +64,6 @@ nCPUs=4
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
 # --------------------------
-rootname="$rootname_$runMin_$runMax"
-
 farmoutdir="/farm_out/$username/$outdir/$rootname/"
 volatiledir="/volatile/clas12/users/$username/$outdir"
 outputdir="$volatiledir/$rootname"

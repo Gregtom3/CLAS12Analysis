@@ -2,7 +2,7 @@
 // Purpose: Parse through HEL::scaler and RUN::scaler for each run and save information to csv's
 // To execute properly, simply perform ./run.sh
 
-int scanRecon(int run = 16904,
+int scanRecon(int run = 16767,
 	      std::string prefix = "/farm_out/gmat/rgc-scaler-run"){
   // Verbosity
   int verbosity = 0;
@@ -29,6 +29,17 @@ int scanRecon(int run = 16904,
   double RUN_fcupgated = 0.0;
   double RUN_fcup = 0.0;
   double RUN_livetime = 0.0;
+  
+  // RAW::Scaler bank info
+  double offset = 140.0;
+  double slope = 906.2;
+  double atten = 1.0;
+  long RAW_fcupgated_33ms = 0.0;
+  long RAW_fcupgated_500us = 0.0;
+  long RAW_clockgated_33ms = 0.0;
+  long RAW_clockgated_500us = 0.0;
+  int  RAW_channel = 0;
+  int  RAW_slot = 0;
 
   ofstream outFile_HEL(outHELScaler,fstream::trunc);
   ofstream outFile_RUN(outRUNScaler,fstream::trunc);
@@ -64,7 +75,12 @@ int scanRecon(int run = 16904,
     reader_.open(filename.data()); //keep a pointer to the reader
     reader_.readDictionary(factory_);
     hipo::bank HEL(factory_.getSchema("HEL::scaler"));
+    hipo::bank RAW(factory_.getSchema("RAW::scaler"));
     int entry_idx = 0;
+    double RAW_tot_fcupgated = 0.0;
+    double RAW_tot_fcupgated_pos = 0.0;
+    double RAW_tot_fcupgated_neg = 0.0;
+    double RAW_tot_fcupgated_zero = 0.0;
     double HEL_tot_fcupgated = 0.0;
     double HEL_tot_fcupgated_pos = 0.0;
     double HEL_tot_fcupgated_neg = 0.0;
@@ -73,11 +89,11 @@ int scanRecon(int run = 16904,
     while(reader_.next()){
       reader_.read(event_);
       event_.getStructure(HEL);
-
-      if(HEL.getRows()==0){
+      event_.getStructure(RAW);
+      if(RAW.getRows()==0){
 	continue;
       }
-
+      
       HEL_fcupgated = HEL.getFloat("fcupgated",0);
       HEL_fcup = HEL.getFloat("fcup",0);
       HEL_slmgated = HEL.getFloat("slmgated",0);
@@ -94,11 +110,50 @@ int scanRecon(int run = 16904,
 	HEL_tot_fcupgated_neg+=HEL_fcupgated;
       if(HEL_helicity==0)
 	HEL_tot_fcupgated_zero+=HEL_fcupgated;
+
+      RAW_fcupgated_33ms = 0.0;
+      RAW_fcupgated_500us = 0.0;
+      RAW_clockgated_33ms = 0.0;
+      RAW_clockgated_500us = 0.0;
+
       
+      for(int j = 0 ; j < RAW.getRows() ; j++){
+	RAW_channel = RAW.getInt("channel",j);
+	RAW_slot = (int)RAW.getByte("slot",j);
+	if(RAW_channel==0 && RAW_slot==0)
+	  RAW_fcupgated_33ms = RAW.getLong("value",j);
+	else if(RAW_channel==2 && RAW_slot==0)
+	  RAW_clockgated_33ms = RAW.getLong("value",j);
+	else if(RAW_channel==32 && RAW_slot==0)
+	  RAW_fcupgated_500us = RAW.getLong("value",j);
+	else if(RAW_channel==34 && RAW_slot==0)
+	  RAW_clockgated_500us = RAW.getLong("value",j);
+      }
+      
+      double result_33ms = (RAW_fcupgated_33ms - offset * RAW_clockgated_33ms * pow(10,-6)) * atten / slope;
+      double result_500us = (RAW_fcupgated_500us - offset * RAW_clockgated_500us * pow(10,-6)) * atten / slope;
+      if(result_33ms>result_500us && result_33ms < 2){
+	RAW_tot_fcupgated+=result_33ms;
+	if(HEL_helicity==1)
+	  RAW_tot_fcupgated_pos+=result_33ms;
+	else if(HEL_helicity==-1)
+	  RAW_tot_fcupgated_neg+=result_33ms;
+	else if(HEL_helicity==0)
+	  RAW_tot_fcupgated_zero+=result_33ms;
+      }
+      else if(result_500us>result_33ms && result_500us < 2){
+	RAW_tot_fcupgated+=result_500us;
+	if(HEL_helicity==1)
+	  RAW_tot_fcupgated_pos+=result_500us;
+	else if(HEL_helicity==-1)
+	  RAW_tot_fcupgated_neg+=result_500us;
+	else if(HEL_helicity==0)
+	  RAW_tot_fcupgated_zero+=result_500us;
+      }
       entry_idx++;
     }
    
-    outFile_HEL << run << "," << idx_file << "," << entry_idx << "," << HEL_tot_fcupgated << "," << HEL_tot_fcupgated_pos << "," << HEL_tot_fcupgated_neg << "," << HEL_tot_fcupgated_zero << "\n";
+    outFile_HEL << run << "," << idx_file << "," << entry_idx << "," << HEL_tot_fcupgated << "," << HEL_tot_fcupgated_pos << "," << HEL_tot_fcupgated_neg << "," << HEL_tot_fcupgated_zero << "," << RAW_tot_fcupgated << "," << RAW_tot_fcupgated_pos << "," << RAW_tot_fcupgated_neg << "," << RAW_tot_fcupgated_zero << "\n";
 
     reader_.open(filename.data()); //keep a pointer to the reader
     reader_.readDictionary(factory_);
@@ -138,7 +193,7 @@ int scanRecon(int run = 16904,
 	RUN_fcup_max = RUN_fcup;
       else if(RUN_fcup < RUN_fcup_min)
 	RUN_fcup_min = RUN_fcup;
-
+      
       RUN_tot_livetime+=RUN_livetime;
       entry_idx++;
     }

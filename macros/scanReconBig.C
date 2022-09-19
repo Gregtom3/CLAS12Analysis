@@ -30,6 +30,20 @@ int scanReconBig(int run = 16904,
   double RUN_fcup = 0.0;
   double RUN_livetime = 0.0;
 
+  // RAW::Scaler bank info
+  double offset = 140.0;
+  double slope = 906.2;
+  double atten = 1.0;
+  long RAW_fcupgated_33ms = 0.0;
+  long RAW_fcupgated_500us = 0.0;
+  long RAW_clockgated_33ms = 0.0;
+  long RAW_clockgated_500us = 0.0;
+  long RAW_clockgated = 0.0;
+  long RAW_fcupgated = 0.0;
+  int  RAW_channel = 0;
+  int  RAW_slot = 0;
+
+
   ofstream outFile_HEL(outHELScaler,fstream::trunc);
   ofstream outFile_RUN(outRUNScaler,fstream::trunc);
   // Headers
@@ -68,7 +82,12 @@ int scanReconBig(int run = 16904,
     reader_.open(filename.data()); //keep a pointer to the reader
     reader_.readDictionary(factory_);
     hipo::bank HEL(factory_.getSchema("HEL::scaler"));
+    hipo::bank RAW(factory_.getSchema("RAW::scaler"));
     int entry_idx = 0;
+    double RAW_tot_fcupgated = 0.0;
+    double RAW_tot_fcupgated_pos = 0.0;
+    double RAW_tot_fcupgated_neg = 0.0;
+    double RAW_tot_fcupgated_zero = 0.0;
     double HEL_tot_fcupgated = 0.0;
     double HEL_tot_fcupgated_pos = 0.0;
     double HEL_tot_fcupgated_neg = 0.0;
@@ -77,7 +96,7 @@ int scanReconBig(int run = 16904,
     while(reader_.next()){
       reader_.read(event_);
       event_.getStructure(HEL);
-
+      event_.getStructure(RAW);
       if(HEL.getRows()==0){
 	continue;
       }
@@ -91,7 +110,40 @@ int scanReconBig(int run = 16904,
       HEL_helicity = HEL.getInt("helicity",0);
       HEL_helicityRaw = HEL.getInt("helicityRaw",0);
       
-      outFile_HEL << run << "," << idx_file << "," << entry_idx << "," << HEL_fcupgated << "," << HEL_fcup << "," << HEL_slmgated << "," << HEL_slm << "," << HEL_clockgated << "," << HEL_clock << "," << HEL_helicity << "," << HEL_helicityRaw << "\n";
+      RAW_fcupgated_33ms = 0.0;
+      RAW_fcupgated_500us = 0.0;
+      RAW_clockgated_33ms = 0.0;
+      RAW_clockgated_500us = 0.0;
+      RAW_clockgated = 0.0;
+      RAW_fcupgated = 0.0;
+  
+
+      for(int j = 0 ; j < RAW.getRows() ; j++){
+        RAW_channel = RAW.getInt("channel",j);
+        RAW_slot = (int)RAW.getByte("slot",j);
+        if(RAW_channel==0 && RAW_slot==0)
+          RAW_fcupgated_33ms = RAW.getLong("value",j);
+        else if(RAW_channel==2 && RAW_slot==0)
+          RAW_clockgated_33ms = RAW.getLong("value",j);
+        else if(RAW_channel==32 && RAW_slot==0)
+          RAW_fcupgated_500us = RAW.getLong("value",j);
+        else if(RAW_channel==34 && RAW_slot==0)
+          RAW_clockgated_500us = RAW.getLong("value",j);
+      }
+
+      double result_33ms = (RAW_fcupgated_33ms - offset * RAW_clockgated_33ms * pow(10,-6)) * atten / slope;
+      double result_500us = (RAW_fcupgated_500us - offset * RAW_clockgated_500us * pow(10,-6)) * atten / slope;
+
+      if(result_33ms>result_500us && result_33ms < 2){
+        RAW_fcupgated = result_33ms;
+	RAW_clockgated = RAW_clockgated_33ms;
+      }
+      else if(result_500us>result_33ms && result_500us < 2){
+        RAW_fcupgated = result_500us;
+	RAW_clockgated = RAW_clockgated_500us;
+      }
+
+      outFile_HEL << run << "," << idx_file << "," << entry_idx << "," << HEL_fcupgated << "," << HEL_fcup << "," << HEL_slmgated << "," << HEL_slm << "," << HEL_clockgated << "," << HEL_clock << "," << HEL_helicity << "," << HEL_helicityRaw << "," << RAW_fcupgated << "," << RAW_clockgated << "\n";
 
       entry_idx++;
     }

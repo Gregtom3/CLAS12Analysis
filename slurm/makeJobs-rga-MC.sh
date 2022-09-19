@@ -9,7 +9,7 @@ RGA_S19_IN="/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/
 
 RGA_F18_IN_BATCH="/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/nSidis/nSidis_005032.hipo"
 
-MC_F18_NOBG_OUT="/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/nobkg_10604MeV/"
+MC_F18_NOBG_IN="/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/nobkg_10604MeV/"
 # --------------------------
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
 # *-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -28,28 +28,28 @@ CLAS12Analysisdir="/work/clas12/users/gmat/CLAS12Analysis"
 
 # Location of hipo directories for analysis
 # --------------------------------------------------------
-declare -a hipodirs=($RGA_F18_IN $RGA_F18_OUT $RGA_S19_IN)
+declare -a hipodirs=($MC_F18_NOBG_IN)
 
 # Beam energy associated with hipo files
 # --------------------------------------------------------
-beamEs=(10.6 10.6 10.2)
+beamEs=(10.604)
 
 # Analysis chain parameters
 # Base chain = Processing  --> PostProcessing --> Merging
 # --------------------------------------------------------
-doAsymmetry=true # Binning --> Fitting --> Asymmetry 
+doAsymmetry=false # Binning --> Fitting --> Asymmetry 
 
 # Name of output directory
 # --------------------------------------------------------
-outdir="clas12analysis.sidis.data/rg-a"
+outdir="clas12analysis.sidis.data/rg-a-mc"
 
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="sept14"
+rootname="sept19"
 
 # Code locations
 # --------------------------------------------------------
-processcode="${CLAS12Analysisdir}/macros/process/rg-a/pipi0_process.C"
+processcode="${CLAS12Analysisdir}/macros/process/rg-a/pipi0_MC_process.C"
 postprocesscode="${CLAS12Analysisdir}/macros/process/rg-a/pipi0_postprocess_only.C"
 mergecode="${CLAS12Analysisdir}/macros/mergeTrees.C"
 asymmetrycode="${CLAS12Analysisdir}/macros/process/rg-a/pipi0_asymmetry.C"
@@ -137,7 +137,7 @@ echo "#!/bin/bash" > $runJobs
 echo "#SBATCH --account=clas12" >> $runJobs
 echo "#SBATCH --partition=production" >> $runJobs
 echo "#SBATCH --mem-per-cpu=${memPerCPU}" >> $runJobs
-echo "#SBATCH --job-name=${rootname}-rga-data" >> $runJobs
+echo "#SBATCH --job-name=${rootname}" >> $runJobs
 echo "#SBATCH --cpus-per-task=${nCPUs}" >> $runJobs
 echo "#SBATCH --time=24:00:00" >> $runJobs
 echo "#SBATCH --chdir=${workdir}" >> $runJobs
@@ -159,7 +159,7 @@ echo "#!/bin/bash" > $runJobsPostProcess
 echo "#SBATCH --account=clas12" >> $runJobsPostProcess
 echo "#SBATCH --partition=production" >> $runJobsPostProcess
 echo "#SBATCH --mem-per-cpu=${memPerCPU}" >> $runJobsPostProcess
-echo "#SBATCH --job-name=${rootname}-rga-data" >> $runJobsPostProcess
+echo "#SBATCH --job-name=${rootname}" >> $runJobsPostProcess
 echo "#SBATCH --cpus-per-task=${nCPUs}" >> $runJobsPostProcess
 echo "#SBATCH --time=24:00:00" >> $runJobsPostProcess
 echo "#SBATCH --chdir=${workdir}" >> $runJobsPostProcess
@@ -181,25 +181,30 @@ echo "sbatch $mergeSlurm 1" >> $makeJobsPostProcess
 # --------------------------------------------------------------------
 touch $mergeFile
 chmod +x $mergeFile
-
-cat >> $mergeFile <<EOF
-#!/bin/bash
-cd \$outputSlurmDir
-organizeOutFile=\"merge.txt\"
-touch \$organizeOutFile
-jobsLeft=999
-while [ \$jobsLeft -ne 0 ]
-do
-    read jobsLeft <<< \$(echo "\$(squeue -u gmat --format="%.18i %.9P %.30j %.8u %.8T %.10M %.9l %.6D %R")" | grep ${rootname}-rga-data | awk 'END{print NR}')
-    echo \$jobsLeft >> \$organizeOutFile
-sleep 30
-done 
-if [ \$1 == 0 ]; then
-    clas12root ${mergecode}\(\"${outputdir}\",\"${rootname}\",\"tree_reco\"\)
-fi
-clas12root ${mergecode}\(\"${outputdir}\",\"${rootname}\",\"tree_postprocess\"\)
-EOF
-
+echo "#!/bin/bash" > $mergeFile
+echo "cd $outputSlurmDir" >> $mergeFile
+echo "mergeOutFile=\"merge.txt\"" >> $mergeFile
+echo "touch \$mergeOutFile" >> $mergeFile
+echo "finishedJobs=0" >> $mergeFile
+echo "nJobs=$(($i+1))" >> $mergeFile
+echo "lastLine=\"\"" >> $mergeFile
+echo "while [ \$finishedJobs -ne \$nJobs ]" >> $mergeFile
+echo "do" >> $mergeFile
+echo "    finishedJobs=0" >> $mergeFile
+echo "    for outputFile in ../output/${rootname}*.out" >> $mergeFile
+echo "    do" >> $mergeFile
+echo "        lastLine=\$(tail -1 \$outputFile)" >> $mergeFile
+echo "        if [[ \"\$lastLine\" == \"(int) 0\" ]]; then" >>  $mergeFile
+echo "            finishedJobs=\$((finishedJobs+1))" >> $mergeFile
+echo "        fi" >> $mergeFile
+echo "    done" >> $mergeFile
+echo "echo \"\$finishedJobs completed out of \$nJobs\" >> \$mergeOutFile" >> $mergeFile 
+echo "sleep 10" >> $mergeFile
+echo "done" >> $mergeFile
+echo "if [ \$1 == 0 ] ; then" >> $mergeFile
+echo "    clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_reco\\\"\)" >> $mergeFile
+echo "fi" >> $mergeFile
+echo "clas12root ${mergecode}\(\\\"${outputdir}\\\",\\\"${rootname}\\\",\\\"tree_postprocess\\\"\)" >> $mergeFile
 if [ "$doAsymmetry" == true ] ; then
     echo "clas12root ${asymmetrycode}\(\\\"${outputdir}\\\",\\\"merged_${rootname}\\\",\\\"\\\",1\)" >> $mergeFile
     echo "${fitFile} ${outputdir}/merged_${rootname}.root.txt" >> $mergeFile
