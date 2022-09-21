@@ -87,10 +87,10 @@ volatiledir="/volatile/clas12/users/$USERNAME/clas12analysis.sidis.data/$rungrou
 farmoutdir="/farm_out/$USERNAME/clas12analysis.sidis.data/$rungroup/$ana/$dir"
 existingruns=0
 if [ -d "${volatiledir}/" ]; then
-    if [ -z " ${booleans[\"o\"]}" ] && [ -z " ${booleans[\"a\"]}" ]; then
+    if [ ! -z ${booleans["o"]} ] && [ ! -z ${booleans["a"]} ]; then
 	echo "You cannot use the -o (overwrite) and -a (append) flag simultaneously...Aborting..."
 	exit 2
-    elif [ -z ${booleans["o"]} ]; then
+    elif [ ! -z ${booleans["o"]} ]; then
 	echo "Are you sure you would like to overwrite $volatiledir (Y/N):"
 	read overwrite
 	if [ $overwrite == "Y" ]; then
@@ -104,7 +104,7 @@ if [ -d "${volatiledir}/" ]; then
 	    echo "ERROR: Please answer Y or N...Aborting..."
 	    exit 2
 	fi
-    elif [ -z ${booleans["a"]} ]; then
+    elif [ ! -z ${booleans["a"]} ]; then
 	echo "Are you sure you would like to append to $volatiledir (Y/N):"
 	read append
 	if [ $append == "Y" ]; then
@@ -215,19 +215,19 @@ do
 	fi
     else
 	if [ $rungroup == "rga" ]; then
-	    read runNumber <<< $(echo $hipo | grep -oP '(?<=${ana}_00).*(?=.hipo)')
+	    read runNumber <<< $(basename $hipo | grep -oP '(?<='$ana'_00).*(?=.hipo)')
 	    if echo $hipo | grep -w -q "spring2019"; then
 		beamE=10.2
 	    else
 		beamE=10.6
 	    fi
 	elif [ $rungroup == "rgc" ]; then
-	    read runNumber <<< $(echo $hipo | grep -oP '(?<=${ana}_0).*(?=.hipo)')
+	    runNumber=$(basename $hipo | grep -oP '(?<='$ana'_0).*(?=.hipo)')
 	    beamE=10.5473
 	fi
     fi
     
-    if [ -z "${flags[\"runmin\"]}" ] && [ -z "${flags[\"runmax\"]}" ]; then
+    if [ ! -z ${flags["runmin"]} ] && [ ! -z ${flags["runmax"]} ]; then
 	if [[ "$runNumber" -gt ${flags["runmax"]} || "$runNumber" -lt ${flags["runmin"]} ]]; then
             continue
         fi
@@ -243,18 +243,95 @@ do
     touch $processFile
     chmod +x $processFile
     cat >> $processFile <<EOF
-    #!/bin/tcsh
-    source /group/clas12/packages/setup.csh
-    module load clas12/pro
-    cd ${outputSlurmDir}
-    clas12root ${processcode}\(\"${hipo}\",\"${volatiledir}/run${runNumber}.root\",${beamE}\)
+
+#!/bin/tcsh
+source /group/clas12/packages/setup.csh
+module load clas12/pro
+cd ${outputSlurmDir}
+clas12root ${processcode}\(\"${hipo}\",\"${volatiledir}/run${runNumber}.root\",${beamE}\)
 EOF
-    
+
+    slurmprocessFile="${shellSlurmDir}/run${runNumber}.slurm"
+    touch $slurmprocessFile
+    cat >> $slurmprocesFile <<EOF
+#!/bin/bash
+#SBATCH --account=clas12
+#SBATCH --partition=production
+#SBATCH --mem-per-cpu=${memPerCPU}
+#SBATCH --job-name=runprocess_$rungroup_$ana_$dir
+#SBATCH --cpus-per-task=${nCPUs}
+#SBATCH --time=24:00:00
+#SBATCH --output=${outputSlurmDir}/%x-%a.out
+#SBATCH --error=${outputSlurmDir}/%x-%a.err
+$processFile
+EOF
+
     filenum=$((filenum+1))
-    if [ -z "${flags[\"maxJobs\"]}" ]; then
+    if [ ! -z ${flags["maxJobs"]} ]; then
 	if [ $filenum -gt "${flags[\"maxJobs\"]}" ]; then
 	    echo "Maximum jobs reached...Skipping rest"
 	    break
 	fi
     fi
 done
+
+organizeFile="${shellSlurmDir}/organize.sh"
+organizeSlurm="${shellSlurmDir}/organizeSlurm.slurm"
+touch $organizeFile
+chmod +x $organizeFile
+
+
+# If rgc, run the organize_rgc.py script
+# If rga, run the merge files script
+needsOrganize=0
+if [ [ $rungroup == "rgc" ] && [ $ana != "MC" ] ]; then
+    needsOrganize=1
+    cat >> $organizeFile <<EOF
+#!/bin/bash
+cd \$outputSlurmDir
+organizeOutFile=\"organize.txt\"
+touch \$organizeOutFile
+jobsLeft=999
+while [ \$jobsLeft -ne 0 ]
+do
+    read jobsLeft <<< \$(echo "\$(squeue -u $USERNAME --format="%.18i %.9P %.30j %.8u %.8T %.10M %.9l %.6D %R")" | grep runprocess_${rungroup}_${ana}_${dir} | awk 'END{print NR}')
+    echo \$jobsLeft >> \$organizeOutFile
+sleep 30
+done 
+/apps/python/2.7.18/bin/python ${CLAS12Analysisdir}/macros/organize_rgc.py $volatiledir/ $dir
+EOF
+elif [ $rungroup == "rga" ]; then
+    needsOrganize=1
+    cat >> $organizeFile <<EOF
+#!/bin/bash
+cd \$outputSlurmDir
+organizeOutFile=\"merge.txt\"
+touch \$organizeOutFile
+jobsLeft=999
+while [ \$jobsLeft -ne 0 ]
+do
+    read jobsLeft <<< \$(echo "\$(squeue -u $USERNAME --format="%.18i %.9P %.30j %.8u %.8T %.10M %.9l %.6D %R")" | grep runprocess_$rungroup_$ana_$dir | awk 'END{print NR}')
+    echo \$jobsLeft >> \$organizeOutFile
+sleep 30
+done 
+if [ \$1 == 0 ]; then
+    clas12root ${CLAS12Analysisdir}/macros/mergeTrees.C\(\"${volatiledir}\",\"${dir}\",\"tree_reco\"\)
+fi
+clas12root ${CLAS12Analysisdir}/macros/mergeTrees.C\(\"${volatiledir}\",\"${dir}\",\"tree_postprocess\"\)
+EOF
+fi
+
+if [ $needsOrganize == 1 ]; then
+    touch $organizeSlurm
+    cat >> $organizeSlurm <<EOF
+#!/bin/bash
+#SBATCH --account=clas12
+#SBATCH --partition=production
+#SBATCH --mem-per-cpu=${memPerCPU}
+#SBATCH --job-name=runprocess_$rungroup_$ana_$dir
+#SBATCH --cpus-per-task=${nCPUs}
+#SBATCH --time=24:00:00
+#SBATCH --output=${outputSlurmDir}/%x-%a.out
+#SBATCH --error=${outputSlurmDir}/%x-%a.err
+$processFile
+EOF
