@@ -264,7 +264,6 @@ do
     touch $processFile
     chmod +x $processFile
     cat >> $processFile <<EOF
-
 #!/bin/tcsh
 source /group/clas12/packages/setup.csh
 module load clas12/pro
@@ -282,8 +281,8 @@ EOF
 #SBATCH --job-name=runprocess_${rungroup}_${ana}_${dir}
 #SBATCH --cpus-per-task=${nCPUs}
 #SBATCH --time=24:00:00
-#SBATCH --output=${outputSlurmDir}/%x-%a.out
-#SBATCH --error=${outputSlurmDir}/%x-%a.err
+#SBATCH --output=${outputSlurmDir}/run${runNumber}.out
+#SBATCH --error=${outputSlurmDir}/run${runNumber}.err
 $processFile
 EOF
 
@@ -312,8 +311,8 @@ if [ $rungroup == "rgc" ] && [ $ana != "MC" ]; then
     needsOrganize=1
     cat >> $organizeFile <<EOF
 #!/bin/bash
-cd \$outputSlurmDir
-organizeOutFile=\"organize.txt\"
+cd $outputSlurmDir
+organizeOutFile="organize.txt"
 touch \$organizeOutFile
 jobsLeft=999
 while [ \$jobsLeft -ne 0 ]
@@ -330,7 +329,7 @@ elif [ $rungroup == "rga" ]; then
     needsOrganize=1
     cat >> $organizeFile <<EOF
 #!/bin/bash
-cd \$outputSlurmDir
+cd $outputSlurmDir
 organizeOutFile=\"merge.txt\"
 touch \$organizeOutFile
 jobsLeft=999
@@ -450,8 +449,8 @@ if [ $needsOrganize == 1 ]; then
 #SBATCH --job-name=merge_$rungroup_$ana_$dir
 #SBATCH --cpus-per-task=${nCPUs}
 #SBATCH --time=24:00:00
-#SBATCH --output=${outputSlurmDir}/merge-%x-%a.out
-#SBATCH --error=${outputSlurmDir}/merge-%x-%a.err
+#SBATCH --output=${outputSlurmDir}/merge.out
+#SBATCH --error=${outputSlurmDir}/merge.err
 $organizeFile
 EOF
 fi    
@@ -462,8 +461,8 @@ echo "DONE WITH FILE CREATION"
 echo $hl
 echo $hl
 echo "Submitting processing slurm jobs"
-ls "${shellSlurmDir}/run*.slurm" | xargs sbatch -q
-n1=$(ls "${shellSlurmDir}/run*.slurm" | wc -l)
+ls $shellSlurmDir/run*.slurm | xargs -l bash -c 'sbatch -Q $0'
+n1=$(ls $shellSlurmDir/run*.slurm | wc -l)
 echo "Submitted ${n1} processing slurm jobs"
 
 if [ $needsOrganize == 1 ]; then

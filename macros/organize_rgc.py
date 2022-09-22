@@ -48,7 +48,7 @@ targetArr = []
 
 for file in files:
     # Get run number from .root file name
-    start = len(rootname)+1
+    start = len("run")
     end = file.index('.')
     runNumber = int(file[start:end])
     runNumberArr.append(int(runNumber))    
@@ -69,7 +69,7 @@ for file in files:
     df.writerow(vallist)
     print("Run",runNumber,"added to csv")
 
-targs = ['ND3','NH3','C']
+'''targs = ['ND3','NH3','C']
 hwps = ['hwp-in','hwp-out']
 for _t in targs:
     for _h in hwps:
@@ -116,7 +116,7 @@ for _file,_target,_hwp,_runNumber in zip(files,targetArr,HWPArr,runNumberArr):
         print("ERROR: File",current,"does not exist...skipping...")
 
 
-
+'''
 
 print("\n \n DONE \n \n")
 
