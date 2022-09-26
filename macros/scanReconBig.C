@@ -3,12 +3,13 @@
 // To execute properly, simply perform ./run.sh
 
 int scanReconBig(int run = 16904,
-	      std::string prefix = "/farm_out/gmat/rgc-scaler-run"){
+		 std::string prefix = "/farm_out/gmat/rgc-scaler-run",
+		 std::string cook="TBT"){
   // Verbosity
   int verbosity = 0;
   
   // Filenames
-  std::string fileprefix_recon = Form("/volatile/clas12/rg-c/production/ana_data/dst/recon/0%d/rec_clas_0%d.evio.",run,run);
+  std::string fileprefix_recon = Form("/volatile/clas12/rg-c/production/ana_data/%s/dst/recon/0%d/rec_clas_0%d.evio.",cook.c_str(),run,run);
   std::string outHELScaler = Form("%s-%d-HELScaler-all.csv",prefix.c_str(),run);
   std::string outRUNScaler = Form("%s-%d-RUNScaler-all.csv",prefix.c_str(),run);
   
@@ -38,8 +39,14 @@ int scanReconBig(int run = 16904,
   long RAW_fcupgated_500us = 0.0;
   long RAW_clockgated_33ms = 0.0;
   long RAW_clockgated_500us = 0.0;
-  long RAW_clockgated = 0.0;
-  long RAW_fcupgated = 0.0;
+  long RAW_fcup_33ms = 0.0;
+  long RAW_fcup_500us = 0.0;
+  long RAW_clock_33ms = 0.0;
+  long RAW_clock_500us = 0.0;
+  double CALC_fcupgated_33ms = 0.0;
+  double CALC_fcup_33ms = 0.0;
+  double CALC_fcupgated_500us = 0.0;
+  double CALC_fcup_500us = 0.0;
   int  RAW_channel = 0;
   int  RAW_slot = 0;
 
@@ -47,7 +54,7 @@ int scanReconBig(int run = 16904,
   ofstream outFile_HEL(outHELScaler,fstream::trunc);
   ofstream outFile_RUN(outRUNScaler,fstream::trunc);
   // Headers
-  outFile_HEL << "run,fileidx,entry,fcupgated,fcup,slmgated,slm,clockgated,clock,helicity,helicityRaw\n";
+  outFile_HEL << "run,fileidx,entry,fcupgated,fcup,slmgated,slm,clockgated,clock,helicity,helicityRaw,fcupgated_33ms,clockgated_33ms,fcupgated_500us,clockgated_500us,fcup_33ms,clock_33ms,fcup_500us,clock_500us\n";
   outFile_RUN << "run,fileidx,entry,fcupgated,fcup,livetime\n";
 
 
@@ -114,10 +121,15 @@ int scanReconBig(int run = 16904,
       RAW_fcupgated_500us = 0.0;
       RAW_clockgated_33ms = 0.0;
       RAW_clockgated_500us = 0.0;
-      RAW_clockgated = 0.0;
-      RAW_fcupgated = 0.0;
-  
-
+      RAW_fcup_33ms = 0.0;
+      RAW_fcup_500us = 0.0;
+      RAW_clock_33ms = 0.0;
+      RAW_clock_500us = 0.0;
+      CALC_fcupgated_33ms = 0.0;
+      CALC_fcup_33ms = 0.0;
+      CALC_fcupgated_500us = 0.0;
+      CALC_fcup_500us = 0.0;
+        
       for(int j = 0 ; j < RAW.getRows() ; j++){
         RAW_channel = RAW.getInt("channel",j);
         RAW_slot = (int)RAW.getByte("slot",j);
@@ -129,21 +141,52 @@ int scanReconBig(int run = 16904,
           RAW_fcupgated_500us = RAW.getLong("value",j);
         else if(RAW_channel==34 && RAW_slot==0)
           RAW_clockgated_500us = RAW.getLong("value",j);
+
+        else if(RAW_channel==0 && RAW_slot==1)
+          RAW_fcup_33ms = RAW.getLong("value",j);
+        else if(RAW_channel==2 && RAW_slot==1)
+          RAW_clock_33ms = RAW.getLong("value",j);
+        else if(RAW_channel==32 && RAW_slot==1)
+          RAW_fcup_500us = RAW.getLong("value",j);
+        else if(RAW_channel==34 && RAW_slot==1)
+          RAW_clock_500us = RAW.getLong("value",j);
+
       }
 
-      double result_33ms = (RAW_fcupgated_33ms - offset * RAW_clockgated_33ms * pow(10,-6)) * atten / slope;
-      double result_500us = (RAW_fcupgated_500us - offset * RAW_clockgated_500us * pow(10,-6)) * atten / slope;
-
-      if(result_33ms>result_500us && result_33ms < 2){
-        RAW_fcupgated = result_33ms;
-	RAW_clockgated = RAW_clockgated_33ms;
+      CALC_fcupgated_33ms = (RAW_fcupgated_33ms - offset * RAW_clockgated_33ms * pow(10,-6)) * atten / slope;
+      CALC_fcupgated_500us = (RAW_fcupgated_500us - offset * RAW_clockgated_500us * pow(10,-6)) * atten / slope;
+      
+      //if(CALC_fcupgated_33ms>CALC_fcupgated_500us && CALC_fcupgated_33ms < 2.0){
+      //  RAW_fcupgated = resultgated_33ms;
+      //  RAW_clockgated = RAW_clockgated_33ms;
+      //}
+      // SWAP 33ms and 500us time window
+      if(CALC_fcupgated_500us>CALC_fcupgated_33ms && CALC_fcupgated_500us < 2){
+        double tmp1 = CALC_fcupgated_500us;
+        double tmp2 = RAW_clockgated_500us;
+        CALC_fcupgated_500us = CALC_fcupgated_33ms;
+        CALC_fcupgated_33ms = tmp1;
+        RAW_clockgated_500us = RAW_clockgated_33ms;
+        RAW_clockgated_33ms = tmp2;
       }
-      else if(result_500us>result_33ms && result_500us < 2){
-        RAW_fcupgated = result_500us;
-	RAW_clockgated = RAW_clockgated_500us;
-      }
 
-      outFile_HEL << run << "," << idx_file << "," << entry_idx << "," << HEL_fcupgated << "," << HEL_fcup << "," << HEL_slmgated << "," << HEL_slm << "," << HEL_clockgated << "," << HEL_clock << "," << HEL_helicity << "," << HEL_helicityRaw << "," << RAW_fcupgated << "," << RAW_clockgated << "\n";
+      double CALC_fcup_33ms = (RAW_fcup_33ms - offset * RAW_clock_33ms * pow(10,-6)) * atten / slope;
+      double CALC_fcup_500us = (RAW_fcup_500us - offset * RAW_clock_500us * pow(10,-6)) * atten / slope;
+      
+      //if(result_33ms>result_500us && result_33ms < 2.0){
+      //  RAW_fcup = result_33ms;
+      //  RAW_clock = RAW_clock_33ms;
+      //}
+      if(CALC_fcup_500us>CALC_fcup_33ms && CALC_fcup_500us < 2){
+        double tmp1 = CALC_fcup_500us;
+        double tmp2 = RAW_clock_500us;
+        CALC_fcup_500us = CALC_fcup_33ms;
+        CALC_fcup_33ms = tmp1;
+        RAW_clock_500us = RAW_clock_33ms;
+        RAW_clock_33ms = tmp2;
+      }
+      
+      outFile_HEL << run << "," << idx_file << "," << entry_idx << "," << HEL_fcupgated << "," << HEL_fcup << "," << HEL_slmgated << "," << HEL_slm << "," << HEL_clockgated << "," << HEL_clock << "," << HEL_helicity << "," << HEL_helicityRaw << "," << CALC_fcupgated_33ms << "," << RAW_clockgated_33ms << "," << CALC_fcupgated_500us << "," << RAW_clockgated_500us << "," << CALC_fcup_33ms << "," << RAW_clock_33ms << "," << CALC_fcup_500us << "," << RAW_clock_500us << "\n";
 
       entry_idx++;
     }

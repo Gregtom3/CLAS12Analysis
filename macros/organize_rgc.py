@@ -1,6 +1,6 @@
 import sys
 import os
-
+import glob
 import rcdb
 from rcdb.provider import RCDBProvider
 from rcdb.model import ConditionType
@@ -38,6 +38,7 @@ add("isValid","is_valid_run_end")
 add("Tpol","target_polarization")
 add("HWP","half_wave_plate")
 add("Target","target")
+cols.append("CookType")
 
 df = csv.writer(open(filedir+'rcdb.csv','wb'), delimiter = ',')
 df.writerow(['Run']+cols)
@@ -65,10 +66,19 @@ for file in files:
             HWPArr.append(int(cnd_val))
         elif(cnd == "target"):
             targetArr.append(str(cnd_val))
+    # Which Cooking type was used
+    hipofiles = glob.glob('/volatile/clas12/rg-c/production/ana_data/*/dst/train/*/*{}.hipo'.format(runNumber))
+    if "/TBT/" in hipofiles[0]:
+        vallist=vallist+['TBT']
+    elif "/HBT/" in hipofiles[0]:
+        vallist=vallist+['HBT']
+    else:
+        vallist=vallist+['???']
+
     # Add list to dataframe
     df.writerow(vallist)
     print("Run",runNumber,"added to csv")
-
+    
 '''targs = ['ND3','NH3','C']
 hwps = ['hwp-in','hwp-out']
 for _t in targs:

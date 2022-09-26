@@ -3,12 +3,13 @@
 // To execute properly, simply perform ./run.sh
 
 int scanRecon(int run = 16767,
-	      std::string prefix = "/farm_out/gmat/rgc-scaler-run"){
+	      std::string prefix = "/farm_out/gmat/rgc-scaler-run",
+	      std::string cook="HBT"){
   // Verbosity
   int verbosity = 0;
   
   // Filenames
-  std::string fileprefix_recon = Form("/volatile/clas12/rg-c/production/ana_data/dst/recon/0%d/rec_clas_0%d.evio.",run,run);
+  std::string fileprefix_recon = Form("/volatile/clas12/rg-c/production/ana_data/%s/dst/recon/0%d/rec_clas_0%d.evio.",cook.c_str(),run,run);
   std::string outHELScaler = Form("%s-%d-HELScaler.csv",prefix.c_str(),run);
   std::string outRUNScaler = Form("%s-%d-RUNScaler.csv",prefix.c_str(),run);
 
