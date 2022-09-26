@@ -42,6 +42,13 @@ int SIDISKinematicsReco::Init()
   _map_event.insert( make_pair( "polarization" , dummy ) );
   _map_event.insert( make_pair( "evnum" , dummy ) );
   _map_event.insert( make_pair( "run" , dummy ) );
+  _map_event.insert( make_pair( "truex" , dummy ) );
+  _map_event.insert( make_pair( "truey" , dummy ) );
+  _map_event.insert( make_pair( "trueQ2" , dummy ) );
+  _map_event.insert( make_pair( "trueW" , dummy ) );
+  _map_event.insert( make_pair( "truenu" , dummy ) );
+  _map_event.insert( make_pair( "trueevnum" , dummy ) );
+  _map_event.insert( make_pair( "truerun" , dummy ) );
   _map_event.insert( make_pair( "Mx"  , dummy ) );
 
   // Create particle map 
@@ -622,14 +629,14 @@ int SIDISKinematicsReco::AddTruthEventInfo(const std::unique_ptr<clas12::clas12r
       float s  = protonMass*protonMass+electronMass*electronMass+2*protonMass*_electron_beam_energy;
       float x = _kin.x(Q2,s,y);
 
-      (_map_event.find("x"))->second = x;
-      (_map_event.find("Q2"))->second = Q2;
-      (_map_event.find("y"))->second = y;
-      (_map_event.find("nu"))->second = nu;
-      (_map_event.find("W"))->second = W;
+      (_map_event.find("truex"))->second = x;
+      (_map_event.find("trueQ2"))->second = Q2;
+      (_map_event.find("truey"))->second = y;
+      (_map_event.find("truenu"))->second = nu;
+      (_map_event.find("trueW"))->second = W;
       (_map_event.find("polarization"))->second = 0;
-      (_map_event.find("evnum"))->second = _evnum;
-      (_map_event.find("run"))->second = _runNumber;
+      (_map_event.find("trueevnum"))->second = _evnum;
+      (_map_event.find("truerun"))->second = _runNumber;
       break;
     }
   }

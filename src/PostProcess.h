@@ -78,14 +78,19 @@ class PostProcess{
   Float_t         Mx=0;
   Float_t         Q2=0;
   Float_t         W=0;
+  Float_t         trueQ2=0;
+  Float_t         trueW=0;
   Float_t         evnum=0;
   Float_t         helicity=0;
   Float_t         nParticles=0;
   Float_t         nu=0;
+  Float_t         truenu=0;
   Float_t         polarization=0;
   Float_t         run=0;
   Float_t         x=0;
   Float_t         y=0;
+  Float_t         truex=0;
+  Float_t         truey=0;
   vector<float>   *evtgen_parentPID=0;
   vector<float>   *evtgen_parentID=0;
   vector<float>   *evtgen_status=0;
@@ -168,15 +173,20 @@ class PostProcess{
   TBranch        *b_event;   //!
   TBranch        *b_Mx;   //!
   TBranch        *b_Q2;   //!
+  TBranch        *b_trueQ2;   //!
   TBranch        *b_W;   //!
+  TBranch        *b_trueW;   //!
   TBranch        *b_evnum;   //!
   TBranch        *b_helicity;   //!
   TBranch        *b_nParticles;   //!
   TBranch        *b_nu;   //!
+  TBranch        *b_truenu;   //!
   TBranch        *b_polarization;   //!
   TBranch        *b_run;   //!
   TBranch        *b_x;   //!
+  TBranch        *b_truex;   //!
   TBranch        *b_y;   //!
+  TBranch        *b_truey;   //!
   TBranch        *b_evtgen_parentPID;   //!
   TBranch        *b_evtgen_parentID;   //!
   TBranch        *b_evtgen_status;   //!
