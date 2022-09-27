@@ -144,7 +144,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   double phi_h;
   double th;
   double zpair = 0.0;
-
+  double ptpair = 0.0;
 
   double truephi_R0;
   double truephi_R1;
@@ -153,8 +153,9 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   double trueMgg;
   double trueMdihadron;
   double truezpair = 0.0;
+  double trueptpair = 0.0;
   int flag;
-  
+  int mcconnect;
   
   double px1;
   double py1;
@@ -333,6 +334,8 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   _tree_postprocess->Branch("truephi_h",&truephi_h);
   _tree_postprocess->Branch("th",&th);
   _tree_postprocess->Branch("trueth",&trueth);
+  _tree_postprocess->Branch("pt",&ptpair);
+  _tree_postprocess->Branch("truept",&trueptpair);
   _tree_postprocess->Branch("Q2",&Q2);
   _tree_postprocess->Branch("W",&W);
   _tree_postprocess->Branch("nu",&nu);
@@ -349,6 +352,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
 
   _tree_postprocess->Branch("polarization",&polarization);
   _tree_postprocess->Branch("flag",&flag); 
+  _tree_postprocess->Branch("mcconnect",&mcconnect); 
 
   _tree_postprocess->Branch("px1",&px1);
   _tree_postprocess->Branch("py1",&py1);
@@ -558,14 +562,17 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
     phi_R1=0.0;
     th=0.0;
     zpair=0.0;
+    ptpair=0.0;
 
     truephi_h=0.0;
     truephi_R0=0.0;
     truephi_R1=0.0;
     trueth=0.0;
     truezpair=0.0;
+    trueptpair=0.0;
 
     flag = 0;
+    mcconnect=0;
 
     px1=0;
     py1=0;
@@ -768,7 +775,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
 
 		// Create pi0
 		pi0=gamma1+gamma2;
-		truepi=truegamma1+truegamma2;
+		truepi0 =truegamma1+truegamma2;
 
 		vz_pi0=(vz->at(i)+vz->at(j))/2.0;
 		zpi0 = (init_target*pi0)/(init_target*q);
@@ -783,7 +790,18 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
 
 		zpair = zpi+zpi0;
 		truezpair = truezpi + truezpi0;
+		
+		ptpair = Kinematics::Pt_COM(q,dihadron,init_target);
+		trueptpair = Kinematics::Pt_COM(trueq,truedihadron,init_target);
 
+
+		// If any of the eventgen energies are less than 0 (typically -999) then we claim that the event does not have a perfect monte carlo match, i.e., at least one of the particles in the dihadron event cannot be matched with a particle in the MC::Lund bank
+		if(evtgen_E->at(i) < 0 || evtgen_E->at(j) < 0 || evtgen_E->at(k) < 0 || trueelectron.E()<0 )
+		  mcconnect=-1;
+		else
+		  mcconnect=1;
+
+		// Additional cuts
 		if(angle1>8 && angle2>8 &&
 		   xF_pi>0 && xF_pi0>0 &&
 		   zpair<0.95 &&

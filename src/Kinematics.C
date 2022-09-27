@@ -98,6 +98,16 @@ double Kinematics::xF(TLorentzVector q, TLorentzVector p, TLorentzVector init_ta
   return 2*(qq.Vect().Dot(pp.Vect()))/(qq.Vect().Mag()*W);
 }
 
+double Kinematics::Pt_COM(TLorentzVector q, TLorentzVector dihadron, TLorentzVector init_target){
+  TLorentzVector com = q+init_target;
+  TVector3 comBOOST = com.BoostVector();
+  TLorentzVector qq = q;
+  TLorentzVector dd = dihadron;
+  qq.Boost(-comBOOST);
+  dd.Boost(-comBOOST);
+  return dd.Pt(qq.Vect());
+}
+
 double Kinematics::phi_R(TLorentzVector Q, TLorentzVector L, TLorentzVector p1, TLorentzVector p2, int method){
   TLorentzVector ph = p1 + p2;
   TLorentzVector r = 0.5*(p1-p2);
