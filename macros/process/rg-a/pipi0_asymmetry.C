@@ -80,7 +80,7 @@ void binner(const char * inputFile){
   std::vector<float> xbins = {0.1,0.13,0.16,0.19,0.235,0.3,0.5};
   std::vector<float> zbins = {0.35,0.43,0.49,0.55,0.62,0.7,0.83};
   std::vector<float> Mhbins;
-  for(float mh = 0.3; mh < 1.3; mh+=1.0/7.0)
+  for(float mh = 0.3; mh <= 1.3; mh+=1.0/7.0)
     Mhbins.push_back(mh);
 
   //------------------------------
@@ -121,7 +121,7 @@ void fitter(const char *inputDir, const char *rootName, const char *treeName){
   mdiphoton_sbnd.binnedFit1D = new TF1("f_diphoton_sig","gaus(0)+pol4(3)",0.08,0.4);
   mdiphoton_sbnd.binnedFit1D->SetParameters(1,0.13,0.01,1,1,1,1,1);
   mdiphoton_sbnd.binnedFit1D->SetParLimits(1,0.128,0.135);
-  mdiphoton_sbnd.binnedFit1D->SetParLimits(2,0.001,0.2);
+  mdiphoton_sbnd.binnedFit1D->SetParLimits(2,0.001,0.06);
   // Second, create 1D histogram for Mdiphoton binning
   histObject hist_Mgg_sbnd;
   hist_Mgg_sbnd.paramX = "Mdiphoton";
