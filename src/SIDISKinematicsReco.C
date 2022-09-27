@@ -134,6 +134,7 @@ int SIDISKinematicsReco::Init()
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_status , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_parentID , vdummy) );
   _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_parentPID , vdummy) );
+  _map_particle.insert( make_pair( SIDISParticle::PROPERTY::evtgen_part_parentparentPID , vdummy) );
 
   // Create Monte Carlo TTree
   // -------------------------
@@ -329,6 +330,10 @@ int SIDISKinematicsReco::process_events()
 	/* Skip event if it fails cuts */
 	if(AddRecoEventInfo( _c12 )!=0)
 	  continue;
+	/* If we do MC, also get true event vars */
+	if(_settings._doMC)
+	  AddTruthEventInfo( _c12 );
+
 	/* Write particle information to Tree */
        	WriteParticlesToTree( recoparticleMap );
 	/* fill reco tree */
@@ -364,24 +369,20 @@ int SIDISKinematicsReco::CollectParticlesFromTruth(const std::unique_ptr<clas12:
 {
   // Get pointer to Monte Carlo particles in event
   auto mcparticles=_c12->mcparts();
-
   // Loop over all particles
   for(int idx = 0 ; idx < mcparticles->getRows() ; idx++){
-    
-    // Get particle in MC::Lund
-    mcparticles->setEntry(idx);
-    if(mcparticles->getType()!=1) // Reject non-final state
+    if(mcparticles->getType(idx)!=1) // Reject non-final state
       {continue;} 
     
     // Create new SIDISParticle
     SIDISParticlev1 *sp = new SIDISParticlev1();
     sp->set_candidate_id( particleMap.size() );
 
-    int pid = mcparticles->getPid();
-    float px = mcparticles->getPx();
-    float py = mcparticles->getPy();
-    float pz = mcparticles->getPz();
-    float m = mcparticles->getMass();
+    int pid = mcparticles->getPid(idx);
+    float px = mcparticles->getPx(idx);
+    float py = mcparticles->getPy(idx);
+    float pz = mcparticles->getPz(idx);
+    float m = mcparticles->getMass(idx);
     
     float pt = _kin.Pt(px,py);
     float p  = _kin.P(px,py,pz);
@@ -391,9 +392,15 @@ int SIDISKinematicsReco::CollectParticlesFromTruth(const std::unique_ptr<clas12:
     float eta = _kin.eta(theta);
     float phi   = _kin.phi(px,py);
 
-    float vx = mcparticles->getVx();
-    float vy = mcparticles->getVy();
-    float vz = mcparticles->getVz();
+    float vx = mcparticles->getVx(idx);
+    float vy = mcparticles->getVy(idx);
+    float vz = mcparticles->getVz(idx);
+
+    int parentID = mcparticles->getParent(idx)-1;
+    int parentparentID = mcparticles->getParent(parentID)-1;
+    
+    int parentPID = mcparticles->getPid(parentID);
+    int parentparentPID = mcparticles->getPid(parentparentID);
     //    float vt = mcparticles->getVt();
 
     sp->set_property( SIDISParticle::evtgen_part_pid, pid);
@@ -414,9 +421,10 @@ int SIDISKinematicsReco::CollectParticlesFromTruth(const std::unique_ptr<clas12:
     sp->set_property( SIDISParticle::evtgen_part_beta,   (float)-999);
     sp->set_property( SIDISParticle::evtgen_part_chi2,   (float)-999);
     sp->set_property( SIDISParticle::evtgen_part_status,   (int)-999);
-    sp->set_property( SIDISParticle::evtgen_part_ID,   (int)mcparticles->getIndex());
-    sp->set_property( SIDISParticle::evtgen_part_parentID,  (int)mcparticles->getParent());
-    sp->set_property( SIDISParticle::evtgen_part_parentPID, (int)mcparticles->getPid(mcparticles->getParent()-1));
+    sp->set_property( SIDISParticle::evtgen_part_ID,   idx);
+    sp->set_property( SIDISParticle::evtgen_part_parentID,  (int)parentID);
+    sp->set_property( SIDISParticle::evtgen_part_parentPID, (int)parentPID);
+    sp->set_property( SIDISParticle::evtgen_part_parentparentPID, (int)parentparentPID);
     // Add SIDISParticle to the collection
     particleMap.insert ( make_pair( sp->get_candidate_id() , sp) );
   }

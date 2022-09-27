@@ -117,7 +117,8 @@ class SIDISParticle
     evtgen_part_status = -53,
     evtgen_part_ID   = -54,
     evtgen_part_parentID = -55,
-    evtgen_part_parentPID = -56
+    evtgen_part_parentPID = -56,
+    evtgen_part_parentparentPID = -57
   };
 
   enum PROPERTY_TYPE

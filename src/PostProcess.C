@@ -22,6 +22,7 @@ int PostProcess::Init(TTree * tree_Reco, double eBeam)
   _tree_Reco->SetBranchAddress("y", &y, &b_y);
   _tree_Reco->SetBranchAddress("truey", &truey, &b_truey);
   _tree_Reco->SetBranchAddress("evtgen_parentPID", &evtgen_parentPID, &b_evtgen_parentPID);
+  _tree_Reco->SetBranchAddress("evtgen_parentparentPID", &evtgen_parentparentPID, &b_evtgen_parentparentPID);
   _tree_Reco->SetBranchAddress("evtgen_parentID", &evtgen_parentID, &b_evtgen_parentID);
   _tree_Reco->SetBranchAddress("evtgen_status", &evtgen_status, &b_evtgen_status);
   _tree_Reco->SetBranchAddress("evtgen_chi2", &evtgen_chi2, &b_evtgen_chi2);
@@ -167,6 +168,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   double vz1;
   double status1;
   double parentPID1;
+  double parentparentPID1;
   double PID1;
   double traj_sector1;
   double traj_path1_1;
@@ -218,6 +220,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   double vz2;
   double status2;
   double parentPID2;
+  double parentparentPID2;
   double PID2;
   double traj_sector2;
   double traj_path1_2;
@@ -269,6 +272,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   double vzpi;
   double statuspi;
   double parentPIDpi;
+  double parentparentPIDpi;
   double PIDpi;
   double traj_sectorpi;
   double traj_path1_pi;
@@ -359,6 +363,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   _tree_postprocess->Branch("status1",&status1);
   _tree_postprocess->Branch("PID1",&PID1);
   _tree_postprocess->Branch("parentPID1",&parentPID1);
+  _tree_postprocess->Branch("parentparentPID1",&parentparentPID1);
   _tree_postprocess->Branch("traj_sector1",&traj_sector1);
   _tree_postprocess->Branch("traj_path1_1",&traj_path1_1);
   _tree_postprocess->Branch("traj_path2_1",&traj_path2_1);
@@ -410,6 +415,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   _tree_postprocess->Branch("status2",&status2);
   _tree_postprocess->Branch("PID2",&PID2);
   _tree_postprocess->Branch("parentPID2",&parentPID2);
+  _tree_postprocess->Branch("parentparentPID2",&parentparentPID2);
   _tree_postprocess->Branch("traj_sector2",&traj_sector2);
   _tree_postprocess->Branch("traj_path1_2",&traj_path1_2);
   _tree_postprocess->Branch("traj_path2_2",&traj_path2_2);
@@ -461,6 +467,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   _tree_postprocess->Branch("statuspi",&statuspi);
   _tree_postprocess->Branch("PIDpi",&PIDpi);
   _tree_postprocess->Branch("parentPIDpi",&parentPIDpi);
+  _tree_postprocess->Branch("parentparentPIDpi",&parentparentPIDpi);
   _tree_postprocess->Branch("traj_sectorpi",&traj_sectorpi);
   _tree_postprocess->Branch("traj_path1_pi",&traj_path1_pi);
   _tree_postprocess->Branch("traj_path2_pi",&traj_path2_pi);
@@ -573,6 +580,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
     status1=0;
     PID1=0;
     parentPID1=0;
+    parentparentPID1=0;
     traj_sector1=0;
     traj_path1_1=0;
     traj_path2_1=0;
@@ -624,6 +632,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
     status2=0;
     PID2=0;
     parentPID2=0;
+    parentparentPID2=0;
     traj_sector2=0;
     traj_path1_2=0;
     traj_path2_2=0;
@@ -675,6 +684,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
     statuspi=0;
     PIDpi=0;
     parentPIDpi=0;
+    parentparentPIDpi=0;
     traj_sectorpi=0;
     traj_path1_pi=0;
     traj_path2_pi=0;
@@ -818,6 +828,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
 		  vz1=vz->at(i);
 		  status1=status->at(i);
 		  parentPID1=evtgen_parentPID->at(i);
+		  parentparentPID1=evtgen_parentparentPID->at(i);
 		  PID1=evtgen_pid->at(i);
 		  traj_sector1=traj_sector->at(i);
 		  traj_path1_1=traj_path1->at(i);
@@ -869,6 +880,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
 		  vz2=vz->at(j);
 		  status2=status->at(j);
 		  parentPID2=evtgen_parentPID->at(j);
+		  parentparentPID2=evtgen_parentparentPID->at(j);
 		  PID2=evtgen_pid->at(j);
 		  traj_sector2=traj_sector->at(j);
 		  traj_path1_2=traj_path1->at(j);
@@ -920,6 +932,7 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
 		  vzpi=vz->at(k);
 		  statuspi=status->at(k);
 		  parentPIDpi=evtgen_parentPID->at(k);
+		  parentparentPIDpi=evtgen_parentparentPID->at(k);
 		  PIDpi=evtgen_pid->at(k);
 		  traj_sectorpi=traj_sector->at(k);
 		  traj_path1_pi=traj_path1->at(k);

@@ -92,6 +92,7 @@ class PostProcess{
   Float_t         truex=0;
   Float_t         truey=0;
   vector<float>   *evtgen_parentPID=0;
+  vector<float>   *evtgen_parentparentPID=0;
   vector<float>   *evtgen_parentID=0;
   vector<float>   *evtgen_status=0;
   vector<float>   *evtgen_chi2=0;
@@ -188,6 +189,7 @@ class PostProcess{
   TBranch        *b_y;   //!
   TBranch        *b_truey;   //!
   TBranch        *b_evtgen_parentPID;   //!
+  TBranch        *b_evtgen_parentparentPID;   //!
   TBranch        *b_evtgen_parentID;   //!
   TBranch        *b_evtgen_status;   //!
   TBranch        *b_evtgen_chi2;   //!
