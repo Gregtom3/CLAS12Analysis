@@ -176,8 +176,8 @@ runJobs="${shellSlurmDir}/runJobs.sh"
 echo $hl
 processcode=""
 if [ $rungroup == "rga" ]; then
-    macroList=${ls "${CLAS12Analysisdir}/macros/process/rg-a"}
-    echo "Please select one of the following processing scripts [${macroList}]"
+    macroList=$(ls "${CLAS12Analysisdir}/macros/process/rg-a")
+    echo "Please select one of the following processing scripts ${macroList}"
     read macro
     processcode="${CLAS12Analysisdir}/macros/process/rg-a/${macro}"
     if echo "$macro" | grep -w -q "$macroList"; then
@@ -227,13 +227,14 @@ filenum=0
 for hipo in $trainhipodir
 do
     beamE=0
-    runNumber=0
+    runNumber=99999
     if [ $ana == "MC" ]; then
-	if [ $rungroup == "rga"]; then
+	if [ $rungroup == "rga" ]; then
 	    beamE=10.604
 	else
 	    beamE=10.5473
 	fi
+	read runNumber <<< $(basename $hipo | grep -oP '(?<=_job_).*(?=.hipo)')
     else
 	if [ $rungroup == "rga" ]; then
 	    read runNumber <<< $(basename $hipo | grep -oP '(?<='$ana'_00).*(?=.hipo)')
@@ -253,12 +254,12 @@ do
             continue
         fi
     fi
-    
+   
     if echo $existingruns | grep -w -q "$runNumber"; then
-	echo "Skipping run $runNumber$ since it already exists in this to-be-appended directory ($volatiledir)"
+	echo "Skipping run $runNumber since it already exists in this to-be-appended directory ($volatiledir)"
 	continue
     fi
-    
+   
     echo "Creating processing script and slurm script for run ${runNumber}"
     processFile="${shellSlurmDir}/run${runNumber}.sh"
     touch $processFile
@@ -288,7 +289,7 @@ EOF
 
     filenum=$((filenum+1))
     if [ ! -z ${flags["maxJobs"]} ]; then
-	if [ $filenum -gt "${flags[\"maxJobs\"]}" ]; then
+	if [ $filenum -gt ${flags["maxJobs"]} ]; then
 	    echo $hl
 	    echo "Maximum jobs reached...Skipping rest"
 	    break
@@ -330,56 +331,56 @@ elif [ $rungroup == "rga" ]; then
     cat >> $organizeFile <<EOF
 #!/bin/bash
 cd $outputSlurmDir
-organizeOutFile=\"merge.txt\"
+organizeOutFile=merge.txt
 touch \$organizeOutFile
 jobsLeft=999
 while [ \$jobsLeft -ne 0 ]
 do
-    read jobsLeft <<< \$(echo "\$(squeue -u $USERNAME --format="%.18i %.9P %.30j %.8u %.8T %.10M %.9l %.6D %R")" | grep runprocess_$rungroup_$ana_$dir | awk 'END{print NR}')
+    read jobsLeft <<< \$(echo "\$(squeue -u $USERNAME --format="%.18i %.9P %.30j %.8u %.8T %.10M %.9l %.6D %R")" | grep runprocess_${rungroup}_${ana}_${dir} | awk 'END{print NR}')
     echo \$jobsLeft >> \$organizeOutFile
 sleep 30
 done 
-clas12root ${CLAS12Analysisdir}/macros/mergeTrees.C\(\"${volatiledir}\",\"${dir}\",\"tree_reco\"\)
-clas12root ${CLAS12Analysisdir}/macros/mergeTrees.C\(\"${volatiledir}\",\"${dir}\",\"tree_postprocess\"\)
+clas12root ${CLAS12Analysisdir}/macros/mergeTrees.C\(\"${volatiledir}\",\"run\",\"tree_reco\"\)
+clas12root ${CLAS12Analysisdir}/macros/mergeTrees.C\(\"${volatiledir}\",\"run\",\"tree_postprocess\"\)
 EOF
-    if [ $ana == "MC" ]; then
-	break
-    fi
-    echo $hl
-    echo "For RGA analysis, several analysis scripts can run after file merging...would you like any of these to be run (Y/N):"
-    read rgaAfter
-    rgaAfterMacro=0
-    if [ $rgaAfter == "Y" ]; then
-	macroList=${ls "${CLAS12Analysisdir}/macros/process/rg-a"}
-	echo "Please select one of the following analysis scripts [${macroList}]"
-	read macro
-	processcode="${CLAS12Analysisdir}/macros/process/rg-a/${macro}"
-	if echo "$macro" | grep -w -q "$macroList"; then
-	    echo "Using processing macro $macro"
-	    rgaAfterMacro=$macro
-	else
-	    echo "Analysis macro $processcode not found...Aborting..."
-	    exit 2
-	fi
-    elif [ $rgaAfter == "N" ]; then
-	echo "Not running further analysis"
-    else
-	echo "Invalid answer...Not running further analysis...Continuing..."
-    fi
-    
-    if [ $rgaAfterMacro != 0 ]; then
+    if [ !$ana == "MC" ]; then
+	
+	
 	echo $hl
-	echo "Creating postprocessing scripts and slurm scripts for RGA analysis"
-	fitFile="${shellSlurmDir}/fit.sh"
-	fitSlurm="${shellSlurmDir}/fitSlurm.slurm"
-	asymSlurm="${shellSlurmDir}/asym.slurm"
-	cat >> $organizeFile <<EOF
+	echo "For RGA analysis, several analysis scripts can run after file merging...would you like any of these to be run (Y/N):"
+	read rgaAfter
+	rgaAfterMacro=0
+	if [ $rgaAfter == "Y" ]; then
+	    macroList=${ls "${CLAS12Analysisdir}/macros/process/rg-a"}
+	    echo "Please select one of the following analysis scripts [${macroList}]"
+	    read macro
+	    processcode="${CLAS12Analysisdir}/macros/process/rg-a/${macro}"
+	    if echo "$macro" | grep -w -q "$macroList"; then
+		echo "Using processing macro $macro"
+		rgaAfterMacro=$macro
+	    else
+		echo "Analysis macro $processcode not found...Aborting..."
+		exit 2
+	    fi
+	elif [ $rgaAfter == "N" ]; then
+	    echo "Not running further analysis"
+	else
+	    echo "Invalid answer...Not running further analysis...Continuing..."
+	fi
+	
+	if [ $rgaAfterMacro != 0 ]; then
+	    echo $hl
+	    echo "Creating postprocessing scripts and slurm scripts for RGA analysis"
+	    fitFile="${shellSlurmDir}/fit.sh"
+	    fitSlurm="${shellSlurmDir}/fitSlurm.slurm"
+	    asymSlurm="${shellSlurmDir}/asym.slurm"
+	    cat >> $organizeFile <<EOF
 clas12root ${rgaAfterMacro}\(\"${volatiledir}\",\"merged_${dir}\",\"\",1\)
 ${fitFile} ${volatiledir}/merged_${dir}.root.txt
 EOF
-	touch $fitFile
-	chmod +x $fitFile
-	cat >> $fitFile <<EOF
+	    touch $fitFile
+	    chmod +x $fitFile
+	    cat >> $fitFile <<EOF
 #!/bin/bash
 j=0
 cd ${outputSlurmDir}
@@ -409,8 +410,8 @@ done
 sbatch $asymSlurm
 EOF
 
-	touch $fitSlurm
-	cat >> $fitSlurm <<EOF
+            touch $fitSlurm
+	    cat >> $fitSlurm <<EOF
 #!/bin/bash
 binname=\$1
 #SBATCH --account=clas12
@@ -422,8 +423,8 @@ binname=\$1
 clas12root ${rgaAfterMacro}\(\"${volatiledir}\",\"merged_${dir}\",\"\$binname\",2\)
 EOF
 	
-	touch $asymSlurm
-	cat >> $asymSlurm <<EOF
+	    touch $asymSlurm
+	    cat >> $asymSlurm <<EOF
 #!/bin/bash
 binname=\$1
 #SBATCH --account=clas12
@@ -434,6 +435,7 @@ binname=\$1
 #SBATCH --time=24:00:00
 clas12root ${rgaAfterMacro}\(\"${volatiledir}\",\"\",\"\",3\)
 EOF
+	fi
     fi
 fi
 
@@ -468,6 +470,12 @@ echo "Submitted ${n1} processing slurm jobs"
 if [ $needsOrganize == 1 ]; then
     echo "Submitting organzing job"
     sbatch $organizeSlurm
+fi
+
+if [ $rungroup == "rgc" ]; then
+    echo "----------------------------------------------------"
+    echo "Submitting RGC QA script"
+    ${CLAS12Analysisdir}/macros/run.sh
 fi
 
 echo "----------------------------------------------------"
