@@ -602,6 +602,7 @@ int SIDISKinematicsReco::ConnectTruth2Reco( type_map_part& particleMap,
 	  (it_reco->second)->set_property( SIDISParticle::part_parentPID , (it_mc->second)->get_property_int(SIDISParticle::evtgen_part_parentPID));
 	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_parentID , (it_mc->second)->get_property_int(SIDISParticle::evtgen_part_parentID));
 	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_parentPID , (it_mc->second)->get_property_int(SIDISParticle::evtgen_part_parentPID));	
+	  (it_reco->second)->set_property( SIDISParticle::evtgen_part_parentparentPID , (it_mc->second)->get_property_int(SIDISParticle::evtgen_part_parentparentPID));	
 	}
       }
   }
