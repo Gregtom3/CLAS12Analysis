@@ -28,6 +28,16 @@ int Merger::mergeTrees(){
     }
     // cd into merged output file
     _fOut->cd();
+    // Before we even consider Merging, check if the first .root file contains the TTree
+    TString firstFile = chain->GetListOfFiles()->At(0)->GetTitle();
+    TFile *ftemp = new TFile(firstFile,"READ");
+    if(!ftemp->Get(treeName.c_str()))
+      {
+	cout << "WARNING: TTree " << treeName.c_str() << " not found in file " << firstFile.Data() << "...Skipping..." << endl;
+	continue;
+      }
+    ftemp->Close();
+    _fOut->cd();
     // Merge TTree and store in output file
     chain->Merge(_fOut,0);
     // chain->Merge closes _fOut, so we must reopen it
