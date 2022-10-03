@@ -42,6 +42,7 @@ cols.append("CookType")
 
 df = csv.writer(open(filedir+'rcdb.csv','wb'), delimiter = ',')
 df.writerow(['Run']+cols)
+print(filedir+'rcdb.csv')
 
 runNumberArr = []
 HWPArr = []
@@ -68,7 +69,9 @@ for file in files:
             targetArr.append(str(cnd_val))
     # Which Cooking type was used
     hipofiles = glob.glob('/volatile/clas12/rg-c/production/ana_data/*/dst/train/*/*{}.hipo'.format(runNumber))
-    if "/TBT/" in hipofiles[0]:
+    if(hipofiles==[]):
+        vallist=vallist+['???']
+    elif "/TBT/" in hipofiles[0]:
         vallist=vallist+['TBT']
     elif "/HBT/" in hipofiles[0]:
         vallist=vallist+['HBT']
