@@ -2,6 +2,7 @@
 #define Merger_h
 /* STL Includes */
 #include <utility>
+#include <filesystem>
 /* ROOT Includes */
 #include <TSystem.h>
 #include <TFile.h>
@@ -14,17 +15,18 @@ using namespace std;
 
 class Merger{
  public:
-  Merger(const char*);
+  Merger(const char*,const char*);
   
   void addDirPath(const char*);
 
   void addTree(std::string);
   int mergeTrees();
- protected:
+
   TFile *_fOut;
   TTree *_tOut;
   std::vector<std::string> _dirpaths;
-  const char* _outFileName;
+  const char* _inputDir;
+  TString _outFileName;
   std::vector<std::string> _treeNames;
   const char* _outTreeName;
   

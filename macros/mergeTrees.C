@@ -34,9 +34,9 @@ R__LOAD_LIBRARY(libclas12ana.so)
 
 using namespace std;
 
-int mergeTrees(const char * inputDir="",
-	       const char * rootname="",
-	       const char * treeName=""
+int mergeTrees(const char * inputDir="/volatile/clas12/users/gmat/clas12analysis.sidis.data/rga/nSidis/testsmall",
+	       const char * rootname="run*binned",
+	       const char * treeName="EVERYTHING"
 ){
   //---------------
   // Load libraries
@@ -53,8 +53,7 @@ int mergeTrees(const char * inputDir="",
   //-------------------------
   // Create mergeTrees Object
   //-------------------------
-  Merger *merger=new Merger(outFileName);
-  merger->addTree(treeName);
+  Merger *merger=new Merger(inputDir,outFileName);
 
   //---------------------------
   // Add directories for TChain
@@ -62,7 +61,10 @@ int mergeTrees(const char * inputDir="",
   for(unsigned int i = 0 ; i < dirpaths.size() ; i++){
     merger->addDirPath(dirpaths[i].c_str());
   }
-
+  //---------------------------
+  // Add TTree for TChain
+  //---------------------------
+  merger->addTree(treeName);
   //---------------------------
   // Merge the TTrees
   //---------------------------

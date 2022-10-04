@@ -3,8 +3,11 @@
 
 using namespace std;
 
-Merger::Merger(const char* outFileName){
-  _outFileName = outFileName;
+Merger::Merger(const char* inputDir, const char* outFileName){
+  _inputDir = inputDir;
+  std::string temp = outFileName;
+  std::replace(temp.begin(),temp.end(),'*','_');
+  _outFileName=temp;
 }
 
 void Merger::addDirPath(const char* dirpath){
@@ -12,11 +15,27 @@ void Merger::addDirPath(const char* dirpath){
 }
 
 void Merger::addTree(std::string treeName){
-  _treeNames.push_back(treeName);
+  // If the user wanted every TTree, give it to them!
+  if(treeName=="EVERYTHING"){
+    TChain *chain = new TChain(treeName.c_str());
+    for(unsigned int i = 0; i < _dirpaths.size(); i++){
+      chain->Add(_dirpaths.at(i).c_str());
+    }
+    // Assuming all the files in the chain will have the same TTree, get TTrees in first file
+    TString firstFile = chain->GetListOfFiles()->At(0)->GetTitle();
+    TFile *ftemp = new TFile(firstFile,"READ");
+    for(int i = 0 ; i < ftemp->GetListOfKeys()->GetEntries(); i++){
+      _treeNames.push_back(ftemp->GetListOfKeys()->At(i)->GetName());
+    }
+    delete chain;
+  }
+  else
+    _treeNames.push_back(treeName);
 }
 
 int Merger::mergeTrees(){
   // For loop over all TTrees
+  int i = 1;
   for(std::string treeName : _treeNames){
     // Create TChain for linking TTree files
     TChain *chain = new TChain(treeName.c_str());
@@ -26,6 +45,7 @@ int Merger::mergeTrees(){
     for(unsigned int i = 0; i < _dirpaths.size(); i++){
       chain->Add(_dirpaths.at(i).c_str());
     }
+    cout << "Merging TTree (" << i++ << "/" << _treeNames.size() << ") "  << treeName << " with " << chain->GetEntries() << " entries" << endl;
     // cd into merged output file
     _fOut->cd();
     // Before we even consider Merging, check if the first .root file contains the TTree
