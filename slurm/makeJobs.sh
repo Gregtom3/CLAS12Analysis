@@ -25,7 +25,7 @@ if [ $# -lt 3 ]; then
 fi
 
 RUNGROUPS="rg-a rg-c rga rgc"
-ANAS="MC sidisdvcs gmn"
+ANAS="MC sidisdvcs gmn nSidis"
 nCPUs=4
 memPerCPU=4000
 
@@ -214,15 +214,29 @@ if [ $rungroup == "rga" ]; then
 	reconhipodir="/cache/clas12/rg-a/production/recon/*20*/torus*/pass1/v1/dst/recon/*/*.hipo"
     fi
 elif [ $rungroup == "rgc" ]; then
+    echo "HERE"
     if [ $ana == "MC" ]; then
-	trainhipodir="/work/cebaf24gev/sidis/reconstructed/*/hipo/*.hipo"
+	trainhipodir="/work/cebaf24gev/sidis/reconstructed/*proton*/hipo/*.hipo"
     else
-	trainhipodir="/volatile/clas12/rg-c/production/ana_data/*/dst/train/${ana}/*.hipo"
-	reconhipodir="/volatile/clas12/rg-c/production/ana_data/*/dst/recon/*/*.hipo"
+	echo "HERE" 
+	if [ ! -z ${flags["version"]} ]; then
+	    echo "HERE"
+	    v=${flags["version"]}
+	    if [ $v == "8.3.2" ]; then
+		echo $hl
+		echo "Analyzing v8.3.2"
+		echo $hl
+		trainhipodir="/volatile/clas12/rg-c/production/ana_data/*/8.3.2/dst/train/${ana}/*.hipo"
+		reconhipodir="/volatile/clas12/rg-c/production/ana_data/*/8.3.2/dst/recon/*/*.hipo"
+	    fi
+	else
+	    trainhipodir="/volatile/clas12/rg-c/production/ana_data/*/dst/train/${ana}/*.hipo"
+	    reconhipodir="/volatile/clas12/rg-c/production/ana_data/*/dst/recon/*/*.hipo"
+	fi
     fi
 fi
 echo $hl
-
+echo "HERE"
 filenum=0
 for hipo in $trainhipodir
 do
@@ -231,10 +245,11 @@ do
     if [ $ana == "MC" ]; then
 	if [ $rungroup == "rga" ]; then
 	    beamE=10.604
+	    read runNumber <<< $(basename $hipo | grep -oP '(?<=_job_).*(?=.hipo)') 
 	else
+	    read runNumber <<< $(basename $hipo | grep -oP '(?<=).*(?=.hipo)')
 	    beamE=10.5473
-	fi
-	read runNumber <<< $(basename $hipo | grep -oP '(?<=_job_).*(?=.hipo)')
+	fi	
     else
 	if [ $rungroup == "rga" ]; then
 	    read runNumber <<< $(basename $hipo | grep -oP '(?<='$ana'_00).*(?=.hipo)')
@@ -310,6 +325,10 @@ if [ $rungroup == "rgc" ] && [ $ana != "MC" ]; then
     echo $hl
     echo "Creating an organizing script for the RGC dataset"
     needsOrganize=1
+    version=""
+    if [ ! -z ${flags["version"]} ]; then
+	version=${flags["version"]}
+    fi
     cat >> $organizeFile <<EOF
 #!/bin/bash
 cd $outputSlurmDir
@@ -322,8 +341,28 @@ do
     echo \$jobsLeft >> \$organizeOutFile
 sleep 30
 done 
-/apps/python/2.7.18/bin/python ${CLAS12Analysisdir}/macros/organize_rgc.py $volatiledir/ $dir
+/apps/python/2.7.18/bin/python ${CLAS12Analysisdir}/macros/organize_rgc.py $volatiledir/ $dir $version
 EOF
+elif [ $rungroup == "rgc" ]  && [ $ana == "MC" ]; then
+    echo $hl
+    echo "Creating an organizing script for the MC RGC dataset"
+    needsOrganize=1
+    cat >> $organizeFile <<EOF
+#!/bin/bash
+cd $outputSlurmDir
+organizeOutFile="organize.txt"
+touch \$organizeOutFile
+jobsLeft=999
+while [ \$jobsLeft -ne 0 ]
+do
+    read jobsLeft <<< \$(echo "\$(squeue -u $USERNAME --format="%.18i %.9P %.30j %.8u %.8T %.10M %.9l %.6D %R")" | grep runprocess_${rungroup}_${ana}_${dir} | awk 'END{print NR}')
+    echo \$jobsLeft >> \$organizeOutFile
+sleep 30
+done 
+clas12root ${CLAS12Analysisdir}/macros/mergeTrees.C\(\"${volatiledir}\",\"run\",\"tree_reco\"\)
+clas12root ${CLAS12Analysisdir}/macros/mergeTrees.C\(\"${volatiledir}\",\"run\",\"tree_postprocess\"\)
+EOF
+
 elif [ $rungroup == "rga" ]; then
     echo $hl
     echo "Creating a merging script for the RGA dataset"
@@ -343,7 +382,7 @@ done
 clas12root ${CLAS12Analysisdir}/macros/mergeTrees.C\(\"${volatiledir}\",\"run\",\"tree_reco\"\)
 clas12root ${CLAS12Analysisdir}/macros/mergeTrees.C\(\"${volatiledir}\",\"run\",\"tree_postprocess\"\)
 EOF
-    if [ !$ana == "MC" ]; then
+    if [ $ana != "MC" ]; then
 	
 	
 	echo $hl
@@ -472,10 +511,14 @@ if [ $needsOrganize == 1 ]; then
     sbatch $organizeSlurm
 fi
 
-if [ $rungroup == "rgc" ]; then
+if [ $rungroup == "rgc" ] && [ $ana != "MC" ]; then
     echo "----------------------------------------------------"
     echo "Submitting RGC QA script"
-    ${CLAS12Analysisdir}/macros/run.sh
+    if [ ! -z ${flags["version"]} ]; then
+	${CLAS12Analysisdir}/macros/run.sh ${flags["version"]}
+    else
+	${CLAS12Analysisdir}/macros/run.sh
+    fi
 fi
 
 echo "----------------------------------------------------"
