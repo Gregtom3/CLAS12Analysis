@@ -166,7 +166,7 @@ echo "Creating bin merge script"
 echo $hl
 
 binmergeFile="${shellSlurmDir}/binmerge.sh"
-binmergeSlurm="${shellSlurmDir}/binmergeSlurm.slurm"t
+binmergeSlurm="${shellSlurmDir}/binmergeSlurm.slurm"
 if [[ -f $binmergeFile ]]; then
     rm $binmergeFile
 fi
@@ -176,7 +176,7 @@ fi
 touch $binmergeFile
 chmod +x $binmergeFile
 
-cat >> $organizeFile <<EOF
+cat >> $binmergeFile <<EOF
 #!/bin/bash
 cd $outputSlurmDir
 organizeOutFile=binmerge.txt

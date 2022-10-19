@@ -23,8 +23,12 @@ class PostProcess{
     piminuspi0_MC = 11,
 
     Inclusive = 20,
-    Elastic = 21
+    Elastic = 21,
 
+    Exclusive_pipi = 50,
+    Exclusive_pipiproton = 51
+    
+  
   };
   int Init(TTree *, double);
   
@@ -60,6 +64,13 @@ class PostProcess{
       _process_id = PROCESS_ID::Elastic;
     }
 
+    else if(strcmp(method, "exclusive_pipi")==0){
+      _process_id = PROCESS_ID::Exclusive_pipi;
+    }
+    else if(strcmp(method, "exclusive_pipiproton")==0){
+      _process_id = PROCESS_ID::Exclusive_pipiproton;
+    }
+
     else{
       std::cout << "ERROR in PostProcess::setPostProcessMethod -- Unrecognized method " << method << " . Breaking . . . " << std::endl;
       return -1;
@@ -70,6 +81,8 @@ class PostProcess{
   int pipi0(TTree *, int);
   int inclusive(TTree *);
   int elastic(TTree *);
+  int exclusive_pipi(TTree *);
+  int exclusive_pipiproton(TTree *);
   
   void set_electron_beam_energy(double E){ _electron_beam_energy = E; }
 

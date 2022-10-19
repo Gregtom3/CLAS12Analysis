@@ -6,4 +6,4 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --output=/farm_out/gmat/rgc-scaler-%j.out
 #SBATCH --error=/farm_out/gmat/rgc-scaler-%j.err
-/work/clas12/users/gmat/CLAS12Analysis/macros/scanRecon.sh $1 $2 $3 $4
+./scanChargeAsymmetry.sh $1 $2

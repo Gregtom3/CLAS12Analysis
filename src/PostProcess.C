@@ -125,6 +125,12 @@ int PostProcess::Process(TTree *_tree_postprocess){
   case PROCESS_ID::Elastic:
     elastic(_tree_postprocess);
     break;
+  case PROCESS_ID::Exclusive_pipiproton:
+    exclusive_pipiproton(_tree_postprocess);
+    break;
+  case PROCESS_ID::Exclusive_pipi:
+    exclusive_pipi(_tree_postprocess);
+    break;
   }
   return 0;
 }
@@ -1192,6 +1198,525 @@ int PostProcess::elastic(TTree * _tree_postprocess){
     TLorentzVector proton_predict = (init_target+init_electron-electron);
     th_p_predict = proton_predict.Angle(proton.Vect());
 
+    _tree_postprocess->Fill();    
+  }  
+  return 0;
+
+}
+
+
+
+
+
+int PostProcess::exclusive_pipiproton(TTree * _tree_postprocess){
+  double px_e;
+  double py_e;
+  double pz_e;
+  double p_e;
+  double th_e;
+  double phi_e;
+  double z_e;
+  double vz_e;
+  double beta_e;
+  double chi2_e;
+  int truepid_e;
+  
+  double px_p;
+  double py_p;
+  double pz_p;
+  double p_p;
+  double th_p;
+  double phi_p;
+  double z_p;
+  double vz_p;
+  double beta_p;
+  double chi2_p;
+  int truepid_p;
+
+  double px_piplus;
+  double py_piplus;
+  double pz_piplus;
+  double p_piplus;
+  double th_piplus;
+  double phi_piplus;
+  double z_piplus;
+  double vz_piplus;
+  double beta_piplus;
+  double chi2_piplus;
+  int truepid_piplus;
+
+  double px_piminus;
+  double py_piminus;
+  double pz_piminus;
+  double p_piminus;
+  double th_piminus;
+  double phi_piminus;
+  double z_piminus;
+  double vz_piminus;
+  double beta_piminus;
+  double chi2_piminus;
+  int truepid_piminus;
+
+  double Mmissing;
+  double Ptmissing;
+  double zpair;
+  double Mh;
+  double p_p_predict;
+  double angle_p_predict;
+  double th_p_predict;
+  double phi_p_predict;
+  double Mmiss_p;
+  double coplanarity;
+  int rho0flag;
+
+  TLorentzVector init_electron;
+  init_electron.SetPxPyPzE(0,0,sqrt(_electron_beam_energy*_electron_beam_energy - electronMass * electronMass),_electron_beam_energy);
+  TLorentzVector init_target;
+  init_target.SetPxPyPzE(0,0,0,protonMass);
+
+  _tree_postprocess->Branch("px_e",&px_e);
+  _tree_postprocess->Branch("py_e",&py_e);
+  _tree_postprocess->Branch("pz_e",&pz_e);
+  _tree_postprocess->Branch("p_e",&p_e);
+  _tree_postprocess->Branch("th_e",&th_e);
+  _tree_postprocess->Branch("phi_e",&phi_e);
+  _tree_postprocess->Branch("z_e",&z_e);
+  _tree_postprocess->Branch("vz_e",&vz_e);
+  _tree_postprocess->Branch("beta_e",&beta_e);
+  _tree_postprocess->Branch("chi2_e",&chi2_e);
+  _tree_postprocess->Branch("truepid_e",&truepid_e);
+
+  _tree_postprocess->Branch("px_p",&px_p);
+  _tree_postprocess->Branch("py_p",&py_p);
+  _tree_postprocess->Branch("pz_p",&pz_p);
+  _tree_postprocess->Branch("p_p",&p_p);
+  _tree_postprocess->Branch("th_p",&th_p);
+  _tree_postprocess->Branch("phi_p",&phi_p);
+  _tree_postprocess->Branch("z_p",&z_p);
+  _tree_postprocess->Branch("vz_p",&vz_p);
+  _tree_postprocess->Branch("beta_p",&beta_p);
+  _tree_postprocess->Branch("chi2_p",&chi2_p);
+  _tree_postprocess->Branch("truepid_p",&truepid_p);
+
+  _tree_postprocess->Branch("px_piplus",&px_piplus);
+  _tree_postprocess->Branch("py_piplus",&py_piplus);
+  _tree_postprocess->Branch("pz_piplus",&pz_piplus);
+  _tree_postprocess->Branch("p_piplus",&p_piplus);
+  _tree_postprocess->Branch("th_piplus",&th_piplus);
+  _tree_postprocess->Branch("phi_piplus",&phi_piplus);
+  _tree_postprocess->Branch("z_piplus",&z_piplus);
+  _tree_postprocess->Branch("vz_piplus",&vz_piplus);
+  _tree_postprocess->Branch("beta_piplus",&beta_piplus);
+  _tree_postprocess->Branch("chi2_piplus",&chi2_piplus);
+  _tree_postprocess->Branch("truepid_piplus",&truepid_piplus);
+
+  _tree_postprocess->Branch("px_piminus",&px_piminus);
+  _tree_postprocess->Branch("py_piminus",&py_piminus);
+  _tree_postprocess->Branch("pz_piminus",&pz_piminus);
+  _tree_postprocess->Branch("p_piminus",&p_piminus);
+  _tree_postprocess->Branch("th_piminus",&th_piminus);
+  _tree_postprocess->Branch("phi_piminus",&phi_piminus);
+  _tree_postprocess->Branch("z_piminus",&z_piminus);
+  _tree_postprocess->Branch("vz_piminus",&vz_piminus);
+  _tree_postprocess->Branch("beta_piminus",&beta_piminus);
+  _tree_postprocess->Branch("chi2_piminus",&chi2_piminus);
+  _tree_postprocess->Branch("truepid_piminus",&truepid_piminus);
+
+  _tree_postprocess->Branch("Q2",&Q2);
+  _tree_postprocess->Branch("x",&x);
+  _tree_postprocess->Branch("y",&y);
+  _tree_postprocess->Branch("W",&W);
+  _tree_postprocess->Branch("Mdihadron",&Mh);
+  _tree_postprocess->Branch("helicity",&helicity);
+  _tree_postprocess->Branch("Mmiss",&Mmissing);
+  _tree_postprocess->Branch("Mmiss_p",&Mmiss_p);
+  _tree_postprocess->Branch("Ptmiss",&Ptmissing);
+  _tree_postprocess->Branch("z",&zpair);
+  _tree_postprocess->Branch("angle_p_predict",&angle_p_predict);
+  _tree_postprocess->Branch("th_p_predict",&th_p_predict);
+  _tree_postprocess->Branch("p_p_predict",&p_p_predict);
+  _tree_postprocess->Branch("phi_p_predict",&phi_p_predict);
+  _tree_postprocess->Branch("rho0flag",&rho0flag);
+  _tree_postprocess->Branch("coplanarity",&coplanarity);
+
+  Long64_t nbytes = 0, nb = 0;
+  for (Long64_t jentry=0; jentry<_nentries;jentry++) {
+    nb = _tree_Reco->GetEntry(jentry);   nbytes += nb;
+
+    TLorentzVector electron;
+    TLorentzVector proton;
+    TLorentzVector piplus;
+    TLorentzVector piminus;
+    TLorentzVector q;
+
+    px_e=0;
+    py_e=0;
+    pz_e=0;
+    p_e=0;
+    th_e=0;
+    phi_e=0;
+    z_e=0;
+    vz_e=0;
+    beta_e=0;
+    chi2_e=0;
+    truepid_e=0;
+  
+    px_p=0;
+    py_p=0;
+    pz_p=0;
+    p_p=0;
+    th_p=0;
+    phi_p=0;
+    z_p=0;
+    vz_p=0;
+    beta_p=0;
+    chi2_p=0;
+    truepid_p=0;
+
+    px_piplus=0;
+    py_piplus=0;
+    pz_piplus=0;
+    p_piplus=0;
+    th_piplus=0;
+    phi_piplus=0;
+    z_piplus=0;
+    vz_piplus=0;
+    beta_piplus=0;
+    chi2_piplus=0;
+    truepid_piplus=0;
+
+    px_piminus=0;
+    py_piminus=0;
+    pz_piminus=0;
+    p_piminus=0;
+    th_piminus=0;
+    phi_piminus=0;
+    z_piminus=0;
+    vz_piminus=0;
+    beta_piminus=0;
+    chi2_piminus=0;
+    truepid_piminus=0;
+
+    Mh=0;
+    rho0flag=0;
+    Mmissing=0;
+    Mmiss_p=0;
+    Ptmissing=0;
+    zpair=0;
+    coplanarity=0.0;
+    // First identify scattered electron to get q
+    for(unsigned int i = 0 ; i < pid->size() ; i++){
+      if(pid->at(i)==11){
+	electron.SetPxPyPzE(px->at(i),py->at(i),pz->at(i),E->at(i));
+	q = init_electron - electron;
+      }
+    }
+      
+    int idx_piplus=-1;
+    int idx_piminus=-1;
+    for(unsigned int i = 0 ; i < pid->size() ; i++){
+      // Identify the scattered electron
+      if(pid->at(i)==11){
+	px_e = px->at(i);
+	py_e = py->at(i);
+	pz_e = pz->at(i);
+	p_e = p->at(i);
+	th_e = theta->at(i);
+	phi_e = phi->at(i);
+	beta_e = beta->at(i);
+	z_e = (init_target*electron)/(init_target*q);	
+	vz_e = vz->at(i);
+	chi2_e = chi2->at(i);
+	truepid_e = evtgen_pid->at(i);
+      }
+      if(pid->at(i)==2212){
+	proton.SetPxPyPzE(px->at(i),py->at(i),pz->at(i),E->at(i));
+	px_p = px->at(i);
+	py_p = py->at(i);
+	pz_p = pz->at(i);
+	p_p = p->at(i);
+	th_p = theta->at(i);
+	phi_p = phi->at(i);
+	beta_p = beta->at(i);
+	z_p = (init_target*proton)/(init_target*q);	
+	vz_p = vz->at(i);
+	chi2_p = chi2->at(i);
+	truepid_p = evtgen_pid->at(i);
+      }
+      if(pid->at(i)==211){
+	piplus.SetPxPyPzE(px->at(i),py->at(i),pz->at(i),E->at(i));
+	px_piplus = px->at(i);
+	py_piplus = py->at(i);
+	pz_piplus = pz->at(i);
+	p_piplus = p->at(i);
+	th_piplus = theta->at(i);
+	phi_piplus = phi->at(i);
+	beta_piplus = beta->at(i);
+	z_piplus = (init_target*piplus)/(init_target*q);	
+	vz_piplus = vz->at(i);
+	chi2_piplus = chi2->at(i);
+	truepid_piplus = evtgen_pid->at(i);
+	idx_piplus = i;
+      }
+      if(pid->at(i)==-211){
+	piminus.SetPxPyPzE(px->at(i),py->at(i),pz->at(i),E->at(i));
+	px_piminus = px->at(i);
+	py_piminus = py->at(i);
+	pz_piminus = pz->at(i);
+	p_piminus = p->at(i);
+	th_piminus = theta->at(i);
+	phi_piminus = phi->at(i);
+	beta_piminus = beta->at(i);
+	z_piminus = (init_target*piminus)/(init_target*q);	
+	vz_piminus = vz->at(i);
+	chi2_piminus = chi2->at(i);
+	truepid_piminus = evtgen_pid->at(i);
+	idx_piminus = i;
+      }
+    }
+    
+    if(truepid_piplus==211 && truepid_piminus==-211 && evtgen_parentPID->at(idx_piplus)==113 &&
+       evtgen_parentPID->at(idx_piminus)==113 && evtgen_parentID->at(idx_piplus)==evtgen_parentID->at(idx_piminus))
+      rho0flag=1;
+    else
+      rho0flag=-1;
+
+    Mh=(piplus+piminus).M();
+    Mmissing = (init_target+init_electron-electron-proton-piplus-piminus).M();
+    Ptmissing = (init_target+init_electron-electron-proton-piplus-piminus).Pt();
+    zpair = z_piplus+z_piminus;
+    TLorentzVector proton_predict = (init_target+init_electron-electron-piplus-piminus);
+    angle_p_predict = proton_predict.Angle(proton.Vect());
+    th_p_predict = proton_predict.Theta();
+    phi_p_predict = proton_predict.Phi();
+    p_p_predict = proton_predict.P();
+    Mmiss_p = proton_predict.M();
+    
+    coplanarity=electron.Phi()-(proton+piplus+piminus).Phi();
+    _tree_postprocess->Fill();    
+  }  
+  return 0;
+}
+
+
+
+int PostProcess::exclusive_pipi(TTree * _tree_postprocess){
+  double px_e;
+  double py_e;
+  double pz_e;
+  double p_e;
+  double th_e;
+  double phi_e;
+  double z_e;
+  double vz_e;
+  double beta_e;
+  double chi2_e;
+  int truepid_e;
+ 
+  double px_piplus;
+  double py_piplus;
+  double pz_piplus;
+  double p_piplus;
+  double th_piplus;
+  double phi_piplus;
+  double z_piplus;
+  double vz_piplus;
+  double beta_piplus;
+  double chi2_piplus;
+  int truepid_piplus;
+
+  double px_piminus;
+  double py_piminus;
+  double pz_piminus;
+  double p_piminus;
+  double th_piminus;
+  double phi_piminus;
+  double z_piminus;
+  double vz_piminus;
+  double beta_piminus;
+  double chi2_piminus;
+  int truepid_piminus;
+
+  double Mmissing;
+  double Ptmissing;
+  double zpair;
+  double Mh;
+  int rho0flag;
+
+  TLorentzVector init_electron;
+  init_electron.SetPxPyPzE(0,0,sqrt(_electron_beam_energy*_electron_beam_energy - electronMass * electronMass),_electron_beam_energy);
+  TLorentzVector init_target;
+  init_target.SetPxPyPzE(0,0,0,protonMass);
+
+  _tree_postprocess->Branch("px_e",&px_e);
+  _tree_postprocess->Branch("py_e",&py_e);
+  _tree_postprocess->Branch("pz_e",&pz_e);
+  _tree_postprocess->Branch("p_e",&p_e);
+  _tree_postprocess->Branch("th_e",&th_e);
+  _tree_postprocess->Branch("phi_e",&phi_e);
+  _tree_postprocess->Branch("z_e",&z_e);
+  _tree_postprocess->Branch("vz_e",&vz_e);
+  _tree_postprocess->Branch("beta_e",&beta_e);
+  _tree_postprocess->Branch("chi2_e",&chi2_e);
+  _tree_postprocess->Branch("truepid_e",&truepid_e);
+
+  _tree_postprocess->Branch("px_piplus",&px_piplus);
+  _tree_postprocess->Branch("py_piplus",&py_piplus);
+  _tree_postprocess->Branch("pz_piplus",&pz_piplus);
+  _tree_postprocess->Branch("p_piplus",&p_piplus);
+  _tree_postprocess->Branch("th_piplus",&th_piplus);
+  _tree_postprocess->Branch("phi_piplus",&phi_piplus);
+  _tree_postprocess->Branch("z_piplus",&z_piplus);
+  _tree_postprocess->Branch("vz_piplus",&vz_piplus);
+  _tree_postprocess->Branch("beta_piplus",&beta_piplus);
+  _tree_postprocess->Branch("chi2_piplus",&chi2_piplus);
+  _tree_postprocess->Branch("truepid_piplus",&truepid_piplus);
+
+  _tree_postprocess->Branch("px_piminus",&px_piminus);
+  _tree_postprocess->Branch("py_piminus",&py_piminus);
+  _tree_postprocess->Branch("pz_piminus",&pz_piminus);
+  _tree_postprocess->Branch("p_piminus",&p_piminus);
+  _tree_postprocess->Branch("th_piminus",&th_piminus);
+  _tree_postprocess->Branch("phi_piminus",&phi_piminus);
+  _tree_postprocess->Branch("z_piminus",&z_piminus);
+  _tree_postprocess->Branch("vz_piminus",&vz_piminus);
+  _tree_postprocess->Branch("beta_piminus",&beta_piminus);
+  _tree_postprocess->Branch("chi2_piminus",&chi2_piminus);
+  _tree_postprocess->Branch("truepid_piminus",&truepid_piminus);
+
+  _tree_postprocess->Branch("Q2",&Q2);
+  _tree_postprocess->Branch("x",&x);
+  _tree_postprocess->Branch("y",&y);
+  _tree_postprocess->Branch("W",&W);
+  _tree_postprocess->Branch("Mdihadron",&Mh);
+  _tree_postprocess->Branch("helicity",&helicity);
+  _tree_postprocess->Branch("Mmiss",&Mmissing);
+  _tree_postprocess->Branch("Ptmiss",&Ptmissing);
+  _tree_postprocess->Branch("z",&zpair);
+  _tree_postprocess->Branch("rho0flag",&rho0flag);
+
+  Long64_t nbytes = 0, nb = 0;
+  for (Long64_t jentry=0; jentry<_nentries;jentry++) {
+    nb = _tree_Reco->GetEntry(jentry);   nbytes += nb;
+
+    TLorentzVector electron;
+    TLorentzVector piplus;
+    TLorentzVector piminus;
+    TLorentzVector q;
+
+    px_e=0;
+    py_e=0;
+    pz_e=0;
+    p_e=0;
+    th_e=0;
+    phi_e=0;
+    z_e=0;
+    vz_e=0;
+    beta_e=0;
+    chi2_e=0;
+    truepid_e=0;
+  
+
+    px_piplus=0;
+    py_piplus=0;
+    pz_piplus=0;
+    p_piplus=0;
+    th_piplus=0;
+    phi_piplus=0;
+    z_piplus=0;
+    vz_piplus=0;
+    beta_piplus=0;
+    chi2_piplus=0;
+    truepid_piplus=0;
+
+    px_piminus=0;
+    py_piminus=0;
+    pz_piminus=0;
+    p_piminus=0;
+    th_piminus=0;
+    phi_piminus=0;
+    z_piminus=0;
+    vz_piminus=0;
+    beta_piminus=0;
+    chi2_piminus=0;
+    truepid_piminus=0;
+
+    Mh=0;
+    rho0flag=0;
+    Mmissing=0;
+    Ptmissing=0;
+    zpair=0;
+    // First identify scattered electron to get q
+    for(unsigned int i = 0 ; i < pid->size() ; i++){
+      if(pid->at(i)==11){
+	electron.SetPxPyPzE(px->at(i),py->at(i),pz->at(i),E->at(i));
+	q = init_electron - electron;
+      }
+    }
+      
+    int idx_piplus=-1;
+    int idx_piminus=-1;
+    for(unsigned int i = 0 ; i < pid->size() ; i++){
+      // Identify the scattered electron
+      if(pid->at(i)==11){
+	px_e = px->at(i);
+	py_e = py->at(i);
+	pz_e = pz->at(i);
+	p_e = p->at(i);
+	th_e = theta->at(i);
+	phi_e = phi->at(i);
+	beta_e = beta->at(i);
+	z_e = (init_target*electron)/(init_target*q);	
+	vz_e = vz->at(i);
+	chi2_e = chi2->at(i);
+	truepid_e = evtgen_pid->at(i);
+      }
+      if(pid->at(i)==211){
+	piplus.SetPxPyPzE(px->at(i),py->at(i),pz->at(i),E->at(i));
+	px_piplus = px->at(i);
+	py_piplus = py->at(i);
+	pz_piplus = pz->at(i);
+	p_piplus = p->at(i);
+	th_piplus = theta->at(i);
+	phi_piplus = phi->at(i);
+	beta_piplus = beta->at(i);
+	z_piplus = (init_target*piplus)/(init_target*q);	
+	vz_piplus = vz->at(i);
+	chi2_piplus = chi2->at(i);
+	truepid_piplus = evtgen_pid->at(i);
+	idx_piplus = i;
+      }
+      if(pid->at(i)==-211){
+	piminus.SetPxPyPzE(px->at(i),py->at(i),pz->at(i),E->at(i));
+	px_piminus = px->at(i);
+	py_piminus = py->at(i);
+	pz_piminus = pz->at(i);
+	p_piminus = p->at(i);
+	th_piminus = theta->at(i);
+	phi_piminus = phi->at(i);
+	beta_piminus = beta->at(i);
+	z_piminus = (init_target*piminus)/(init_target*q);	
+	vz_piminus = vz->at(i);
+	chi2_piminus = chi2->at(i);
+	truepid_piminus = evtgen_pid->at(i);
+	idx_piminus = i;
+      }
+    }
+    
+    if(truepid_piplus==211 && truepid_piminus==-211 && evtgen_parentPID->at(idx_piplus)==113 &&
+       evtgen_parentPID->at(idx_piminus)==113 && evtgen_parentID->at(idx_piplus)==evtgen_parentID->at(idx_piminus))
+      rho0flag=1;
+    else
+      rho0flag=-1;
+
+    Mh=(piplus+piminus).M();
+    Mmissing = (init_target+init_electron-electron-piplus-piminus).M();
+    Ptmissing = (init_target+init_electron-electron-piplus-piminus).Pt();
+    zpair = z_piplus+z_piminus;
+    //    TLorentzVector proton_predict = (init_target+init_electron-electron-piplus-piminus);
+    //    th_p_predict = proton_predict.Angle(proton.Vect());
+    
+    //    coplanarity=electron.Phi()-(proton+piplus+piminus).Phi();
     _tree_postprocess->Fill();    
   }  
   return 0;

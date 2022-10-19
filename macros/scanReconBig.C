@@ -32,9 +32,16 @@ int scanReconBig(int run = 16904,
   double RUN_livetime = 0.0;
 
   // RAW::Scaler bank info
-  double offset = 140.0;
-  double slope = 906.2;
-  double atten = 1.0;
+  clas12databases::SetCCDBRemoteConnection();
+  clas12reader c12(Form("/volatile/clas12/rg-c/production/ana_data/%s/dst/recon/0%d/rec_clas_0%d.evio.00000.hipo",cook.c_str(),run,run),{0});
+  clas12databases db;
+  c12.connectDataBases(&db);
+  double offset = c12.ccdb()->requestTableValueFor(0,"offset","/runcontrol/fcup");
+  double slope = c12.ccdb()->requestTableValueFor(0,"slope","/runcontrol/fcup");
+  double atten = c12.ccdb()->requestTableValueFor(0,"atten","/runcontrol/fcup");
+  //  double offset = 140.0;
+  // double slope = 906.2;
+  //  double atten = 1.0;
   long RAW_fcupgated_33ms = 0.0;
   long RAW_fcupgated_500us = 0.0;
   long RAW_clockgated_33ms = 0.0;
@@ -161,7 +168,8 @@ int scanReconBig(int run = 16904,
       //  RAW_clockgated = RAW_clockgated_33ms;
       //}
       // SWAP 33ms and 500us time window
-      if(CALC_fcupgated_500us>CALC_fcupgated_33ms && CALC_fcupgated_500us < 2){
+      //      if(CALC_fcupgated_500us>CALC_fcupgated_33ms && CALC_fcupgated_500us < 2){
+      if(RAW_clock_500us > RAW_clock_33ms){
         double tmp1 = CALC_fcupgated_500us;
         double tmp2 = RAW_clockgated_500us;
         CALC_fcupgated_500us = CALC_fcupgated_33ms;
@@ -177,8 +185,10 @@ int scanReconBig(int run = 16904,
       //  RAW_fcup = result_33ms;
       //  RAW_clock = RAW_clock_33ms;
       //}
-      if(CALC_fcup_500us>CALC_fcup_33ms && CALC_fcup_500us < 2){
-        double tmp1 = CALC_fcup_500us;
+
+      //      if(CALC_fcup_500us>CALC_fcup_33ms && CALC_fcup_500us < 2){
+      if(RAW_clock_500us > RAW_clock_33ms){
+	double tmp1 = CALC_fcup_500us;
         double tmp2 = RAW_clock_500us;
         CALC_fcup_500us = CALC_fcup_33ms;
         CALC_fcup_33ms = tmp1;

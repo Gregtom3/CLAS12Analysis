@@ -515,6 +515,7 @@ int SIDISKinematicsReco::CollectParticlesFromReco(const std::unique_ptr<clas12::
     sp->set_property( SIDISParticle::evtgen_part_ID, (int)-999);
     sp->set_property( SIDISParticle::evtgen_part_parentID, (int)-999);
     sp->set_property( SIDISParticle::evtgen_part_parentPID, (int)-999);
+    sp->set_property( SIDISParticle::evtgen_part_parentparentPID, (int)-999);
     
     // Add detector info to SIDISParticle
     // --------------------------------------------------------------------------

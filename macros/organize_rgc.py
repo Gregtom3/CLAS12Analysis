@@ -9,7 +9,9 @@ import csv
 
 filedir = str(sys.argv[1])
 rootname = str(sys.argv[2])
-
+version = ""
+if(len(sys.argv)>3):
+    version = "/" + str(sys.argv[3])
 
 #for path in Path(filedir).glob("*.*"):
 #    files.append(str(path))
@@ -62,18 +64,20 @@ for file in files:
         cnd_val = run.get_condition(cnd).value
         if(cnd == "target"):
             cnd_val=cnd_val.strip()
+            if(cnd_val=="12C"):
+                cnd_val="C"
         vallist.append(cnd_val)
         if(cnd == "half_wave_plate"):
             HWPArr.append(int(cnd_val))
         elif(cnd == "target"):
             targetArr.append(str(cnd_val))
     # Which Cooking type was used
-    hipofiles = glob.glob('/volatile/clas12/rg-c/production/ana_data/*/dst/train/*/*{}.hipo'.format(runNumber))
+    hipofiles = glob.glob('/volatile/clas12/rg-c/production/ana_data/*{}/dst/train/sidisdvcs/*{}.hipo'.format(version,runNumber))
     if(hipofiles==[]):
         vallist=vallist+['???']
-    elif "/TBT/" in hipofiles[0]:
+    elif "TBT" in hipofiles[0]:
         vallist=vallist+['TBT']
-    elif "/HBT/" in hipofiles[0]:
+    elif "HBT" in hipofiles[0]:
         vallist=vallist+['HBT']
     else:
         vallist=vallist+['???']
