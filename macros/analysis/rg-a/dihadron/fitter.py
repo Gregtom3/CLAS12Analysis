@@ -2,7 +2,10 @@ import ROOT
 import os
 import numpy as np
 import pandas as pd
+import uproot
+import time
 from binner import Bin
+
 
 class Fit:
     def __init__(self,name,infile,intree):
@@ -20,7 +23,7 @@ class Fit:
         
     def perform2dFit(self):
         pass
-
+    
 class sdbnd(Fit):
     def __init__(self,infile,intree,verbosity=0):
         Fit.__init__(self,"sideband",infile,intree)
@@ -28,6 +31,10 @@ class sdbnd(Fit):
         self.nmods=7
         self.latexmods=["sin(2#phi_{h}-2#phi_{R})","sin(#phi_{h}-#phi_{R})", "sin(-#phi_{h}+2#phi_{R})" , "sin(#phi_{R})", "sin(#phi_{h})", "sin(2#phi_{h}-#phi{R})" , "sin(3#phi_{h}-2#phi_{R})"]
         self.v=verbosity
+        # Set output directory in same location as the root files
+        self.outdir=infile.replace("/merged_run_binned.root","")+"/sdbnd"
+        if(not os.path.exists(self.outdir)):
+            os.mkdir(self.outdir)
         # Defining bounds for signal/sideband
         # -------EDIT BELOW----------#
         self.signalBounds=[0.108,0.160]
@@ -106,6 +113,12 @@ class sdbnd(Fit):
         self.sig_errors_u3 = [0]*self.nmods
         self.bg_params_u3 = [0]*self.nmods
         self.bg_errors_u3 = [0]*self.nmods
+    
+    def write(self):
+        outfile=ROOT.TFile(self.outdir+"/sdbnd_{}.root".format(self.intree),"RECREATE")
+        outfile.WriteObject(self.th1,self.th1.GetName())
+        outfile.WriteObject(self.tf1,self.tf1.GetName())
+        outfile.Close()
         
     def setTF1(self):
         self.tf1=ROOT.TF1( self.fitname , self.fitfunc , self.fitbounds[0] , self.fitbounds[1] )
@@ -346,14 +359,20 @@ class sdbnd(Fit):
                     self.sig_errors_u3.append(sig_error)
                     self.bg_params_u3.append(bg_param)
                     self.bg_errors_u3.append(bg_error)
-
+                    
+        self.write()
+        
 class splotUnBinnedFit(Fit):
     def __init__(self,infile,intree,verbosity=0):
         Fit.__init__(self,"splotUnbinned",infile,intree)
         self.verbosity=verbosity
         # Create sPlot object
         self.splot = ROOT.sPlot()
-        self.splot.SetUp().SetOutDir("/work/clas12/users/gmat/CLAS12Analysis/macros/analysis/rg-a/splot/splot_{}".format(intree))
+        # Set output directory in same location as the root files
+        self.outdir=infile.replace("/merged_run_binned.root","")+"/splot"
+        if(not os.path.exists(self.outdir)):
+            os.mkdir(self.outdir)
+        self.splot.SetUp().SetOutDir("{}/splot_{}".format(self.outdir,intree))
         # sPlot parameter setup
         # ---------------------------#
         self.diphotonMin=0.08
@@ -375,7 +394,8 @@ class splotUnBinnedFit(Fit):
         # ---------------------------#
         # Compile modulation PDF
         # ---------------------------#
-        ROOT.Loader.Compile("/work/clas12/users/gmat/CLAS12Analysis/brufit/tutorials/CLAS12Analysis_test/dihadronModulationPDF.cxx");
+        
+        ROOT.Loader.Compile("mod/dihadronModulationPDF.cxx");
         
         # ---------------------------#
         # Setup the fit manager
@@ -393,6 +413,8 @@ class splotUnBinnedFit(Fit):
         self.fm.SetUp().LoadSpeciesPDF("SigAsym",1);
         
         self.fm.LoadData(self.intree,(self.infile));
+        
+    
     def determineDiphotonMax(self):
         df = ROOT.RDataFrame(self.intree,self.infile)
         return np.amin([df.Filter("Mdiphoton<1").Max("Mdiphoton").GetValue(),0.4])
@@ -412,7 +434,7 @@ class splotUnBinnedFit(Fit):
         print("splotUnbinnedFit: Fitting 2d modulations for",self.intree)
         self.fm.SetRedirectOutput();
         ROOT.Here.Go(self.fm)
-
+        
 # Class for storing Fit Functions on the Bin structure
 # Inhertits the "Bin" Class
 class FitBin(Bin):
@@ -423,7 +445,10 @@ class FitBin(Bin):
         self.intree=intree
         self.isempty=False
         self.sdbnd=0
-    
+        self.splotunbin=0
+        self.sdbnd_row=[]
+        self.splot_row=[]
+        
     # Perform a sideband fit on this specific bin
     def sidebandFit(self,verbosity):
         self.sdbnd=sdbnd(self.infile,self.intree,verbosity)
@@ -442,6 +467,140 @@ class FitBin(Bin):
         else:
             return 1
 
+    def writeRows(self):
+        
+        # FOR THE SIDEBAND COLUMNS
+        # -------------------------------------------------------------
+        dimMax = 4
+        # Determine columns for dataframe
+        cols=["dim","hasData"]
+        # Columns for each bin dimension
+        for d in range(dimMax):
+            cols+=["bintype{}".format(d+1)]
+            cols+=["binlower{}".format(d+1)]
+            cols+=["bincenter{}".format(d+1)]
+            cols+=["binupper{}".format(d+1)]
+        # Columns for diphoton peak & spread values
+        cols+=["diphotonPeak","diphotonSpread"]
+        # Column for diphoton fit parameters
+        cols+=["diphotonFitFunc","diphotonChi2","diphotonNDF"]
+        for fidx in range(len(self.sdbnd.fitparams)):
+            cols+=["diphotonParam{}".format(fidx)]
+            cols+=["diphotonError{}".format(fidx)]
+        # Columns for the purities
+        cols+=["u0","u1","u2","u3"]
+        # Columns for the azimuthal fit parameters
+        for fidx in range(self.sdbnd.nmods):
+            cols+=["modName{}".format(fidx)]
+        for fidx in range(self.sdbnd.nmods):
+            for uidx in range(4):
+                cols+=["sigbgParam{}_u{}".format(fidx,uidx)]
+                cols+=["sigParam{}_u{}".format(fidx,uidx)]
+                cols+=["bgParam{}_u{}".format(fidx,uidx)]
+                cols+=["sigbgErrror{}_u{}".format(fidx,uidx)]
+                cols+=["sigError{}_u{}".format(fidx,uidx)]
+                cols+=["bgError{}_u{}".format(fidx,uidx)]
+        df_sdbnd = pd.DataFrame(columns=cols)
+        df_sdbnd.loc[len(df_sdbnd.index)]=self.sdbnd_row
+        df_sdbnd.to_csv(self.sdbnd.outdir+"/sdbnd_{}.csv".format(self.intree),index=False)
+        
+        
+        
+        
+        # FOR THE SPLOT COLUMNS
+        # -------------------------------------------------------------
+        dimMax = 4
+        # Determine columns for dataframe
+        cols=["dim","hasData"]
+        # Columns for each bin dimension
+        for d in range(dimMax):
+            cols+=["bintype{}".format(d+1)]
+            cols+=["binlower{}".format(d+1)]
+            cols+=["bincenter{}".format(d+1)]
+            cols+=["binupper{}".format(d+1)]
+        for c in self.splot_colNames:
+            cols+=[c]
+        df_splot = pd.DataFrame(columns=cols)
+        df_splot.loc[len(df_splot.index)]=self.splot_row
+        df_splot.to_csv(self.splotunbin.outdir+"/splot_{}.csv".format(self.intree),index=False)
+        
+
+        
+    # Collect parameters from fits into a single row
+    # ONLY THE SIDEBAND DATA
+    def setSidebandRow(self):
+        row=[]
+        # Dimension of bin
+        b=self
+        row+=[b.dim,not b.isempty]
+        # Check if bin was empty
+        # Bin lower and upper edges
+        for d in np.arange(1,5):
+            if(d>b.dim):
+                row+=["0","0","0","0"]
+            else:
+                row+=[b.names[d-1],b.bounds[d-1][0],0.5*(b.bounds[d-1][0]+b.bounds[d-1][1]),b.bounds[d-1][1]]
+        # Diphoton peak and spread
+        row+=[b.sdbnd.diphotonPeak,b.sdbnd.diphotonSpread]
+        # Diphoton fit function
+        row+=[b.sdbnd.fitfunc]
+        # Diphoton fit parameters
+        row+=[b.sdbnd.diphotonchi2,b.sdbnd.diphotonndf]
+        for fidx in range(len(b.sdbnd.fitparams)):
+            row+=[b.sdbnd.fitparams[fidx]]
+            row+=[b.sdbnd.fiterrors[fidx]]
+        # Purities
+        for u in b.sdbnd.uarr:
+            row+=[u]
+        # Modulation names
+        for modname in b.sdbnd.latexmods:
+            row+=[modname]
+        # Modulation parameters
+        for fidx in range(b.sdbnd.nmods):
+            row+=[b.sdbnd.sigbg_params_u0[fidx], b.sdbnd.sig_params_u0[fidx], b.sdbnd.bg_params_u0[fidx],
+                  b.sdbnd.sigbg_errors_u0[fidx], b.sdbnd.sig_errors_u0[fidx], b.sdbnd.bg_errors_u0[fidx]]
+            row+=[b.sdbnd.sigbg_params_u1[fidx], b.sdbnd.sig_params_u1[fidx], b.sdbnd.bg_params_u1[fidx],
+                  b.sdbnd.sigbg_errors_u1[fidx], b.sdbnd.sig_errors_u1[fidx], b.sdbnd.bg_errors_u1[fidx]]
+            row+=[b.sdbnd.sigbg_params_u2[fidx], b.sdbnd.sig_params_u2[fidx], b.sdbnd.bg_params_u2[fidx],
+                  b.sdbnd.sigbg_errors_u2[fidx], b.sdbnd.sig_errors_u2[fidx], b.sdbnd.bg_errors_u2[fidx]]
+            row+=[b.sdbnd.sigbg_params_u3[fidx], b.sdbnd.sig_params_u3[fidx], b.sdbnd.bg_params_u3[fidx],
+                  b.sdbnd.sigbg_errors_u3[fidx], b.sdbnd.sig_errors_u3[fidx], b.sdbnd.bg_errors_u3[fidx]]
+        self.sdbnd_row = row
+        
+    # Collect parameters from fits into a single row
+    # ONLY THE SPLOT DATA
+    def setsPlotRow(self):
+        row=[]
+        # Dimension of bin
+        b=self
+        row+=[b.dim,not b.isempty]
+        # Check if bin was empty
+        # Bin lower and upper edges
+        for d in np.arange(1,5):
+            if(d>b.dim):
+                row+=["0","0","0","0"]
+            else:
+                row+=[b.names[d-1],b.bounds[d-1][0],0.5*(b.bounds[d-1][0]+b.bounds[d-1][1]),b.bounds[d-1][1]]
+        # Get ResultsHSMinuit2.root file
+        #time.sleep(10) # Wait 10 seconds for root tree to write
+        f=uproot.open("{}/splot_{}/ResultsHSMinuit2.root".format(self.splotunbin.outdir,self.intree))
+        t=f["ResultTree"]
+        F=t.arrays()
+        # For loop over the entries in that TTree
+        self.splot_colNames=[]
+        for key,value in F.items():
+            self.splot_colNames.append(str(key)[2:-1])
+            row+=[value[0]]
+        # Get ResultsHSMinuit2.root file, open the MinuitResult TTree (contains fitparams and errors for modulations)
+        f=ROOT.TFile("{}/splot_{}/ResultsHSMinuit2.root".format(self.splotunbin.outdir,self.intree),"READ")
+        MR=f.Get("MinuitResult")
+        self.splot_colNames+=["N","Nerr"]
+        for i,val in enumerate(MR.floatParsFinal()):
+            row+=[val.getVal(),val.getError()]
+            if(i>0):
+                self.splot_colNames+=["a{}".format(i-1),"a{}_err".format(i-1)]
+        self.splot_row = row
+        
 # Class which stores multiple FitBins
 # Each FitBin will perform sideband fitting, splot, etc.
 class Fittify():
@@ -478,7 +637,6 @@ class Fittify():
             if(b.splotUnBinnedFit(self.v)==-1):
                 if(self.v>0): # Error logging
                     print(b.objName)
-            return 0
     # Collect all the parameters from the bins
     # Save into a pandas dataframe
     def collectParams(self):
