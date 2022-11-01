@@ -86,6 +86,7 @@ class SIDISKinematicsReco{
   int _idx_RUNconfig;
   int _irun;
   int _ievnum;
+  int _itorus;
   int _runNumber = -999;
   int _evnum;
 

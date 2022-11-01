@@ -230,6 +230,7 @@ int SIDISKinematicsReco::InitHipo()
   _idx_RUNconfig = _config_c12->addBank("RUN::config");
   _irun = _config_c12->getBankOrder(_idx_RUNconfig,"run");
   _ievnum = _config_c12->getBankOrder(_idx_RUNconfig,"event");
+  _itorus = _config_c12->getBankOrder(_idx_RUNconfig,"torus");
 
   return 0;
 }
@@ -729,6 +730,10 @@ int SIDISKinematicsReco::AddRecoEventInfo(const std::unique_ptr<clas12::clas12re
       (_map_event.find("helicity"))->second = event->getHelicity();
     (_map_event.find("polarization"))->second = runPolarization(_runNumber,true);
     (_map_event.find("evnum"))->second = _evnum;
+    if(_runNumber==11){ // Monte Carlo
+      // Set runNumber to -11 for torus-1
+      _runNumber = _runNumber * _c12->getBank(_idx_RUNconfig)->getFloat(_itorus,0); 
+    }
     (_map_event.find("run"))->second = _runNumber;
   }
   

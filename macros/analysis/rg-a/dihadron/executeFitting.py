@@ -10,6 +10,7 @@ binTree = str(sys.argv[2])
 
 # Create Fitting Bin from "merged_run_binned.root" and "binName"
 fbin=FitBin(infile_binned,binTree)
+fbin.setParamsFromName(binTree)
 
 # Perform the sideband fit
 fbin.sidebandFit(1)

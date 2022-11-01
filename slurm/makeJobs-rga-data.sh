@@ -45,7 +45,7 @@ outdir="clas12analysis.sidis.data/rg-a"
 
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="sept14"
+rootname="sept19_beta_0.02"
 
 # Code locations
 # --------------------------------------------------------

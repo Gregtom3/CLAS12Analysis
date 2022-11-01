@@ -208,7 +208,7 @@ trainhipodir=""
 reconhipodir=""
 if [ $rungroup == "rga" ]; then
     if [ $ana == "MC" ]; then
-	trainhipodir="/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/bkg45nA_10604MeV/*.hipo"
+	trainhipodir="/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus*/v1/bkg*/*.hipo"
     else
 	trainhipodir="/cache/clas12/rg-a/production/recon/*20*/torus*/pass1/v1/dst/train/${ana}/*.hipo"
 	reconhipodir="/cache/clas12/rg-a/production/recon/*20*/torus*/pass1/v1/dst/recon/*/*.hipo"

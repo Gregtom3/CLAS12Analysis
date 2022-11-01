@@ -45,7 +45,7 @@ outdir="clas12analysis.sidis.data/rg-a-mc"
 
 # Prefix for the output files from the analysis
 # --------------------------------------------------------
-rootname="sept19"
+rootname="sept26"
 
 # Code locations
 # --------------------------------------------------------

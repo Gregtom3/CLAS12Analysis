@@ -16,6 +16,7 @@ class Bin:
         self.objName=""
         self.ttree=0
         self.params={
+            "run" : np.array([0.0]),
             "helicity" : np.array([0.0]),
             "x" : np.array([10.0]),
             "Q2" : np.array([10.0]),

@@ -1,9 +1,11 @@
-
 #!/bin/bash
 hl="---------------------------------------------------------------"
 USERNAME="$USER"
 
-if [ $# -lt 3 ]; then
+CLAS12Analysisdir="/work/clas12/users/$USERNAME/CLAS12Analysis"
+binGridList=$(ls "${CLAS12Analysisdir}/macros/analysis/rg-a/dihadron/binGrids")
+
+if [ $# -lt 4 ]; then
   echo """
   USAGE: $0 [run-group] [MC/train] [dir]
   Automates the sending of slurm binning jobs for CLAS12Analysis TTrees
@@ -15,11 +17,14 @@ if [ $# -lt 3 ]; then
                    sidisdvcs (rgc only) 
                    gmn       (rgc only)
    - [dir]: Path in /volatile/clas12/users/$USERNAME/clas12analysis.sidis.data/run-group/(MC/train)<dir> where the simulation output of CLAS12Analysis is stored
+   - [binGrid]: Name of the binGrid to be implemented. See ./binGrids for available grids
   """
   if [ $# == 2 ]; then
       echo "Directories currently in /volatile/clas12/users/$USERNAME/clas12analysis.sidis.data/$1/$2/..."
       ls /volatile/clas12/users/$USERNAME/clas12analysis.sidis.data/$1/$2/
   fi
+  echo "Please select one of the following binGrids"
+  echo "${binGridList}"
   exit 2
 fi
 
@@ -57,6 +62,7 @@ done
 rungroup=${args[0]}
 ana=${args[1]}
 dir=${args[2]}
+binGrid=${args[3]}
 
 if ! echo "$RUNGROUPS" | grep -q "$rungroup"; then
     echo $hl
@@ -90,15 +96,11 @@ fi
 
 shellSlurmDir="${farmoutdir}/shells"
 outputSlurmDir="${farmoutdir}/output"
-CLAS12Analysisdir="/work/clas12/users/$USERNAME/CLAS12Analysis"
 
 binnerScript="$CLAS12Analysisdir/macros/analysis/rg-a/dihadron/executeBinning.py"
 
 # -----------------------------------------------------------------------------------------
 
-binGridList=$(ls "${CLAS12Analysisdir}/macros/analysis/rg-a/dihadron/binGrids")
-echo "Please select one of the following binGrids ${binGridList}"
-read binGrid
 binGridFile="${CLAS12Analysisdir}/macros/analysis/rg-a/dihadron/binGrids/${binGrid}"
 if echo "$binGrid" | grep -w -q "$binGridList"; then
     echo "Using binGrid $binGrid"

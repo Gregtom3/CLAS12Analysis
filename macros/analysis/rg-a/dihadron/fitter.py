@@ -331,6 +331,7 @@ class sdbnd(Fit):
                 sig_param = (1.0/u)*sigbg_param - ((1.0-u)/u)*bg_param
                 sig_error = np.sqrt((sigbg_error/u)**2+(bg_error*(1.0-u)/u)**2)
                 
+                print(sig_param)
                 if(uidx==0):
                     self.sigbg_params_u0.append(sigbg_param)
                     self.sigbg_errors_u0.append(sigbg_error)
@@ -401,7 +402,7 @@ class splotUnBinnedFit(Fit):
         # Setup the fit manager
         # ---------------------------#
         self.fm = ROOT.FitManager()
-        self.fm.SetUp().SetOutDir("/work/clas12/users/gmat/CLAS12Analysis/macros/analysis/rg-a/splot/obs_{}".format(intree))
+        self.fm.SetUp().SetOutDir("{}/splot_{}".format(self.outdir,intree))
         
         self.fm.SetUp().LoadVariable("phi_h[-3.1415,3.1515]"); 
         self.fm.SetUp().LoadVariable("phi_R0[-3.1415,3.1515]"); 
@@ -429,7 +430,7 @@ class splotUnBinnedFit(Fit):
        
         print("splotUnBinnedFit: Loading sWeights for",self.intree)
         
-        self.fm.Data().LoadWeights("Signal", "/work/clas12/users/gmat/CLAS12Analysis/macros/analysis/rg-a/splot/splot_{}/Weights.root".format(self.intree));
+        self.fm.Data().LoadWeights("Signal", "{}/splot_{}/Weights.root".format(self.outdir,self.intree));
         
         print("splotUnbinnedFit: Fitting 2d modulations for",self.intree)
         self.fm.SetRedirectOutput();
@@ -588,9 +589,9 @@ class FitBin(Bin):
         F=t.arrays()
         # For loop over the entries in that TTree
         self.splot_colNames=[]
-        for key,value in F.items():
+        for key in t.keys():
             self.splot_colNames.append(str(key)[2:-1])
-            row+=[value[0]]
+            row+=[F[key][0]]
         # Get ResultsHSMinuit2.root file, open the MinuitResult TTree (contains fitparams and errors for modulations)
         f=ROOT.TFile("{}/splot_{}/ResultsHSMinuit2.root".format(self.splotunbin.outdir,self.intree),"READ")
         MR=f.Get("MinuitResult")
@@ -598,7 +599,7 @@ class FitBin(Bin):
         for i,val in enumerate(MR.floatParsFinal()):
             row+=[val.getVal(),val.getError()]
             if(i>0):
-                self.splot_colNames+=["a{}".format(i-1),"a{}_err".format(i-1)]
+                self.splot_colNames+=["mod_a{}".format(i-1),"mod_a{}_err".format(i-1)]
         self.splot_row = row
         
 # Class which stores multiple FitBins

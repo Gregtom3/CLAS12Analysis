@@ -319,7 +319,12 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   double cal_lw_ECIN_pi;
   double cal_lw_ECOUT_pi;
 
-  
+  double xF_pi;
+  double xF_pi0;
+  double truexF_pi;
+  double truexF_pi0;
+
+  _tree_postprocess->Branch("run",&run);
   _tree_postprocess->Branch("fid",&fid);
   _tree_postprocess->Branch("Mdiphoton",&Mgg);
   _tree_postprocess->Branch("trueMdiphoton",&trueMgg);
@@ -348,6 +353,10 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   _tree_postprocess->Branch("x",&x);
   _tree_postprocess->Branch("y",&y);
   _tree_postprocess->Branch("z",&zpair);
+  _tree_postprocess->Branch("xF_pi0",&xF_pi0);
+  _tree_postprocess->Branch("truexF_pi0",&truexF_pi0);
+  _tree_postprocess->Branch("xF_pi",&xF_pi);
+  _tree_postprocess->Branch("truexF_pi",&truexF_pi);
 
   _tree_postprocess->Branch("trueQ2",&trueQ2);
   _tree_postprocess->Branch("trueW",&trueW);
@@ -542,9 +551,6 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
   double vz_pi = 0.0;
   double vz_pi0 = 0.0;
 
-  double xF_pi = 0.0;
-  double xF_pi0 = 0.0;
-
   double zpi = 0.0;
   double zpi0 = 0.0;
 
@@ -576,6 +582,11 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
     trueth=0.0;
     truezpair=0.0;
     trueptpair=0.0;
+
+    xF_pi = 0.0;
+    xF_pi0 = 0.0;
+    truexF_pi = 0.0;
+    truexF_pi0 = 0.0;
 
     flag = 0;
     mcconnect=0;
@@ -793,6 +804,9 @@ int PostProcess::pipi0(TTree * _tree_postprocess, int isMC){
 
 		xF_pi = Kinematics::xF(q,pi,init_target,W);
 		xF_pi0 = Kinematics::xF(q,pi0,init_target,W);
+
+		truexF_pi = Kinematics::xF(trueq,truepi,init_target,trueW);
+		truexF_pi0 = Kinematics::xF(trueq,truepi0,init_target,trueW);
 
 		zpair = zpi+zpi0;
 		truezpair = truezpi + truezpi0;
