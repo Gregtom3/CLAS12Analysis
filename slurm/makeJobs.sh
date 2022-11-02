@@ -204,19 +204,19 @@ fi
 
 echo $hl
 echo "Grabbing hipo directory and files within"
-trainhipodir=""
-reconhipodir=""
 if [ $rungroup == "rga" ]; then
     if [ $ana == "MC" ]; then
-	trainhipodir="/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus*/v1/bkg*/*.hipo"
+	declare -a trainhipodir=("/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus-1/v1/bkg*/*.hipo" "/cache/clas12/rg-a/production/montecarlo/clasdis/fall2018/torus+1/v1/bkg*/*.hipo")
     else
-	trainhipodir="/cache/clas12/rg-a/production/recon/*20*/torus*/pass1/v1/dst/train/${ana}/*.hipo"
-	reconhipodir="/cache/clas12/rg-a/production/recon/*20*/torus*/pass1/v1/dst/recon/*/*.hipo"
+	declare -a trainhipodir=("/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/train/${ana}/*.hipo" "/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/train/${ana}/*.hipo" "/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/train/${ana}/*.hipo")
+
+	declare -a reconhipodir=("/cache/clas12/rg-a/production/recon/fall2018/torus-1/pass1/v1/dst/recon/*/*.hipo" "/cache/clas12/rg-a/production/recon/fall2018/torus+1/pass1/v1/dst/recon/*/*.hipo" "/cache/clas12/rg-a/production/recon/spring2019/torus-1/pass1/v1/dst/recon/*/*.hipo")
+       
     fi
 elif [ $rungroup == "rgc" ]; then
     echo "HERE"
     if [ $ana == "MC" ]; then
-	trainhipodir="/work/cebaf24gev/sidis/reconstructed/*proton*/hipo/*.hipo"
+	declare -a trainhipodir=("/work/cebaf24gev/sidis/reconstructed/*proton*/hipo/*.hipo")
     else
 	echo "HERE" 
 	if [ ! -z ${flags["version"]} ]; then
@@ -226,19 +226,21 @@ elif [ $rungroup == "rgc" ]; then
 		echo $hl
 		echo "Analyzing v8.3.2"
 		echo $hl
-		trainhipodir="/volatile/clas12/rg-c/production/ana_data/*/8.3.2/dst/train/${ana}/*.hipo"
-		reconhipodir="/volatile/clas12/rg-c/production/ana_data/*/8.3.2/dst/recon/*/*.hipo"
+		declare -a trainhipodir=("/volatile/clas12/rg-c/production/ana_data/*/8.3.2/dst/train/${ana}/*.hipo")
+		declare -a reconhipodir=("/volatile/clas12/rg-c/production/ana_data/*/8.3.2/dst/recon/*/*.hipo")
 	    fi
 	else
-	    trainhipodir="/volatile/clas12/rg-c/production/ana_data/*/dst/train/${ana}/*.hipo"
-	    reconhipodir="/volatile/clas12/rg-c/production/ana_data/*/dst/recon/*/*.hipo"
+	    declare -a trainhipodir=("/volatile/clas12/rg-c/production/ana_data/*/dst/train/${ana}/*.hipo")
+	    declare -a reconhipodir=("/volatile/clas12/rg-c/production/ana_data/*/dst/recon/*/*.hipo")
 	fi
     fi
 fi
 echo $hl
 echo "HERE"
+for subtrainhipodir in "${trainhipodir[@]}"
+do
 filenum=0
-for hipo in $trainhipodir
+for hipo in $subtrainhipodir
 do
     beamE=0
     runNumber=99999
@@ -310,6 +312,7 @@ EOF
 	    break
 	fi
     fi
+done
 done
 
 organizeFile="${shellSlurmDir}/organize.sh"
