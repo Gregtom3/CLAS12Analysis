@@ -382,8 +382,7 @@ do
     echo \$jobsLeft >> \$organizeOutFile
 sleep 30
 done 
-clas12root ${CLAS12Analysisdir}/macros/mergeTrees.C\(\"${volatiledir}\",\"run\",\"tree_reco\"\)
-clas12root ${CLAS12Analysisdir}/macros/mergeTrees.C\(\"${volatiledir}\",\"run\",\"tree_postprocess\"\)
+clas12root ${CLAS12Analysisdir}/macros/mergeTrees.C\(\"${volatiledir}\",\"run\",\"EVERYTHING\"\)
 EOF
     if [ $ana != "MC" ]; then
 	
