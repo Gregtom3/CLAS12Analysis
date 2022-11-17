@@ -214,7 +214,6 @@ if [ $rungroup == "rga" ]; then
        
     fi
 elif [ $rungroup == "rgc" ]; then
-    echo "HERE"
     if [ $ana == "MC" ]; then
 	declare -a trainhipodir=("/work/cebaf24gev/sidis/reconstructed/*proton*/hipo/*.hipo")
     else
