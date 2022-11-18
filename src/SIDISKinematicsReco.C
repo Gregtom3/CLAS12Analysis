@@ -256,6 +256,11 @@ int SIDISKinematicsReco::process_events()
        std::cout << _ievent << " events completed | " << _tree_Reco->GetEntriesFast() << " passed cuts --> " << _tree_Reco->GetEntriesFast()*100.0/_ievent << "%" << std::endl;
     }
 
+    /* Free up memory taken by elements of the map */
+    DeleteParticlePointers( recoparticleMap ); // Reco
+    DeleteParticlePointers( particleMap ); // MC
+    
+
     // Get the run number from the RUN::config bank
     // If the runNumber changes, adjust run-by-run data accordingly
     // -----------------------------------------------------
@@ -287,13 +292,6 @@ int SIDISKinematicsReco::process_events()
     if(_c12->getDetParticles().empty())
       continue;
 
-    // Create map to store reconstructed SIDIS particles
-    // Use the pindex as a unique key
-    type_map_part recoparticleMap;
-
-    // Create map to store true SIDIS particles
-    type_map_part particleMap;
-
     
     // Parse through reconstructed particle data
     if(_settings._doReco)
@@ -301,8 +299,7 @@ int SIDISKinematicsReco::process_events()
 	/* Add reco particle information */
 	/* Skip event if certain cuts are not satisfied */
 	if(CollectParticlesFromReco( _c12, recoparticleMap )!=0)
-       	  continue;
-
+	  continue;
       }
     
     // Parse through true Monte Carlo particle data
@@ -329,8 +326,9 @@ int SIDISKinematicsReco::process_events()
 
 	/* Add event information */
 	/* Skip event if it fails cuts */
-	if(AddRecoEventInfo( _c12 )!=0)
+	if(AddRecoEventInfo( _c12 )!=0){
 	  continue;
+	}
 	/* If we do MC, also get true event vars */
 	if(_settings._doMC)
 	  AddTruthEventInfo( _c12 );
@@ -339,8 +337,6 @@ int SIDISKinematicsReco::process_events()
        	WriteParticlesToTree( recoparticleMap );
 	/* fill reco tree */
        	_tree_Reco->Fill();
-	/* Free up memory taken by elements of the map */
-	DeleteParticlePointers( recoparticleMap );
       }
     if(_settings._doMC)
       {
@@ -354,9 +350,6 @@ int SIDISKinematicsReco::process_events()
 	
 	/* Fill MC tree */
 	_tree_MC->Fill();
-
-	/* Free up memory taken by elements of the map */
-	DeleteParticlePointers( particleMap );
       }
   }
   
@@ -428,6 +421,7 @@ int SIDISKinematicsReco::CollectParticlesFromTruth(const std::unique_ptr<clas12:
     sp->set_property( SIDISParticle::evtgen_part_parentparentPID, (int)parentparentPID);
     // Add SIDISParticle to the collection
     particleMap.insert ( make_pair( sp->get_candidate_id() , sp) );
+    
   }
   return 0;
 }
@@ -790,6 +784,7 @@ void SIDISKinematicsReco::DeleteParticlePointers(type_map_part& particleMap)
   for(type_map_part::iterator it = particleMap.begin(); it!=particleMap.end();++it)
     {
       delete (it->second);
+      particleMap.erase(it);
     }   
   return;
 }

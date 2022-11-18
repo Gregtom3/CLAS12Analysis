@@ -90,6 +90,9 @@ class SIDISKinematicsReco{
   int _runNumber = -999;
   int _evnum;
 
+  type_map_part recoparticleMap;
+  type_map_part particleMap;
+
   std::string _outfilename="";
   TFile *_tfile;
   TTree *_tree_MC;
